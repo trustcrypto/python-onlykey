@@ -1,11 +1,16 @@
 # coding: utf-8
+import logging
+
 import hid
 from aenum import Enum
+
+log = logging.getLogger(__name__)
 
 ID_VENDOR = 5824
 ID_PRODUCT = 1158
 
 MAX_INPUT_REPORT_SIZE = 64
+MAX_LARGE_PAYLOAD_SIZE = 58  # 64 - <4 bytes header> - <1 byte message> - <1 byte size|0xFF if max>
 MATX_OUTPUT_REPORT_SIZE = 64
 MAX_FEATURE_REPORTS = 0
 MESSAGE_HEADER = [255, 255, 255, 255]
@@ -24,6 +29,7 @@ class Message(Enum):
     OKSETU2FCERT = 234  # 0xEA
     OKWIPEU2FCERT = 235  # 0xEB
     OKGETSSHPKEY = 236  # XXX(tsileo): my own testing
+    OKSSHSIGNCHALLENGE = 237
 
 
 class MessageField(Enum):
@@ -39,15 +45,28 @@ class MessageField(Enum):
     YUBIAUTH = 10
 
 
+class OnlyKeyUnavailableException(Exception):
+    """Exception raised when the connection to the OnlyKey failed."""
+    pass
+
+
 class OnlyKey(object):
-    def __init__(self):
+    def __init__(self, connect=True):
         self._hid = hid.device()
-        self._hid.open(ID_VENDOR, ID_PRODUCT)
+        if connect:
+            self._connect()
+
+    def _connect(self):
+        try:
+            self._hid.open(ID_VENDOR, ID_PRODUCT)
+        except:
+            log.exception('failed to connect')
+            raise OnlyKeyUnavailableException()
 
     def initialized(self):
-        assert self._read_string() == 'INITIALIZED'
+        return self._read_string() == 'INITIALIZED'
 
-    def send_message(self, payload='', msg=None, slot_id=None, message_field=None):
+    def send_message(self, payload=None, msg=None, slot_id=None, message_field=None):
         """Send a message."""
         # Initialize an empty message with the header
         raw_bytes = list(MESSAGE_HEADER)
@@ -64,15 +83,54 @@ class OnlyKey(object):
         if message_field:
             raw_bytes.append(message_field.value)
 
-        # Append the raw payload, expect a string from now
+        # Append the raw payload, expect a string or a list of int
         if payload:
-            for c in payload:
-                raw_bytes.append(ord(c))
+            if isinstance(payload, str):
+                for c in payload:
+                    raw_bytes.append(ord(c))
+            else:
+                raw_bytes.extend(payload)
+
+        # Pad the ouput with 0s
         while len(raw_bytes) < MAX_INPUT_REPORT_SIZE:
             raw_bytes.append(0)
 
         # Send the message
         self._hid.write(raw_bytes)
+
+    def send_large_message(self, payload=None, msg=None):
+        """Wrapper for sending large message (larger than 58 bytes) in batch in a transparent way."""
+        if not msg:
+            raise Exception("Missing msg")
+
+        # Split the payload in multiple chunks
+        chunks = [payload[x:x+MAX_LARGE_PAYLOAD_SIZE] for x in xrange(0, len(payload), 58)]
+        for chunk in chunks:
+            current_payload = [255]  # 255 means that it's not the last payload
+            # If it's less than the max size, set explicitely the size
+            if len(chunk) < 58:
+                current_payload = [len(chunk)]
+
+            # Append the actual payload
+            if isinstance(chunk, list):
+                current_payload.extend(chunk)
+            else:
+                for c in chunk:
+                    current_payload.append(ord(c))
+
+            self.send_message(payload=current_payload, msg=msg)
+
+        return
+
+    def read_bytes(self, n=64, to_str=False):
+        """Read n bytes and return an array of uint8 (int)."""
+        out = self._hid.read(n)
+        if to_str:
+            # Returns the bytes a string if requested
+            return ''.join([chr(c) for c in out])
+
+        # Returns the raw list
+        return out
 
     def read_string(self):
         """Read an ASCII string."""
