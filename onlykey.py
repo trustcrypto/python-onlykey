@@ -1,5 +1,6 @@
 # coding: utf-8
 import logging
+import time
 
 import hid
 from aenum import Enum
@@ -48,6 +49,15 @@ class MessageField(Enum):
 class OnlyKeyUnavailableException(Exception):
     """Exception raised when the connection to the OnlyKey failed."""
     pass
+
+
+class Slot(object):
+    def __init__(self, num, label=''):
+        self.number = num
+        self.label = label
+
+    def __repr__(self):
+        return '<Slot \'{}|{}\'>'.format(self.number, self.label)
 
 
 class OnlyKey(object):
@@ -135,3 +145,22 @@ class OnlyKey(object):
     def read_string(self):
         """Read an ASCII string."""
         return ''.join([chr(item) for item in self._hid.read(MAX_INPUT_REPORT_SIZE) if item != 0])
+
+    def getlabels(self):
+        self.send_message(msg=Message.OKGETLABELS)
+        time.sleep(0.2)
+        slots = []
+        for _ in range(12):
+            data = self.read_string().split('|')
+            slot_number = ord(data[0])
+            if slot_number >= 16:
+                slot_number = slot_number - 6
+            if 1 <= slot_number <= 12:
+                slots.append(Slot(slot_number, label=data[1]))
+        return slots
+
+    def setslot(self, slot_number, message_field, value):
+        if slot_number >= 10:
+            slot_number += 6
+        self.send_message(msg=Message.OKSETSLOT, slot_id=slot_number, message_field=message_field, payload=value)
+        print self.read_string()
