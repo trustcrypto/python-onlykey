@@ -19,5 +19,5 @@ setup(
     author_email='t@a4.io',
     license='MIT',
     packages=find_packages(exclude=['contrib', 'docs', 'tests']),
-    install_requires=['hidapi', 'aenum'],
+    install_requires=['hidapi', 'aenum', 'prompt_toolkit'],
 )
