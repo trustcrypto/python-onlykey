@@ -1,3 +1,4 @@
+*.pyc
 onlykey.egg*
 .ropeproject
 cython-hidapi

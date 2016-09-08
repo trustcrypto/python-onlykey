@@ -19,5 +19,8 @@ setup(
     author_email='t@a4.io',
     license='MIT',
     packages=find_packages(exclude=['contrib', 'docs', 'tests']),
+    entry_points = {
+        'console_scripts': ['onlykey-cli=onlykey.cli:main'],
+    },
     install_requires=['hidapi', 'aenum', 'prompt_toolkit'],
 )
