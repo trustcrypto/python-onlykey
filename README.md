@@ -7,13 +7,11 @@ Python client for interacting with the OnlyKey. Bundled with a CLI for configuri
 ## QuickStart
 
 ```python
-import onlykey
+from onlykey import OnlyKey, Message
 
 # Automatically connect
-ok = onlykey.OnlyKey()
+ok = OnlyKey()
 
-if ok.initialized():
-    ok.sendmessage(msg=onlykey.OKGETLABELS)
-
-    print ok.read_string()
+ok.sendmessage(msg=Message.OKGETLABELS)
+print ok.read_string()
 ```
