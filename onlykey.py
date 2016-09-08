@@ -66,7 +66,17 @@ class OnlyKey(object):
     def __init__(self, connect=True):
         self._hid = hid.device()
         if connect:
-            self._connect()
+            tries = 3
+            while tries > 0:
+                try:
+                    self._connect()
+                    return
+                except Exception, e:
+                    log.debug('connect failed, trying again in 1 second...')
+                    time.sleep(1)
+                    tries -= 1
+
+            raise e
 
     def _connect(self):
         try:
