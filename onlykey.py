@@ -29,8 +29,10 @@ class Message(Enum):
     OKWIPEU2FPRIV = 233  # 0xE9
     OKSETU2FCERT = 234  # 0xEA
     OKWIPEU2FCERT = 235  # 0xEB
-    OKGETSSHPKEY = 236  # XXX(tsileo): my own testing
-    OKSSHSIGNCHALLENGE = 237
+    OKGETSSHPUBKEY = 236  # XXX(tsileo): my own testing
+    OKSIGNSSHCHALLENGE = 237
+    OKWIPESSHPRIV = 238
+    OKSETSSHPRIV = 239
 
 
 class MessageField(Enum):
@@ -132,9 +134,9 @@ class OnlyKey(object):
 
         return
 
-    def read_bytes(self, n=64, to_str=False):
+    def read_bytes(self, n=64, to_str=False, timeout_ms=5000):
         """Read n bytes and return an array of uint8 (int)."""
-        out = self._hid.read(n)
+        out = self._hid.read(n, timeout_ms=timeout_ms)
         if to_str:
             # Returns the bytes a string if requested
             return ''.join([chr(c) for c in out])
@@ -142,9 +144,9 @@ class OnlyKey(object):
         # Returns the raw list
         return out
 
-    def read_string(self):
+    def read_string(self, timeout_ms=5000):
         """Read an ASCII string."""
-        return ''.join([chr(item) for item in self._hid.read(MAX_INPUT_REPORT_SIZE) if item != 0])
+        return ''.join([chr(item) for item in self._hid.read(MAX_INPUT_REPORT_SIZE, timeout_ms) if item != 0])
 
     def getlabels(self):
         self.send_message(msg=Message.OKGETLABELS)
@@ -164,3 +166,9 @@ class OnlyKey(object):
             slot_number += 6
         self.send_message(msg=Message.OKSETSLOT, slot_id=slot_number, message_field=message_field, payload=value)
         print self.read_string()
+        # Set U2F
+        # [255, 255, 255, 255, 230, 12, 8, 117, 50, 102, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+
+    def wipeslot(self, slot_number):
+        # Seems to be 8 message to read
+        pass
