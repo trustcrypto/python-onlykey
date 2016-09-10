@@ -16,6 +16,21 @@ MATX_OUTPUT_REPORT_SIZE = 64
 MAX_FEATURE_REPORTS = 0
 MESSAGE_HEADER = [255, 255, 255, 255]
 
+SLOTS_NAME= {
+    1: '1a',
+    2: '2a',
+    3: '3a',
+    4: '4a',
+    5: '5a',
+    6: '6a',
+    7: '1b',
+    8: '2b',
+    9: '3b',
+    10: '4b',
+    11: '5b',
+    12: '6b',
+}
+
 
 class Message(Enum):
     OKSETPIN = 225  # 0xE1
@@ -59,7 +74,7 @@ class Slot(object):
         self.label = label
 
     def __repr__(self):
-        return '<Slot \'{}|{}\'>'.format(self.number, self.label)
+        return '<Slot \'{}|{}\'>'.format(SLOTS_NAME[self.number], self.label)
 
 
 class OnlyKey(object):
@@ -70,6 +85,7 @@ class OnlyKey(object):
             while tries > 0:
                 try:
                     self._connect()
+                    logging.debug('connected')
                     return
                 except Exception, e:
                     log.debug('connect failed, trying again in 1 second...')
@@ -90,34 +106,43 @@ class OnlyKey(object):
 
     def send_message(self, payload=None, msg=None, slot_id=None, message_field=None):
         """Send a message."""
+        logging.debug('preparing payload for writing')
         # Initialize an empty message with the header
         raw_bytes = list(MESSAGE_HEADER)
 
         # Append the message type (must be `Message` enum value)
         if msg:
+            logging.debug('msg=%s', msg.name)
             raw_bytes.append(msg.value)
 
         # Append the slot ID if needed
         if slot_id:
+            logging.debug('slot_id=%s', slot_id)
             raw_bytes.append(slot_id)
 
         # Append the message field (must be a `MessageField` enum value)
         if message_field:
+            logging.debug('slot_field=%s', message_field.name)
             raw_bytes.append(message_field.value)
 
         # Append the raw payload, expect a string or a list of int
         if payload:
             if isinstance(payload, str):
+                logging.debug('payload="%s"', payload)
                 for c in payload:
                     raw_bytes.append(ord(c))
-            else:
+            elif isinstance(payload, list):
+                logging.debug('payload=%s', ''.join([chr(c) for c in payload]))
                 raw_bytes.extend(payload)
+            else:
+                raise Exception('`payload` must be either `str` or `list`')
 
         # Pad the ouput with 0s
         while len(raw_bytes) < MAX_INPUT_REPORT_SIZE:
             raw_bytes.append(0)
 
         # Send the message
+        logging.debug('sending message')
         self._hid.write(raw_bytes)
 
     def send_large_message(self, payload=None, msg=None):
@@ -147,6 +172,7 @@ class OnlyKey(object):
     def read_bytes(self, n=64, to_str=False, timeout_ms=5000):
         """Read n bytes and return an array of uint8 (int)."""
         out = self._hid.read(n, timeout_ms=timeout_ms)
+        logging.debug('read="%s"', ''.join([chr(c) for c in out]))
         if to_str:
             # Returns the bytes a string if requested
             return ''.join([chr(c) for c in out])
@@ -156,7 +182,7 @@ class OnlyKey(object):
 
     def read_string(self, timeout_ms=5000):
         """Read an ASCII string."""
-        return ''.join([chr(item) for item in self._hid.read(MAX_INPUT_REPORT_SIZE, timeout_ms) if item != 0])
+        return ''.join([chr(item) for item in self.read_bytes(MAX_INPUT_REPORT_SIZE, timeout_ms=timeout_ms) if item != 0])
 
     def getlabels(self):
         self.send_message(msg=Message.OKGETLABELS)
