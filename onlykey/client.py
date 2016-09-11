@@ -72,10 +72,13 @@ class Slot(object):
     def __init__(self, num, label=''):
         self.number = num
         self.label = label
+        self.name = SLOTS_NAME[num]
 
     def __repr__(self):
-        return '<Slot \'{}|{}\'>'.format(SLOTS_NAME[self.number], self.label)
+        return '<Slot \'{}|{}\'>'.format(self.name, self.label)
 
+    def to_str(self):
+        return 'Slot {}: {}'.format(self.name, self.label or '<empty>')
 
 class OnlyKey(object):
     def __init__(self, connect=True):
@@ -127,7 +130,7 @@ class OnlyKey(object):
 
         # Append the raw payload, expect a string or a list of int
         if payload:
-            if isinstance(payload, str):
+            if isinstance(payload, (str, unicode)):
                 logging.debug('payload="%s"', payload)
                 for c in payload:
                     raw_bytes.append(ord(c))
@@ -185,6 +188,10 @@ class OnlyKey(object):
         return ''.join([chr(item) for item in self.read_bytes(MAX_INPUT_REPORT_SIZE, timeout_ms=timeout_ms) if item != 0])
 
     def getlabels(self):
+        """Fetch the list of `Slot` from the OnlyKey.
+
+        No need to read messages.
+        """
         self.send_message(msg=Message.OKGETLABELS)
         time.sleep(0.2)
         slots = []
@@ -198,13 +205,17 @@ class OnlyKey(object):
         return slots
 
     def setslot(self, slot_number, message_field, value):
+        """Set a slot field to the given value.
+        """
         if slot_number >= 10:
             slot_number += 6
         self.send_message(msg=Message.OKSETSLOT, slot_id=slot_number, message_field=message_field, payload=value)
-        print self.read_string()
         # Set U2F
         # [255, 255, 255, 255, 230, 12, 8, 117, 50, 102, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+        print self.read_string()
 
     def wipeslot(self, slot_number):
-        # Seems to be 8 message to read
-        pass
+        """Wipe all the fields for the given slot."""
+        self.send_message(msg=Message.OKWIPESLOT, slot_id=slot_number)
+        for _ in xrange(8):
+            print self.read_string()

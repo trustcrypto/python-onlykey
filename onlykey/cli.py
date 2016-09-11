@@ -13,14 +13,15 @@ from prompt_toolkit.filters import Condition
 
 from client import OnlyKey, Message, MessageField
 
+only_key = OnlyKey()
 
 def cli():
     logging.basicConfig(level=logging.DEBUG)
-    only_key = OnlyKey()
     # Create some history first. (Easy for testing.)
     history = InMemoryHistory()
     history.append('getlabels')
     history.append('setslot')
+    history.append('wipeslot')
 
     # ContrlT handling
     hidden = [True]  # Nonlocal
@@ -39,8 +40,7 @@ def cli():
         return password
 
     # Print help.
-    print('This CLI has fish-style auto-suggestion enable.')
-    print('Type for instance "pri", then you\'ll see a suggestion.')
+    print('OnlyKey CLI v0')
     print('Press the right arrow to insert the suggestion.')
     print('Press Control-C to retry. Control-D to exit.')
     print()
@@ -58,8 +58,16 @@ def cli():
         data = raw.split()
         # nexte = prompt_pass
         if data[0] == 'getlabels':
+            tmp = {}
             for slot in only_key.getlabels():
-                print(slot)
+                tmp[slot.name] = slot
+            slots = iter(['1a', '1b', '2a', '2b', '3a', '3b', '4a', '4b', '5a', '5b', '6a', '6b'])
+            for slot_name in slots:
+                print(tmp[slot_name].to_str())
+                print(tmp[next(slots)].to_str())
+                print()
+
+
         elif data[0] == 'setslot':
             try:
                 slot_id = int(data[1])
@@ -70,24 +78,32 @@ def cli():
 
             if data[2] == 'label':
                 only_key.setslot(slot_id, MessageField.LABEL, data[3])
-                print(only_key.read_string())
             elif data[2] == 'password':
                 password = prompt_pass()
                 only_key.setslot(slot_id, MessageField.PASSWORD, password)
-                print(only_key.read_string())
             elif data[2] == 'type':
                 only_key.setslot(slot_id, MessageField.TFATYPE, data[3])
-                print(only_key.read_string())
             else:
                 print("setslot <id> <type> [value]")
                 print("<type> must be ['label', 'password', 'type']")
+            continue
+        elif data[0] == 'wipeslot':
+            try:
+                slot_id = int(data[1])
+            except:
+                print("wipeslot <id>")
+                print("<id> must be an int")
                 continue
+
+            only_key.wipeslot(slot_id)
+            continue
 
 
 def main():
     try:
         cli()
     except EOFError:
+        only_key._hid.close()
         print()
         print('Bye!')
         pass
