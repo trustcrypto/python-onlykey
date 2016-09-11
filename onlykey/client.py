@@ -104,6 +104,9 @@ class OnlyKey(object):
             log.exception('failed to connect')
             raise OnlyKeyUnavailableException()
 
+    def close(self):
+        return self._hid.close()
+
     def initialized(self):
         return self._read_string() == 'INITIALIZED'
 
