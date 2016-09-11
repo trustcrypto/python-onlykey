@@ -15,6 +15,7 @@ Press the right arrow to insert the suggestion.
 Press Control-C to retry. Control-D to exit.
 
 OnlyKey> getlabels
+
 Slot 1a: <empty>
 Slot 1b: <empty>
 
@@ -34,12 +35,17 @@ Slot 6a: <empty>
 Slot 6b: <empty>
 
 OnlyKey> setslot 1 label ok
+
 Successfully set Label
+
 OnlyKey> setslot 1 password
 Type Control-T to toggle password visible.
 Password: ***
+
 Successfully set Password
+
 OnlyKey> getlabels
+
 Slot 1a: ok
 Slot 1b: <empty>
 

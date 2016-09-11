@@ -54,7 +54,9 @@ def cli():
     nexte = mprompt
 
     while 1:
+        print()
         raw = nexte()
+        print()
         data = raw.split()
         # nexte = prompt_pass
         if data[0] == 'getlabels':
