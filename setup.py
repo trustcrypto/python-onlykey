@@ -22,5 +22,5 @@ setup(
     entry_points = {
         'console_scripts': ['onlykey-cli=onlykey.cli:main'],
     },
-    install_requires=['hidapi', 'aenum', 'prompt_toolkit'],
+    install_requires=['hidapi', 'aenum', 'prompt_toolkit', 'ed25519'],
 )
