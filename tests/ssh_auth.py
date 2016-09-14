@@ -23,18 +23,37 @@ ok = OnlyKey()
 print 'Done'
 print
 
+time.sleep(2)
+print 'You should see your OnlyKey blink 3 times'
+print
+
+ok.read_string(timeout_ms=100)
+empty = 'a'
+while not empty:
+    empty = ok.read_string(timeout_ms=100)
+
 print 'Setting SSH private...'
 ok.send_message(msg=Message.OKSETSSHPRIV, payload=privkey.to_seed())
-time.sleep(0.2)
+time.sleep(0.5)
 print ok.read_string()
 
-time.sleep(1)
+time.sleep(2)
+print 'You should see your OnlyKey blink 3 times'
+print
 
 print 'Trying to read the pubkey...'
 ok.send_message(msg=Message.OKGETSSHPUBKEY)
-time.sleep(0.2)
-ok_pubkey = ok.read_bytes(32, to_str=True)
+time.sleep(0.5)
+for _ in xrange(10):
+    ok_pubkey = ok.read_bytes(32, to_str=True)
+    if ok_pubkey:
+        break
+    time.sleep(0.5)
+
 print
+
+if not ok_pubkey:
+    raise Exception('failed to set the SSH key')
 
 print 'Assert that the received pubkey match the one generated locally'
 assert ok_pubkey == pubkey.to_bytes()
@@ -54,7 +73,7 @@ ok.send_large_message(msg=Message.OKSIGNSSHCHALLENGE, payload=test_payload)
 signature = ''
 while signature == '':
     time.sleep(0.5)
-    signature = ok.read_string()
+    signature = ok.read_bytes(64, to_str=True)
 
 print 'Signed, signature=', repr(signature)
 
