@@ -24,17 +24,18 @@ print 'Done'
 print
 
 time.sleep(2)
-print 'You should see your OnlyKey blink 3 times'
-print
 
 ok.read_string(timeout_ms=100)
 empty = 'a'
 while not empty:
     empty = ok.read_string(timeout_ms=100)
 
+print 'You should see your OnlyKey blink 3 times'
+print
+
 print 'Setting SSH private...'
 ok.send_message(msg=Message.OKSETSSHPRIV, payload=privkey.to_seed())
-time.sleep(0.5)
+time.sleep(1.5)
 print ok.read_string()
 
 time.sleep(2)
@@ -43,14 +44,17 @@ print
 
 print 'Trying to read the pubkey...'
 ok.send_message(msg=Message.OKGETSSHPUBKEY)
-time.sleep(0.5)
+time.sleep(1.5)
 for _ in xrange(10):
     ok_pubkey = ok.read_bytes(32, to_str=True)
-    if ok_pubkey:
+    if len(ok_pubkey) == 32:
         break
-    time.sleep(0.5)
+    time.sleep(1)
 
 print
+
+print 'received=', repr(ok_pubkey)
+import pdb; pdb.set_trace()
 
 if not ok_pubkey:
     raise Exception('failed to set the SSH key')
