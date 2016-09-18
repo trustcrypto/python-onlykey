@@ -1,7 +1,10 @@
 # coding: utf-8
 from __future__ import unicode_literals, print_function
 
+import time
 import logging
+import os
+import sys
 
 from prompt_toolkit import prompt
 from prompt_toolkit.history import InMemoryHistory
@@ -10,10 +13,45 @@ from prompt_toolkit.auto_suggest import AutoSuggestFromHistory
 from prompt_toolkit.key_binding.manager import KeyBindingManager
 from prompt_toolkit.keys import Keys
 from prompt_toolkit.filters import Condition
+import ed25519
 
 from client import OnlyKey, Message, MessageField
 
 only_key = OnlyKey()
+
+def utils():
+    if sys.argv[1] == 'ssh':
+        # SSH subcommands
+
+        # Create a new private key
+        if sys.argv[2] == 'new':
+            signing_key, _ = ed25519.create_keypair()
+
+            with open('ssh_private.key', 'wb+') as f:
+                f.write(signing_key.to_seed())
+
+            print('SSH private key written to ssh_private.key')
+
+        # Load a private key to the OnlyKey
+        elif sys.argv[2] == 'load':
+            privkey = sys.argv[3] or 'ssh_private.key'
+
+            if not os.path.exists(privkey):
+                print('{} does not exists'.format(privkey))
+
+            with open(privkey, 'rb') as f:
+                raw_privkey = f.read()
+
+            only_key.send_message(msg=Message.OKSETSSHPRIV, payload=raw_privkey)
+
+            time.sleep(1.5)
+            print(only_key.read_string())
+
+    elif sys.argv[1] == 'u2f':
+        print('u2f not implemented yet')
+
+    else:
+        print('unknown command')
 
 def cli():
     logging.basicConfig(level=logging.DEBUG)
@@ -46,7 +84,7 @@ def cli():
     print()
 
     def mprompt():
-        return prompt('OnlyKey> ', history=history,
+        return prompt('OnlyKey> ',
                auto_suggest=AutoSuggestFromHistory(),
                enable_history_search=True,
                on_abort=AbortAction.RETRY)

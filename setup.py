@@ -20,7 +20,10 @@ setup(
     license='MIT',
     packages=find_packages(exclude=['contrib', 'docs', 'tests']),
     entry_points = {
-        'console_scripts': ['onlykey-cli=onlykey.cli:main'],
+        'console_scripts': [
+            'onlykey-cli=onlykey.cli:main',
+            'onlykey-utils=onlykey.cli:utils',
+        ],
     },
-    install_requires=['hidapi', 'aenum', 'prompt_toolkit', 'ed25519'],
+    install_requires=['hidapi', 'aenum', 'six', 'prompt_toolkit', 'ed25519'],
 )
