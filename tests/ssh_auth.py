@@ -54,7 +54,6 @@ for _ in xrange(10):
 print
 
 print 'received=', repr(ok_pubkey)
-import pdb; pdb.set_trace()
 
 if not ok_pubkey:
     raise Exception('failed to set the SSH key')

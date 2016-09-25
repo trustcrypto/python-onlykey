@@ -1,3 +1,5 @@
+ed25519
+Cython
 prompt_toolkit
 hidapi
 aenum
