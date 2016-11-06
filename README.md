@@ -87,6 +87,17 @@ OnlyKey>
 Bye!
 ```
 
+### Creating/Loading SSH key
+
+Create a new ed25519 private key and load it into the OnlyKey:
+
+```
+$ onlykey-utils ssh new
+$ onlykey-utils ssh load
+```
+
+See [onlykey-agent](https://github.com/trustcrypto/onlykey-agent) for more informations.
+
 ### Python client
 
 ```python
