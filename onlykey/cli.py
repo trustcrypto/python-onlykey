@@ -19,6 +19,7 @@ from client import OnlyKey, Message, MessageField
 
 only_key = OnlyKey()
 
+
 def utils():
     if sys.argv[1] == 'ssh':
         # SSH subcommands
@@ -34,7 +35,10 @@ def utils():
 
         # Load a private key to the OnlyKey
         elif sys.argv[2] == 'load':
-            privkey = sys.argv[3] or 'ssh_private.key'
+
+            privkey = 'ssh_private.key'
+            if len(privkey) == 4:
+                privkey = sys.argv[3]
 
             if not os.path.exists(privkey):
                 print('{} does not exists'.format(privkey))
