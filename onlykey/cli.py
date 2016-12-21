@@ -156,7 +156,7 @@ def cli():
                  only_key.setslot(slot_id, MessageField.WIPEMODE, data[3])
             elif data[2] == 'keytypespeed':
                  only_key.setslot(slot_id, MessageField.KEYTYPESPEED, data[3])
-            elif data[2] == 'keylayout:
+            elif data[2] == 'keylayout':
                  only_key.setslot(slot_id, MessageField.KEYLAYOUT, data[3])
             else:
                 print("setslot <id> <type> [value]")
