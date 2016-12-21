@@ -56,12 +56,6 @@ OnlyKey> setslot 1 label ok
 
 Successfully set Label
 
-OnlyKey> setslot 1 password
-Type Control-T to toggle password visible.
-Password: ***
-
-Successfully set Password
-
 OnlyKey> getlabels
 
 Slot 1a: ok
