@@ -82,7 +82,7 @@ def cli():
         return password
 
     # Print help.
-    print('OnlyKey CLI v0')
+    print('OnlyKey CLI v0.1')
     print('Press the right arrow to insert the suggestion.')
     print('Press Control-C to retry. Control-D to exit.')
     print()

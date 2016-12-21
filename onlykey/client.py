@@ -44,24 +44,35 @@ class Message(Enum):
     OKWIPEU2FPRIV = 233  # 0xE9
     OKSETU2FCERT = 234  # 0xEA
     OKWIPEU2FCERT = 235  # 0xEB
-    OKGETSSHPUBKEY = 236  # XXX(tsileo): my own testing
+    OKGETSSHPUBKEY = 236  #
     OKSIGNSSHCHALLENGE = 237
     OKWIPESSHPRIV = 238
     OKSETSSHPRIV = 239
+    OKGETGPGPUBKEY = 240
+    OKSIGNGPGCHALLENGE = 241
+    OKWIPEGPGPRIV = 242
+    OKSETGPGPRIV = 243
 
 
 class MessageField(Enum):
     LABEL = 1
+    URL = 15
+    NEXTKEY1 = 16
+    DELAY1 = 17
     USERNAME = 2
-    NEXTKEY1 = 3
-    DELAY1 = 4
+    NEXTKEY2 = 3
+    DELAY2 = 4
     PASSWORD = 5
-    NEXTKEY2 = 6
-    DELAY2 = 7
+    NEXTKEY3 = 6
+    DELAY3 = 7
     TFATYPE = 8
-    TFAUSERNAME = 9
-    YUBIAUTH = 10
-
+    TOTPKEY = 9
+    NEXTKEY4 = 18
+    DELAY4 = 10
+    IDLETIMEOUT = 11
+    WIPEMODE = 12
+    KEYTYPESPEED = 13
+    KEYLAYOUT = 14
 
 class OnlyKeyUnavailableException(Exception):
     """Exception raised when the connection to the OnlyKey failed."""
