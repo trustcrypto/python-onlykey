@@ -82,7 +82,55 @@ Slot 5b: <empty>
 Slot 6a: <empty>
 Slot 6b: <empty>
 
-OnlyKey>
+OnlyKey> setslot 1 url accounts.google.com
+
+Successfully set URL
+
+OnlyKey> setslot 1 add_char1 2
+
+Successfully set Character1
+
+OnlyKey> setslot 1 delay1 2
+
+Successfully set Delay1
+
+OnlyKey> setslot 1 username onlykey.1234
+
+Successfully set Username
+
+OnlyKey> setslot 1 add_char2 2
+
+Successfully set Character2
+
+OnlyKey> setslot 1 delay2 2
+
+Successfully set Delay2
+
+OnlyKey> setslot 1 password
+
+Type Control-T to toggle password visible.
+Password: *********
+Successfully set Password
+
+OnlyKey> setslot 1 add_char3 2
+
+Successfully set Character3
+
+OnlyKey> setslot 1 delay3 2
+
+Successfully set Delay3
+
+OnlyKey> setslot 1 totpkey
+
+Type Control-T to toggle password visible.
+Password: ********************************
+Successfully set TOTP Key
+
+OnlyKey> setslot 1 add_char4 2
+
+Successfully set Character4
+
+OnlyKey> 
 
 Bye!
 ```
