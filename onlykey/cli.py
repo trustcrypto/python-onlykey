@@ -122,11 +122,42 @@ def cli():
 
             if data[2] == 'label':
                 only_key.setslot(slot_id, MessageField.LABEL, data[3])
+            elif data[2] == 'url':
+                only_key.setslot(slot_id, MessageField.URL, data[3])
+            elif data[2] == 'add_char1':
+                only_key.setslot(slot_id, MessageField.NEXTKEY1, data[3])
+            elif data[2] == 'delay1':
+                only_key.setslot(slot_id, MessageField.DELAY1, data[3])
+            elif data[2] == 'username':
+                only_key.setslot(slot_id, MessageField.USERNAME, data[3])
+            elif data[2] == 'add_char2':
+                only_key.setslot(slot_id, MessageField.NEXTKEY2, data[3])
+            elif data[2] == 'delay2':
+                only_key.setslot(slot_id, MessageField.DELAY2, data[3])
             elif data[2] == 'password':
                 password = prompt_pass()
                 only_key.setslot(slot_id, MessageField.PASSWORD, password)
+            elif data[2] == 'add_char3':
+                only_key.setslot(slot_id, MessageField.NEXTKEY3, data[3])
+            elif data[2] == 'delay3':
+                only_key.setslot(slot_id, MessageField.DELAY3, data[3])
             elif data[2] == 'type':
-                only_key.setslot(slot_id, MessageField.TFATYPE, data[3])
+                 only_key.setslot(slot_id, MessageField.TFATYPE, data[3])
+            elif data[2] == 'totpkey':
+                totpkey = prompt_pass()
+                only_key.setslot(slot_id, MessageField.TOTPKEY, totpkey)
+            elif data[2] == 'add_char4':
+                only_key.setslot(slot_id, MessageField.NEXTKEY4, data[3])
+            elif data[2] == 'delay4':
+                only_key.setslot(slot_id, MessageField.DELAY4, data[3])
+            elif data[2] == 'idletimeout':
+                 only_key.setslot(slot_id, MessageField.IDLETIMEOUT, data[3])
+            elif data[2] == 'wipemode':
+                 only_key.setslot(slot_id, MessageField.WIPEMODE, data[3])
+            elif data[2] == 'keytypespeed':
+                 only_key.setslot(slot_id, MessageField.KEYTYPESPEED, data[3])
+            elif data[2] == 'keylayout:
+                 only_key.setslot(slot_id, MessageField.KEYLAYOUT, data[3])
             else:
                 print("setslot <id> <type> [value]")
                 print("<type> must be ['label', 'password', 'type']")
