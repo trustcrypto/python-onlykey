@@ -14,7 +14,7 @@ setup(
     description='OnlyKey client and command-line tool',
     long_description=long_description,
 
-    url='https://github.com/tsileo/python-onlykey',
+    url='https://github.com/trustcrypto/python-onlykey',
     author='Thomas Sileo',
     author_email='t@a4.io',
     license='MIT',
