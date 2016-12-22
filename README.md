@@ -114,6 +114,10 @@ OnlyKey> setslot 1 delay3 2
 
 Successfully set Delay3
 
+OnlyKey> setslot 1 type g
+
+Successfully set 2FA Type
+
 OnlyKey> setslot 1 totpkey
 
 Type Control-T to toggle password visible.
