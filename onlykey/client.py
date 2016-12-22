@@ -44,14 +44,14 @@ class Message(Enum):
     OKWIPEU2FPRIV = 233  # 0xE9
     OKSETU2FCERT = 234  # 0xEA
     OKWIPEU2FCERT = 235  # 0xEB
-    OKGETSSHPUBKEY = 236  #
-    OKSIGNSSHCHALLENGE = 237
-    OKWIPESSHPRIV = 238
-    OKSETSSHPRIV = 239
-    OKGETGPGPUBKEY = 240
-    OKSIGNGPGCHALLENGE = 241
-    OKWIPEGPGPRIV = 242
-    OKSETGPGPRIV = 243
+    OKGETECCPUBKEY = 236  #
+    OKSIGNECCCHALLENGE = 237
+    OKWIPEECCPRIV = 238
+    OKSETECCPRIV = 239
+    OKGETRSAPUBKEY = 240
+    OKSIGNRSACHALLENGE = 241
+    OKWIPERSAPRIV = 242
+    OKSETRSAPRIV = 243
 
 
 class MessageField(Enum):
@@ -231,5 +231,23 @@ class OnlyKey(object):
     def wipeslot(self, slot_number):
         """Wipe all the fields for the given slot."""
         self.send_message(msg=Message.OKWIPESLOT, slot_id=slot_number)
+        for _ in xrange(8):
+            print self.read_string()
+
+    def setpin(self):
+        """Set PIN on OnlyKey keypad."""
+        self.send_message(msg=Message.OKSETPIN)
+        for _ in xrange(8):
+            print self.read_string()
+
+    def setsdpin(self):
+        """Set SD PIN on OnlyKey keypad."""
+        self.send_message(msg=Message.OKSETSDPIN)
+        for _ in xrange(8):
+            print self.read_string()
+
+    def setpdpin(self):
+        """Set PD PIN on OnlyKey keypad."""
+        self.send_message(msg=Message.OKSETPDPIN)
         for _ in xrange(8):
             print self.read_string()

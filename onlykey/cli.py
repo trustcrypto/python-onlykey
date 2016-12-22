@@ -21,22 +21,22 @@ only_key = OnlyKey()
 
 
 def utils():
-    if sys.argv[1] == 'ssh':
-        # SSH subcommands
+    if sys.argv[1] == 'ecc':
+        # ECC subcommands
 
         # Create a new private key
         if sys.argv[2] == 'new':
             signing_key, _ = ed25519.create_keypair()
 
-            with open('ssh_private.key', 'wb+') as f:
+            with open('ecc_private.key', 'wb+') as f:
                 f.write(signing_key.to_seed())
 
-            print('SSH private key written to ssh_private.key')
+            print('ECC private key written to ecc_private.key')
 
         # Load a private key to the OnlyKey
         elif sys.argv[2] == 'load':
 
-            privkey = 'ssh_private.key'
+            privkey = 'ecc_private.key'
             if len(privkey) == 4:
                 privkey = sys.argv[3]
 
@@ -46,7 +46,7 @@ def utils():
             with open(privkey, 'rb') as f:
                 raw_privkey = f.read()
 
-            only_key.send_message(msg=Message.OKSETSSHPRIV, payload=raw_privkey)
+            only_key.send_message(msg=Message.OKSETECCPRIV, payload=raw_privkey)
 
             time.sleep(1.5)
             print(only_key.read_string())
@@ -64,6 +64,9 @@ def cli():
     history.append('getlabels')
     history.append('setslot')
     history.append('wipeslot')
+    history.append('setpin')
+    history.append('setsdpin')
+    history.append('setpdpin')
 
     # ContrlT handling
     hidden = [True]  # Nonlocal
@@ -81,13 +84,18 @@ def cli():
                           key_bindings_registry=key_bindings_manager.registry)
         return password
 
-    def prompt_key):
+    def prompt_key():
         print('Type Control-T to toggle key visible.')
         key = prompt('Key: ',
                           is_password=Condition(lambda cli: hidden[0]),
                           key_bindings_registry=key_bindings_manager.registry)
         #need base32 to hex conversion
         return key
+
+    def prompt_pin():
+        print('Press any key when finished entering PIN')
+        return
+
 
     # Print help.
     print('OnlyKey CLI v0.1')
@@ -179,6 +187,30 @@ def cli():
                 continue
 
             only_key.wipeslot(slot_id)
+        elif data[0] == 'setpin':
+            try:
+                print("Enter a 7-10 digit PIN on the OnlyKey keypad")
+            except:
+                continue
+            only_key.setpin() #first OKSETPIN message starts PIN entry
+            prompt_pin() #have user press any key when they are done entering PIN
+            only_key.setpin() #second OKSETPIN message ends PIN entry
+        elif data[0] == 'setsdpin':
+            try:
+                print("Enter a 7-10 digit PIN on the OnlyKey keypad")
+            except:
+                continue
+            only_key.setpin() #first OKSETSDPIN message starts PIN entry
+            prompt_pin() #have user press any key when they are done entering PIN
+            only_key.setpin() #second OKSETSDPIN message ends PIN entry
+        elif data[0] == 'setpdpin':
+            try:
+                print("Enter a 7-10 digit PIN on the OnlyKey keypad")
+            except:
+                continue
+            only_key.setpin() #first OKSETPDPIN message starts PIN entry
+            prompt_pin() #have user press any key when they are done entering PIN
+            only_key.setpin() #second OKSETPDPIN message ends PIN entry
             continue
 
 
