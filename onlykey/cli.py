@@ -160,14 +160,14 @@ def cli():
                  only_key.setslot(slot_id, MessageField.KEYLAYOUT, data[3])
             else:
                 print("setslot <id> <type> [value]")
-                print("<type> must be ['label', 'password', 'type']")
+                print("<type> must be ['label', 'url', 'add_char1', 'delay1', 'username', 'add_char2', 'delay2', 'password', 'add_char3', 'delay3', 'type', 'totpkey', 'add_char4', 'delay4', 'idletimeout', 'wipemode', 'keytypespeed', 'keylayout']")
             continue
         elif data[0] == 'wipeslot':
             try:
                 slot_id = int(data[1])
             except:
                 print("wipeslot <id>")
-                print("<id> must be an int")
+                print("<id> must be an int (1-24)")
                 continue
 
             only_key.wipeslot(slot_id)
