@@ -76,10 +76,18 @@ def cli():
 
     def prompt_pass():
         print('Type Control-T to toggle password visible.')
-        password = prompt('Password: ',
+        password = prompt('Password/Key: ',
                           is_password=Condition(lambda cli: hidden[0]),
                           key_bindings_registry=key_bindings_manager.registry)
         return password
+
+    def prompt_key):
+        print('Type Control-T to toggle key visible.')
+        key = prompt('Key: ',
+                          is_password=Condition(lambda cli: hidden[0]),
+                          key_bindings_registry=key_bindings_manager.registry)
+        #need base32 to hex conversion
+        return key
 
     # Print help.
     print('OnlyKey CLI v0.1')
@@ -117,7 +125,7 @@ def cli():
                 slot_id = int(data[1])
             except:
                 print("setslot <id> <type> [value]")
-                print("<id> must be an int")
+                print("<id> must be an int (1-24)")
                 continue
 
             if data[2] == 'label':
@@ -144,7 +152,7 @@ def cli():
             elif data[2] == 'type':
                  only_key.setslot(slot_id, MessageField.TFATYPE, data[3])
             elif data[2] == 'totpkey':
-                totpkey = prompt_pass()
+                totpkey = prompt_key()
                 only_key.setslot(slot_id, MessageField.TOTPKEY, totpkey)
             elif data[2] == 'add_char4':
                 only_key.setslot(slot_id, MessageField.NEXTKEY4, data[3])
