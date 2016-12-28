@@ -68,7 +68,6 @@ class MessageField(Enum):
     TFATYPE = 8
     TOTPKEY = 9
     YUBIAUTH = 10
-    NEXTKEY4 = 18
     IDLETIMEOUT = 11
     WIPEMODE = 12
     KEYTYPESPEED = 13

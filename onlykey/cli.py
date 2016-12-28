@@ -162,10 +162,6 @@ def cli():
             elif data[2] == 'totpkey':
                 totpkey = prompt_key()
                 only_key.setslot(slot_id, MessageField.TOTPKEY, totpkey)
-            elif data[2] == 'add_char4':
-                only_key.setslot(slot_id, MessageField.NEXTKEY4, data[3])
-            elif data[2] == 'delay4':
-                only_key.setslot(slot_id, MessageField.DELAY4, data[3])
             elif data[2] == 'idletimeout':
                  only_key.setslot(slot_id, MessageField.IDLETIMEOUT, data[3])
             elif data[2] == 'wipemode':
