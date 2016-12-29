@@ -46,7 +46,7 @@ def utils():
             with open(privkey, 'rb') as f:
                 raw_privkey = f.read()
 
-            only_key.send_message(msg=Message.OKSETECCPRIV, payload=raw_privkey)
+            only_key.send_message(msg=Message.OKSETPRIV, payload=raw_privkey)
 
             time.sleep(1.5)
             print(only_key.read_string())
