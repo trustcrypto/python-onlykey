@@ -48,7 +48,8 @@ class Message(Enum):
     OKSIGN: 237,
     OKDECRYPT: 238,
     OKWIPEPRIV: 239,
-    OKSETPRIV: 240
+    OKSETPRIV: 240,
+    OKSETRESTORE: 241
 
 
 class MessageField(Enum):
