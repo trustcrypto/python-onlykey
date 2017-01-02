@@ -44,12 +44,14 @@ class Message(Enum):
     OKWIPEU2FPRIV = 233  # 0xE9
     OKSETU2FCERT = 234  # 0xEA
     OKWIPEU2FCERT = 235  # 0xEB
-    OKGETPUBKEY = 236
-    OKSIGN = 237
-    OKDECRYPT = 238
-    OKWIPEPRIV = 239
-    OKSETPRIV = 240
-    OKSETRESTORE = 241
+    OKGETECCPUBKEY = 236
+    OKSIGNECCCHALLENGE = 237
+    OKWIPEECCPRIV = 238
+    OKSETECCPRIV = 239
+    # OKGETRSAPUBKEY =
+    # OKWIPEPRIV = 239
+    # OKSETPRIV = 240
+    # OKSETRESTORE = 241
 
 
 class MessageField(Enum):
@@ -70,6 +72,11 @@ class MessageField(Enum):
     WIPEMODE = 12
     KEYTYPESPEED = 13
     KEYLAYOUT = 14
+
+class KeyTypeEnum(Enum):
+    ED22519 = 1
+    P256 = 2
+    SECP256K1 = 3
 
 class OnlyKeyUnavailableException(Exception):
     """Exception raised when the connection to the OnlyKey failed."""
@@ -118,6 +125,10 @@ class OnlyKey(object):
     def initialized(self):
         return self._read_string() == 'INITIALIZED'
 
+    def set_ecc_key(self, key_type, slot, key):
+        payload = [key_type, slot] + [ord(c) for c in key]
+        self.send_message(msg=Message.OKSETECCPRIV, payload=payload)
+
     def send_message(self, payload=None, msg=None, slot_id=None, message_field=None):
         """Send a message."""
         logging.debug('preparing payload for writing')
@@ -157,9 +168,11 @@ class OnlyKey(object):
 
         # Send the message
         logging.debug('sending message')
+        print 'send_message', len(raw_bytes)
+        print raw_bytes
         self._hid.write(raw_bytes)
 
-    def send_large_message(self, payload=None, msg=None):
+    def send_large_message(self, payload=None, msg=None, key_type=chr(1)):
         """Wrapper for sending large message (larger than 58 bytes) in batch in a transparent way."""
         if not msg:
             raise Exception("Missing msg")
@@ -167,10 +180,39 @@ class OnlyKey(object):
         # Split the payload in multiple chunks
         chunks = [payload[x:x+MAX_LARGE_PAYLOAD_SIZE] for x in xrange(0, len(payload), 58)]
         for chunk in chunks:
+            # print chunk
+            # print [ord(c) for c in chunk]
             current_payload = [255]  # 255 means that it's not the last payload
             # If it's less than the max size, set explicitely the size
             if len(chunk) < 58:
                 current_payload = [len(chunk)]
+
+            # Append the actual payload
+            if isinstance(chunk, list):
+                current_payload.extend(chunk)
+            else:
+                for c in chunk:
+                    current_payload.append(ord(c))
+
+            self.send_message(payload=current_payload, msg=msg)
+
+        return
+
+
+    def send_large_message2(self, payload=None, msg=None, key_type=chr(1)):
+        """Wrapper for sending large message (larger than 58 bytes) in batch in a transparent way."""
+        if not msg:
+            raise Exception("Missing msg")
+
+        # Split the payload in multiple chunks
+        chunks = [payload[x:x+MAX_LARGE_PAYLOAD_SIZE-1] for x in xrange(0, len(payload), 57)]
+        for chunk in chunks:
+            # print chunk
+            # print [ord(c) for c in chunk]
+            current_payload = [1, 255]  # 255 means that it's not the last payload
+            # If it's less than the max size, set explicitely the size
+            if len(chunk) < 57:
+                current_payload = [1, len(chunk)]
 
             # Append the actual payload
             if isinstance(chunk, list):
@@ -228,23 +270,5 @@ class OnlyKey(object):
     def wipeslot(self, slot_number):
         """Wipe all the fields for the given slot."""
         self.send_message(msg=Message.OKWIPESLOT, slot_id=slot_number)
-        for _ in xrange(8):
-            print self.read_string()
-
-    def setpin(self):
-        """Set PIN on OnlyKey keypad."""
-        self.send_message(msg=Message.OKSETPIN)
-        for _ in xrange(8):
-            print self.read_string()
-
-    def setsdpin(self):
-        """Set SD PIN on OnlyKey keypad."""
-        self.send_message(msg=Message.OKSETSDPIN)
-        for _ in xrange(8):
-            print self.read_string()
-
-    def setpdpin(self):
-        """Set PD PIN on OnlyKey keypad."""
-        self.send_message(msg=Message.OKSETPDPIN)
         for _ in xrange(8):
             print self.read_string()
