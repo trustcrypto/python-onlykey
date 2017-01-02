@@ -44,12 +44,12 @@ class Message(Enum):
     OKWIPEU2FPRIV = 233  # 0xE9
     OKSETU2FCERT = 234  # 0xEA
     OKWIPEU2FCERT = 235  # 0xEB
-    OKGETPUBKEY: 236
-    OKSIGN: 237,
-    OKDECRYPT: 238,
-    OKWIPEPRIV: 239,
-    OKSETPRIV: 240,
-    OKSETRESTORE: 241
+    OKGETPUBKEY = 236
+    OKSIGN = 237
+    OKDECRYPT = 238
+    OKWIPEPRIV = 239
+    OKSETPRIV = 240
+    OKSETRESTORE = 241
 
 
 class MessageField(Enum):
@@ -194,7 +194,7 @@ class OnlyKey(object):
         # Returns the raw list
         return out
 
-    def read_string(self, timeout_ms=5000):
+    def read_string(self, timeout_ms=2000):
         """Read an ASCII string."""
         return ''.join([chr(item) for item in self.read_bytes(MAX_INPUT_REPORT_SIZE, timeout_ms=timeout_ms) if item != 0])
 
