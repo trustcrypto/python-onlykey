@@ -22,6 +22,22 @@ $ python setup.py install
 
 ## QuickStart
 
+### Init
+
+You can set your pins using the special `onlykey-init` command.
+
+```
+$ onlykey-init
+OnlyKey is ready, enter your PIN
+Press the Enter key once you are done
+Successful PIN entry
+OnlyKey is ready, re-enter your PIN to confirm
+Press the Enter key once you are done
+Successfully set PIN
+[...]
+```
+
+
 ### CLI
 
 The CLI is bundled with the package, it should be present globally after the install.

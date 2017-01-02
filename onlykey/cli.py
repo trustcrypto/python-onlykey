@@ -57,6 +57,27 @@ def utils():
     else:
         print('unknown command')
 
+def init():
+    while 1:
+        if only_key.read_string(timeout_ms=500) != 'UNINITIALIZED':
+            break
+
+    for msg in [Message.OKSETPIN, Message.OKSETPDPIN, Message.OKSETSDPIN]:
+        only_key.send_message(msg=msg)
+        print(only_key.read_string())
+        print
+        raw_input('Press the Enter key once you are done')
+        only_key.send_message(msg=msg)
+        print(only_key.read_string())
+        only_key.send_message(msg=msg)
+        print(only_key.read_string())
+        print
+        raw_input('Press the Enter key once you are done')
+        only_key.send_message(msg=msg)
+        print(only_key.read_string())
+        print
+
+
 def cli():
     logging.basicConfig(level=logging.DEBUG)
     # Create some history first. (Easy for testing.)
@@ -183,31 +204,6 @@ def cli():
                 continue
 
             only_key.wipeslot(slot_id)
-        elif data[0] == 'setpin':
-            try:
-                print("Enter a 7-10 digit PIN on the OnlyKey keypad")
-            except:
-                continue
-            only_key.setpin() #first OKSETPIN message starts PIN entry
-            prompt_pin() #have user press any key when they are done entering PIN
-            only_key.setpin() #second OKSETPIN message ends PIN entry
-        elif data[0] == 'setsdpin':
-            try:
-                print("Enter a 7-10 digit PIN on the OnlyKey keypad")
-            except:
-                continue
-            only_key.setpin() #first OKSETSDPIN message starts PIN entry
-            prompt_pin() #have user press any key when they are done entering PIN
-            only_key.setpin() #second OKSETSDPIN message ends PIN entry
-        elif data[0] == 'setpdpin':
-            try:
-                print("Enter a 7-10 digit PIN on the OnlyKey keypad")
-            except:
-                continue
-            only_key.setpin() #first OKSETPDPIN message starts PIN entry
-            prompt_pin() #have user press any key when they are done entering PIN
-            only_key.setpin() #second OKSETPDPIN message ends PIN entry
-            continue
 
 
 def main():

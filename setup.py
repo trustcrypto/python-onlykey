@@ -23,6 +23,7 @@ setup(
         'console_scripts': [
             'onlykey-cli=onlykey.cli:main',
             'onlykey-utils=onlykey.cli:utils',
+            'onlykey-init=onlykey.cli:init',
         ],
     },
     install_requires=['hidapi', 'aenum', 'six', 'prompt_toolkit', 'ed25519'],
