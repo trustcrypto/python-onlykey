@@ -125,7 +125,7 @@ class OnlyKey(object):
 
     def set_ecc_key(self, key_type, slot, key):
         payload = [key_type, slot] + [ord(c) for c in key]
-        self.send_message(msg=Message.OKSETECCPRIV, payload=payload)
+        self.send_message(msg=Message.OKSETPRIV, payload=payload)
 
     def send_message(self, payload=None, msg=None, slot_id=None, message_field=None):
         """Send a message."""
