@@ -69,11 +69,11 @@ print 'test_payload=', repr(test_payload)
 print
 
 print 'Sending the payload to the OnlyKey...'
-ok.send_large_message2(msg=Message.OKSIGNCHALLENGE, payload=test_payload)
+ok.send_large_message2(msg=Message.OKSIGNCHALLENGE, payload=test_payload, key_slot=chr(101))
 print 'Please touch a button (and press ENTER if necessary)'
 raw_input()
 time.sleep(0.2)
-ok.send_large_message2(msg=Message.OKSIGNCHALLENGE, payload=test_payload)
+ok.send_large_message2(msg=Message.OKSIGNCHALLENGE, payload=test_payload, key_slot=chr(101))
 signature = ''
 while signature == '':
     time.sleep(0.5)

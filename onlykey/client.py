@@ -197,7 +197,7 @@ class OnlyKey(object):
         return
 
 
-    def send_large_message2(self, payload=None, msg=None, key_type=chr(1)):
+    def send_large_message2(self, payload=None, msg=None, key_slot=None):
         """Wrapper for sending large message (larger than 58 bytes) in batch in a transparent way."""
         if not msg:
             raise Exception("Missing msg")
