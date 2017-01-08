@@ -70,6 +70,9 @@ print
 
 print 'Sending the payload to the OnlyKey...'
 ok.send_large_message2(msg=Message.OKSIGNCHALLENGE, payload=test_payload)
+
+# Try to read the challenge code?
+print ok.read_string(timeout_ms=500)
 print 'Please touch a button (and press ENTER if necessary)'
 raw_input()
 time.sleep(0.2)

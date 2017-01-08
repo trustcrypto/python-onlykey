@@ -207,10 +207,10 @@ class OnlyKey(object):
         for chunk in chunks:
             # print chunk
             # print [ord(c) for c in chunk]
-            current_payload = [1, 255]  # 255 means that it's not the last payload
+            current_payload = [101, 255]  # 255 means that it's not the last payload
             # If it's less than the max size, set explicitely the size
             if len(chunk) < 57:
-                current_payload = [1, len(chunk)]
+                current_payload = [101, len(chunk)]
 
             # Append the actual payload
             if isinstance(chunk, list):
