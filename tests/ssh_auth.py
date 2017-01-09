@@ -1,4 +1,5 @@
 # coding: utf-8
+import hashlib
 import time
 import os
 
@@ -68,11 +69,24 @@ test_payload = os.urandom(150)
 print 'test_payload=', repr(test_payload)
 print
 
+# Compute the challenge pin
+h = hashlib.sha256()
+h.update(test_payload)
+d = h.digest()
+
+assert len(d) == 32
+
+def get_button(byte):
+    ibyte = ord(byte)
+    if ibyte < 6:
+        return 1
+    return ibyte % 5 + 1
+
+b1, b2, b3 = get_button(d[0]), get_button(d[15]), get_button(d[31])
+
 print 'Sending the payload to the OnlyKey...'
 ok.send_large_message2(msg=Message.OKSIGNCHALLENGE, payload=test_payload)
 
-# Try to read the challenge code?
-print ok.read_string(timeout_ms=500)
 # Tim - The OnlyKey can send the code to enter but it would be better if the app generates
 # the code, this way in order to trick a user into approving an unauthorized signature
 # the app, in this case this python code would have to be hacked on the user's system.
@@ -101,6 +115,7 @@ print ok.read_string(timeout_ms=500)
 # This method prevents some malware on a users system from sending fake requests to be signed
 # at the same time as real requests and tricking the user into signing the wrong data
 print 'Please enter the 3 digit challenge code on OnlyKey (and press ENTER if necessary)'
+print '{} {} {}'.format(b1, b2, b3)
 raw_input()
 time.sleep(0.2)
 ok.send_large_message2(msg=Message.OKSIGNCHALLENGE, payload=test_payload)
