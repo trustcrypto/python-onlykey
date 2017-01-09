@@ -41,9 +41,7 @@ print 'You should see your OnlyKey blink 3 times'
 print
 
 print 'Setting SSH private...'
-rsaslot = 1
-rsatype = 2
-ok.set_ecc_key(rsaslot, rsatype, privkey)
+ok.set_rsa_key(1, 2, privkey)
 # Slot 1 - 4 for RSA
 # Type 1 = 1024, Type 2 = 2048
 # ok.set_ecc_privsend_message(msg=Message.OKSETPRIV, payload=privkey.to_seed())
@@ -55,7 +53,7 @@ print 'You should see your OnlyKey blink 3 times'
 print
 
 print 'Trying to read the pubkey...'
-ok.send_message(msg=Message.OKGETPUBKEY, payload=chr(101))  #, payload=[1, 1])
+ok.send_message(msg=Message.OKGETPUBKEY, payload=chr(1))  #, payload=[1, 1])
 time.sleep(1.5)
 for _ in xrange(10):
     ok_pubkey = ok.read_bytes((rsatype*128), to_str=True)
