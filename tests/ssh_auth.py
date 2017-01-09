@@ -61,7 +61,7 @@ if not ok_pubkey:
 
 print 'Assert that the received pubkey match the one generated locally'
 assert ok_pubkey == pubkey.to_bytes()
-print 'Ok'
+print 'Ok, pubkey matches'
 print
 
 test_payload = os.urandom(150)
@@ -73,7 +73,34 @@ ok.send_large_message2(msg=Message.OKSIGNCHALLENGE, payload=test_payload)
 
 # Try to read the challenge code?
 print ok.read_string(timeout_ms=500)
-print 'Please touch a button (and press ENTER if necessary)'
+# Tim - The OnlyKey can send the code to enter but it would be better if the app generates
+# the code, this way in order to trick a user into approving an unauthorized signature
+# the app, in this case this python code would have to be hacked on the user's system.
+# How the OnlyKey creates the three digit code:
+# SHA256_CTX CRYPTO;
+# sha256_init(&CRYPTO);
+# sha256_update(&CRYPTO, large_buffer, large_data_offset); //step 1 create a sha256 hash of
+# sha256_final(&CRYPTO, rsa_signature); //the data to sign
+# if (rsa_signature[0] < 6) Challenge_button1 = '1'; //step 2 Convert first byte of hash to
+# else { //first button to press (remainder of byte is a base 6 number 0 - 5)
+# Challenge_button1 = rsa_signature[0] % 5;
+# Challenge_button1 = Challenge_button1 + '0' + 1; //Add '0' and 1 so number will be ASCII 1 - 6
+# }
+# if (rsa_signature[15] < 6) Challenge_button2 = '1'; //step 3 do the same with 16th byte to
+# else { // get Challenge_button2
+# Challenge_button2 = rsa_signature[15] % 5;
+# Challenge_button2 = Challenge_button2 + '0' + 1;
+#}
+# if (rsa_signature[31] < 6) Challenge_button3 = '1'; //step 4 do the same with 32nd byte to
+# else { // get Challenge_button
+# Challenge_button3 = rsa_signature[31] % 5;
+# Challenge_button3 = Challenge_button3 + '0' + 1;
+# }
+# step 5 display the code to user to enter on OnlyKey
+
+# This method prevents some malware on a users system from sending fake requests to be signed
+# at the same time as real requests and tricking the user into signing the wrong data
+print 'Please enter the 3 digit challenge code on OnlyKey (and press ENTER if necessary)'
 raw_input()
 time.sleep(0.2)
 ok.send_large_message2(msg=Message.OKSIGNCHALLENGE, payload=test_payload)
@@ -82,12 +109,12 @@ while signature == '':
     time.sleep(0.5)
     signature = ok.read_bytes(64, to_str=True)
 
-print 'Signed, signature=', repr(signature)
+print 'Signed by OnlyKey, signature=', repr(signature)
 
 print 'Local signature=', repr(privkey.sign(bytes(test_payload)))
 print 'Assert that the signature generated locally match the one generated on the OnlyKey'
 assert repr(signature) == repr(privkey.sign(bytes(test_payload)))
-print 'Ok'
+print 'Ok, signatures match'
 print
 
 print 'Done'
