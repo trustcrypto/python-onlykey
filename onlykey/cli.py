@@ -77,7 +77,6 @@ def init():
         print(only_key.read_string())
         print
 
-
 def cli():
     logging.basicConfig(level=logging.DEBUG)
     # Create some history first. (Easy for testing.)

@@ -3,23 +3,43 @@ import hashlib
 import time
 import os
 
-import rsa
+import Crypto
+from Crypto.PublicKey import RSA
+from Crypto import Random
+import ast
+import binascii
 
 from onlykey import OnlyKey, Message
 
 print 'Generating a new rsa key pair...'
-(pubkey, privkey) = rsa.newkeys(2048, poolsize=8)
-# privkey, pubkey = rsa.create_keypair(entropy=os.urandom)
-# documentation https://stuvel.eu/python-rsa-doc/usage.html#generating-keys
+random_generator = Random.new().read
+key = RSA.generate(1024, random_generator) #generate pub and priv key
 
+p = key.p
+q = key.q
+d = key.d
+
+binPrivKey = key.exportKey('DER')
+binPubKey =  key.publickey().exportKey('DER')
+#privKeyObj = RSA.importKey(binPrivKey)
+#pubKeyObj =  RSA.importKey(binPubKey)
+
+def bin2hex(binStr):
+        return binascii.hexlify(binStr)
+
+def hex2bin(hexStr):
+        return binascii.unhexlify(hexStr)
+
+hexPrivKey = bin2hex(binPrivKey)
+hexPubKey = bin2hex(binPubKey)
 
 print 'Done'
 print
 
-print 'privkey=', repr(privkey)
-#print 'privkey hex=', ''.join([c.encode('hex') for c in privkey.to_seed()])
-# not displaying correctly
-print 'pubkey=', repr(pubkey)
+print 'RSA p value =', repr(p)
+print 'RSA q value =', repr(q)
+print 'RSA d value =', repr(d)
+print 'pubkey=', repr(hexPubKey)
 #print 'pubkey hex=', pubkey.to_ascii(encoding='hex')
 # not displaying correctly
 print
@@ -41,10 +61,19 @@ print 'You should see your OnlyKey blink 3 times'
 print
 
 print 'Setting SSH private...'
-ok.set_rsa_key(1, 2, privkey)
+# p and q are long ints that are no more than 1/2 the size of pubkey
+# I need to convert these into a single byte array put p in the first
+# half byte[0] of the byte array and q in the second half byte[(type*128) / 2]
+# send the byte array to OnlyKey splitting into 56 bytes per packet
+ok.set_rsa_key(1, (1+64), byte array here) #Can only send 56 bytes per packet
 # Slot 1 - 4 for RSA
-# Type 1 = 1024, Type 2 = 2048
-# ok.set_ecc_privsend_message(msg=Message.OKSETPRIV, payload=privkey.to_seed())
+# Type 1 = 1024, Type 2 = 2048, Type 3 = 3072, Type 4 = 4096
+# Key Features -
+# if backup key = type + 128
+# if signature key = type + 64
+# if decryption key = type + 32
+# if authentication key = type + 16
+# For this example it will be a decryption key
 time.sleep(1.5)
 print ok.read_string()
 
@@ -56,7 +85,7 @@ print 'Trying to read the pubkey...'
 ok.send_message(msg=Message.OKGETPUBKEY, payload=chr(1))  #, payload=[1, 1])
 time.sleep(1.5)
 for _ in xrange(10):
-    ok_pubkey = ok.read_bytes((rsatype*128), to_str=True)
+    ok_pubkey = ok.read_bytes((1*128), to_str=True)
     if len(ok_pubkey) == (rsatype*128):
         break
     time.sleep(1)
@@ -107,9 +136,9 @@ while signature == '':
 
 print 'Signed by OnlyKey, signature=', repr(signature)
 
-print 'Local signature=', repr(rsa.sign(test_payload, privkey, 'SHA-256'))
+print 'Local signature=', repr(key.sign(test_payload, ''))
 print 'Assert that the signature generated locally match the one generated on the OnlyKey'
-assert repr(signature) == repr(rsa.sign(test_payload, privkey, 'SHA-256'))
+assert repr(signature) == repr(key.sign(test_payload, ''))
 print 'Ok, signatures match'
 print
 
