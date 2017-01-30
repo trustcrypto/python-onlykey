@@ -3,10 +3,8 @@ import hashlib
 import time
 import os
 
-import Crypto
 from Crypto.PublicKey import RSA
 from Crypto import Random
-import ast
 import binascii
 
 from onlykey import OnlyKey, Message
@@ -61,11 +59,25 @@ print 'You should see your OnlyKey blink 3 times'
 print
 
 print 'Setting SSH private...'
+
+def pack_long(n):
+    """this conert 10045587143827198209824131064458461027107542643158086193488942239589004873324146472911535357118684101051965945865943581473431374244810144984918148150975257L
+    to "\xbf\xcd\xce\xa0K\x93\x85}\xf0\x18\xb3\xd3L}\x14\xdb\xce0\x00uE,\x05'\xeeW\x1c\xeb\xcf\x8b\x1f\xcc\xc5\xc1\xe2\x17\xb7\xa3\xb6C\x16\xea?\xcchz\xebF1\xb7\xb1\x86\xb8\n}\x82\xebx\xce\x1b\x13\xdf\xdb\x19"
+    it seems to be want you wanted? it's 64 bytes.
+    """
+    h = '%x' % n
+    s = ('0'*(len(h) % 2) + h).decode('hex')
+    return s
+
 # p and q are long ints that are no more than 1/2 the size of pubkey
 # I need to convert these into a single byte array put p in the first
 # half byte[0] of the byte array and q in the second half byte[(type*128) / 2]
 # send the byte array to OnlyKey splitting into 56 bytes per packet
-ok.set_rsa_key(1, (1+64), byte array here) #Can only send 56 bytes per packet
+q_and_p = pack_long(q) + pack_long(p)
+#
+ok.send_large_message3(msg=255, slot_id=1, key_type=64+1, payload=q_and_p)
+
+# ok.set_rsa_key(1, (1+64), byte array here) #Can only send 56 bytes per packet
 # Slot 1 - 4 for RSA
 # Type 1 = 1024, Type 2 = 2048, Type 3 = 3072, Type 4 = 4096
 # Key Features -

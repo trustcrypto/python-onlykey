@@ -201,7 +201,7 @@ class OnlyKey(object):
         return
 
 
-    def send_large_message2(self, payload=None, msg=None, slot_id=chr(101)):
+    def send_large_message2(self, payload=None, msg=None, slot_id=101):
         """Wrapper for sending large message (larger than 58 bytes) in batch in a transparent way."""
         if not msg:
             raise Exception("Missing msg")
@@ -211,10 +211,38 @@ class OnlyKey(object):
         for chunk in chunks:
             # print chunk
             # print [ord(c) for c in chunk]
-            current_payload = [101, 255]  # 255 means that it's not the last payload
+            current_payload = [slot_id, 255]  # 255 means that it's not the last payload
             # If it's less than the max size, set explicitely the size
             if len(chunk) < 57:
-                current_payload = [101, len(chunk)]
+                current_payload = [slot_id, len(chunk)]
+
+            # Append the actual payload
+            if isinstance(chunk, list):
+                current_payload.extend(chunk)
+            else:
+                for c in chunk:
+                    current_payload.append(ord(c))
+
+            self.send_message(payload=current_payload, msg=msg)
+
+        return
+
+
+
+    def send_large_message3(self, payload=None, msg=None, slot_id=101, key_type=1):
+        """Wrapper for sending large message (larger than 58 bytes) in batch in a transparent way."""
+        if not msg:
+            raise Exception("Missing msg")
+
+        # Split the payload in multiple chunks
+        chunks = [payload[x:x+MAX_LARGE_PAYLOAD_SIZE-1] for x in xrange(0, len(payload), 56)]
+        for chunk in chunks:
+            # print chunk
+            # print [ord(c) for c in chunk]
+            current_payload = [slot_id, key_type, 255]  # 255 means that it's not the last payload
+            # If it's less than the max size, set explicitely the size
+            if len(chunk) < 56:
+                current_payload = [slot_id, key_type, len(chunk)]
 
             # Append the actual payload
             if isinstance(chunk, list):
