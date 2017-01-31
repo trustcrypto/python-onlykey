@@ -75,7 +75,7 @@ def pack_long(n):
 # send the byte array to OnlyKey splitting into 56 bytes per packet
 q_and_p = pack_long(q) + pack_long(p)
 #
-ok.send_large_message3(msg=255, slot_id=1, key_type=64+1, payload=q_and_p)
+ok.send_large_message3(msg=Message.OKSETPRIV, slot_id=1, key_type=64+1, payload=q_and_p)
 
 # ok.set_rsa_key(1, (1+64), byte array here) #Can only send 56 bytes per packet
 # Slot 1 - 4 for RSA
@@ -98,7 +98,7 @@ ok.send_message(msg=Message.OKGETPUBKEY, payload=chr(1))  #, payload=[1, 1])
 time.sleep(1.5)
 for _ in xrange(10):
     ok_pubkey = ok.read_bytes((1*128), to_str=True)
-    if len(ok_pubkey) == (rsatype*128):
+    if len(ok_pubkey) == (1*128):
         break
     time.sleep(1)
 
