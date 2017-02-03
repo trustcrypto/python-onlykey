@@ -15,7 +15,7 @@ key = RSA.generate(1024, random_generator) #generate pub and priv key
 
 p = key.p
 q = key.q
-d = key.d
+n = key.n
 
 binPrivKey = key.exportKey('DER')
 binPubKey =  key.publickey().exportKey('DER')
@@ -33,15 +33,9 @@ hexPubKey = bin2hex(binPubKey)
 
 print 'Done'
 print
-
 print 'RSA p value =', repr(p)
 print 'RSA q value =', repr(q)
-print 'RSA d value =', repr(d)
-print 'pubkey=', repr(hexPubKey)
-#print 'pubkey hex=', pubkey.to_ascii(encoding='hex')
-# not displaying correctly
-print
-
+print 'RSA n value =', repr(n)
 print
 print 'Initialize OnlyKey client...'
 ok = OnlyKey()
@@ -74,8 +68,9 @@ def pack_long(n):
 # half byte[0] of the byte array and q in the second half byte[(type*128) / 2]
 # send the byte array to OnlyKey splitting into 56 bytes per packet
 q_and_p = pack_long(q) + pack_long(p)
+public_n = pack_long(n)
 #
-ok.send_large_message3(msg=Message.OKSETPRIV, slot_id=1, key_type=64+1, payload=q_and_p)
+ok.send_large_message3(msg=Message.OKSETPRIV, slot_id=1, key_type=(1+64), payload=q_and_p)
 
 # ok.set_rsa_key(1, (1+64), byte array here) #Can only send 56 bytes per packet
 # Slot 1 - 4 for RSA
@@ -93,24 +88,36 @@ time.sleep(2)
 print 'You should see your OnlyKey blink 3 times'
 print
 
-print 'Trying to read the pubkey...'
+print 'Trying to read the public RSA N part 1...'
 ok.send_message(msg=Message.OKGETPUBKEY, payload=chr(1))  #, payload=[1, 1])
 time.sleep(1.5)
 for _ in xrange(10):
-    ok_pubkey = ok.read_bytes((1*128), to_str=True)
-    if len(ok_pubkey) == (1*128):
+    ok_pubkey1 = ok.read_bytes(64, to_str=True)
+    if len(ok_pubkey1) == 64:
         break
     time.sleep(1)
 
 print
 
-print 'received=', repr(ok_pubkey)
+print 'received=', repr(ok_pubkey1)
 
-if not ok_pubkey:
+print 'Trying to read the public RSA N part 2...'
+for _ in xrange(10):
+    ok_pubkey2 = ok.read_bytes(64, to_str=True)
+    if len(ok_pubkey2) == 64:
+        break
+    time.sleep(1)
+
+print
+
+print 'received=', repr(ok_pubkey2)
+
+if not ok_pubkey2:
     raise Exception('failed to set the SSH key')
 
 print 'Assert that the received pubkey match the one generated locally'
-assert ok_pubkey == pubkey.to_bytes()
+ok_pubkey = ok_pubkey1 + ok_pubkey2
+assert ok_pubkey == public_n
 print 'Ok, pubkey matches'
 print
 
@@ -134,18 +141,34 @@ def get_button(byte):
 b1, b2, b3 = get_button(d[0]), get_button(d[15]), get_button(d[31])
 
 print 'Sending the payload to the OnlyKey...'
-ok.send_large_message2(msg=Message.OKSIGNCHALLENGE, payload=test_payload)
+ok.send_large_message2(msg=Message.OKSIGNCHALLENGE, payload=test_payload, slot_id=1)
 
 print 'Please enter the 3 digit challenge code on OnlyKey (and press ENTER if necessary)'
 print '{} {} {}'.format(b1, b2, b3)
 raw_input()
-time.sleep(0.2)
-ok.send_large_message2(msg=Message.OKSIGNCHALLENGE, payload=test_payload)
-signature = ''
-while signature == '':
-    time.sleep(0.5)
-    signature = ok.read_bytes(256, to_str=True)
+print 'Trying to read the signature part 1...'
+for _ in xrange(10):
+    signature1 = ok.read_bytes(64, to_str=True)
+    if len(signature1) == 64:
+        break
+    time.sleep(1)
 
+print
+
+print 'received=', repr(signature1)
+
+print 'Trying to read the signature part 2...'
+for _ in xrange(10):
+    signature2 = ok.read_bytes(64, to_str=True)
+    if len(signature2) == 64:
+        break
+    time.sleep(1)
+
+print
+
+print 'received=', repr(signature2)
+
+signature = signature1 + signature2
 print 'Signed by OnlyKey, signature=', repr(signature)
 
 print 'Local signature=', repr(key.sign(test_payload, ''))

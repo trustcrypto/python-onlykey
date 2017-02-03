@@ -35,7 +35,7 @@ print 'You should see your OnlyKey blink 3 times'
 print
 
 print 'Setting SSH private...'
-ok.set_ecc_key(101, 1, privkey.to_seed())
+ok.set_ecc_key(101, (1+64), privkey.to_seed())
 # ok.set_ecc_privsend_message(msg=Message.OKSETPRIV, payload=privkey.to_seed())
 time.sleep(1.5)
 print ok.read_string()
@@ -85,7 +85,7 @@ def get_button(byte):
 b1, b2, b3 = get_button(d[0]), get_button(d[15]), get_button(d[31])
 
 print 'Sending the payload to the OnlyKey...'
-ok.send_large_message2(msg=Message.OKSIGNCHALLENGE, payload=test_payload)
+ok.send_large_message2(msg=Message.OKSIGNCHALLENGE, payload=test_payload, slot_id=101)
 
 # Tim - The OnlyKey can send the code to enter but it would be better if the app generates
 # the code, this way in order to trick a user into approving an unauthorized signature
@@ -117,8 +117,6 @@ ok.send_large_message2(msg=Message.OKSIGNCHALLENGE, payload=test_payload)
 print 'Please enter the 3 digit challenge code on OnlyKey (and press ENTER if necessary)'
 print '{} {} {}'.format(b1, b2, b3)
 raw_input()
-time.sleep(0.2)
-ok.send_large_message2(msg=Message.OKSIGNCHALLENGE, payload=test_payload)
 signature = ''
 while signature == '':
     time.sleep(0.5)

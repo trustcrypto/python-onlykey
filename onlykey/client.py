@@ -235,11 +235,11 @@ class OnlyKey(object):
             raise Exception("Missing msg")
 
         # Split the payload in multiple chunks
-        chunks = [payload[x:x+MAX_LARGE_PAYLOAD_SIZE-1] for x in xrange(0, len(payload), 56)]
+        chunks = [payload[x:x+MAX_LARGE_PAYLOAD_SIZE-1] for x in xrange(0, len(payload), 57)]
         for chunk in chunks:
             # print chunk
             # print [ord(c) for c in chunk]
-            current_payload = [slot_id, key_type]  
+            current_payload = [slot_id, key_type]
 
             # Append the actual payload
             if isinstance(chunk, list):
