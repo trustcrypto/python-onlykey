@@ -3,6 +3,8 @@ import hashlib
 import time
 import os
 
+from Crypto.Signature import PKCS1_v1_5
+from Crypto.Hash import SHA
 from Crypto.PublicKey import RSA
 from Crypto import Random
 import binascii
@@ -115,19 +117,23 @@ print 'received=', repr(ok_pubkey2)
 if not ok_pubkey2:
     raise Exception('failed to set the SSH key')
 
-print 'Assert that the received pubkey match the one generated locally'
+print 'Assert that the received public N match the one generated locally'
+print 'Local Public N=', repr(public_n)
 ok_pubkey = ok_pubkey1 + ok_pubkey2
 assert ok_pubkey == public_n
-print 'Ok, pubkey matches'
+print 'Ok, public N matches'
 print
 
-test_payload = os.urandom(150)
-print 'test_payload=', repr(test_payload)
+test_payload1 = os.urandom(100)
+h = hashlib.sha1()
+h.update(test_payload1)
+test_payload2 = h.digest()
+print 'test_payload=', repr(test_payload2)
 print
 
 # Compute the challenge pin
 h = hashlib.sha256()
-h.update(test_payload)
+h.update(test_payload2)
 d = h.digest()
 
 assert len(d) == 32
@@ -141,40 +147,53 @@ def get_button(byte):
 b1, b2, b3 = get_button(d[0]), get_button(d[15]), get_button(d[31])
 
 print 'Sending the payload to the OnlyKey...'
-ok.send_large_message2(msg=Message.OKSIGNCHALLENGE, payload=test_payload, slot_id=1)
+ok.send_large_message2(msg=Message.OKSIGNCHALLENGE, payload=test_payload2, slot_id=1)
 
 print 'Please enter the 3 digit challenge code on OnlyKey (and press ENTER if necessary)'
 print '{} {} {}'.format(b1, b2, b3)
 raw_input()
 print 'Trying to read the signature part 1...'
-for _ in xrange(10):
+signature1 = ''
+while signature1 == '':
+    time.sleep(0.5)
     signature1 = ok.read_bytes(64, to_str=True)
-    if len(signature1) == 64:
-        break
-    time.sleep(1)
-
-print
 
 print 'received=', repr(signature1)
 
 print 'Trying to read the signature part 2...'
-for _ in xrange(10):
+signature2 = ''
+while signature2 == '':
+    time.sleep(0.5)
     signature2 = ok.read_bytes(64, to_str=True)
-    if len(signature2) == 64:
-        break
-    time.sleep(1)
-
-print
 
 print 'received=', repr(signature2)
 
-signature = signature1 + signature2
-print 'Signed by OnlyKey, signature=', repr(signature)
+ok_signature = signature1 + signature2
+print 'Signed by OnlyKey, signature=', repr(ok_signature)
+def bytes2int(str):
+ return int(str.encode('hex'), 16)
 
-print 'Local signature=', repr(key.sign(test_payload, ''))
-print 'Assert that the signature generated locally match the one generated on the OnlyKey'
-assert repr(signature) == repr(key.sign(test_payload, ''))
-print 'Ok, signatures match'
-print
+# I don't think this is right, need to convert signature to right format
+# https://www.dlitz.net/software/pycrypto/api/current/Crypto.PublicKey.RSA._RSAobj-class.html#verify
+# https://www.dlitz.net/software/pycrypto/api/current/Crypto.Signature.PKCS1_v1_5-module.html
+
+h = SHA.new(test_payload1)
+verifier = PKCS1_v1_5.new(key)
+if verifier.verify(h, ok_signature):
+    print "The OnlyKey signature is authentic."
+else:
+   print "The OnlyKey signature is not authentic."
+
+
+h = SHA.new(test_payload1)
+signer = PKCS1_v1_5.new(key)
+signature = signer.sign(h)
+
+verifier = PKCS1_v1_5.new(key)
+if verifier.verify(h, signature):
+   print "The local signature is authentic."
+else:
+  print "The local signature is not authentic."
+
 
 print 'Done'
