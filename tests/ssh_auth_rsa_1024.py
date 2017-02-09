@@ -33,11 +33,20 @@ def hex2bin(hexStr):
 hexPrivKey = bin2hex(binPrivKey)
 hexPubKey = bin2hex(binPubKey)
 
+def pack_long(n):
+    """this conert 10045587143827198209824131064458461027107542643158086193488942239589004873324146472911535357118684101051965945865943581473431374244810144984918148150975257L
+    to "\xbf\xcd\xce\xa0K\x93\x85}\xf0\x18\xb3\xd3L}\x14\xdb\xce0\x00uE,\x05'\xeeW\x1c\xeb\xcf\x8b\x1f\xcc\xc5\xc1\xe2\x17\xb7\xa3\xb6C\x16\xea?\xcchz\xebF1\xb7\xb1\x86\xb8\n}\x82\xebx\xce\x1b\x13\xdf\xdb\x19"
+    it seems to be want you wanted? it's 64 bytes.
+    """
+    h = '%x' % n
+    s = ('0'*(len(h) % 2) + h).decode('hex')
+    return s
+
 print 'Done'
 print
-print 'RSA p value =', repr(p)
-print 'RSA q value =', repr(q)
-print 'RSA n value =', repr(n)
+print 'RSA p value =', repr(pack_long(p))
+print 'RSA q value =', repr(pack_long(q))
+print 'RSA n value =', repr(pack_long(n))
 print
 print 'Initialize OnlyKey client...'
 ok = OnlyKey()
@@ -56,20 +65,12 @@ print
 
 print 'Setting SSH private...'
 
-def pack_long(n):
-    """this conert 10045587143827198209824131064458461027107542643158086193488942239589004873324146472911535357118684101051965945865943581473431374244810144984918148150975257L
-    to "\xbf\xcd\xce\xa0K\x93\x85}\xf0\x18\xb3\xd3L}\x14\xdb\xce0\x00uE,\x05'\xeeW\x1c\xeb\xcf\x8b\x1f\xcc\xc5\xc1\xe2\x17\xb7\xa3\xb6C\x16\xea?\xcchz\xebF1\xb7\xb1\x86\xb8\n}\x82\xebx\xce\x1b\x13\xdf\xdb\x19"
-    it seems to be want you wanted? it's 64 bytes.
-    """
-    h = '%x' % n
-    s = ('0'*(len(h) % 2) + h).decode('hex')
-    return s
 
 # p and q are long ints that are no more than 1/2 the size of pubkey
 # I need to convert these into a single byte array put p in the first
 # half byte[0] of the byte array and q in the second half byte[(type*128) / 2]
 # send the byte array to OnlyKey splitting into 56 bytes per packet
-q_and_p = pack_long(q) + pack_long(p)
+q_and_p = pack_long(p) + pack_long(q)
 public_n = pack_long(n)
 #
 ok.send_large_message3(msg=Message.OKSETPRIV, slot_id=1, key_type=(1+64), payload=q_and_p)
@@ -124,7 +125,7 @@ assert ok_pubkey == public_n
 print 'Ok, public N matches'
 print
 
-test_payload1 = os.urandom(100)
+test_payload1 = 'message to sign'
 h = hashlib.sha1()
 h.update(test_payload1)
 test_payload2 = h.digest()
@@ -176,8 +177,21 @@ def bytes2int(str):
 # I don't think this is right, need to convert signature to right format
 # https://www.dlitz.net/software/pycrypto/api/current/Crypto.PublicKey.RSA._RSAobj-class.html#verify
 # https://www.dlitz.net/software/pycrypto/api/current/Crypto.Signature.PKCS1_v1_5-module.html
+print 'Length=', len(ok_signature)
 
 h = SHA.new(test_payload1)
+signer = PKCS1_v1_5.new(key)
+signature = signer.sign(h)
+print 'Signed locally, signature=', repr(signature)
+print 'Length=', len(signature)
+print 'local messege to sign=', repr(h.hexdigest())
+verifier = PKCS1_v1_5.new(key)
+if verifier.verify(h, signature):
+   print "The local signature is authentic."
+else:
+  print "The local signature is not authentic."
+
+print 'OnlyKey messege to sign=', repr(test_payload2)
 verifier = PKCS1_v1_5.new(key)
 if verifier.verify(h, ok_signature):
     print "The OnlyKey signature is authentic."
@@ -185,15 +199,7 @@ else:
    print "The OnlyKey signature is not authentic."
 
 
-h = SHA.new(test_payload1)
-signer = PKCS1_v1_5.new(key)
-signature = signer.sign(h)
 
-verifier = PKCS1_v1_5.new(key)
-if verifier.verify(h, signature):
-   print "The local signature is authentic."
-else:
-  print "The local signature is not authentic."
 
 
 print 'Done'
