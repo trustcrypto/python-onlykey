@@ -44,7 +44,7 @@ while not empty:
 print 'You should see your OnlyKey blink 3 times'
 print
 
-print 'Setting SSH private...'
+print 'Setting RSA private...'
 
 def pack_long(n):
     """this conert 10045587143827198209824131064458461027107542643158086193488942239589004873324146472911535357118684101051965945865943581473431374244810144984918148150975257L
@@ -158,7 +158,7 @@ print
 print 'received=', repr(ok_pubkey6)
 
 if not ok_pubkey6:
-    raise Exception('failed to set the SSH key')
+    raise Exception('failed to set the RSA key')
 
 print 'Assert that the received public N match the one generated locally'
 print 'Local Public N=', repr(public_n)
