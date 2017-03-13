@@ -14,10 +14,6 @@ import binascii
 
 from onlykey import OnlyKey, Message
 
-def text_from_bits(bits, encoding='utf-8', errors='surrogatepass'):
-    n = int(bits, 2)
-    return int2bytes(n).decode(encoding, errors)
-
 '''
 print 'Initialize OnlyKey client...'
 ok = OnlyKey()
@@ -145,21 +141,21 @@ e = int('10001', 16)
 
 
 # we can start by generating a primary key. For this example, we'll use RSA, but it could be DSA or ECDSA as well
-with open('test_priv.asc', 'rb') as f:
-    t = f.read().replace('\r', '')
+#with open('test_priv.asc', 'rb') as f:
+#    t = f.read().replace('\r', '')
 
-priv_key, _ = PGPKey.from_blob(t)
-
+#priv_key, _ = PGPKey.from_blob(t)
+priv_key = pgpy.PGPKey()
 # we now have some key material, but our new key doesn't have a user ID yet, and therefore is not yet usable!
-with priv_key.unlock("test"):
-    uid = pgpy.PGPUID.new('Abraham Lincoln', comment='Honest Abe', email='abraham.lincoln@whitehouse.gov')
+#with priv_key.unlock("test"):
+#    uid = pgpy.PGPUID.new('Abraham Lincoln', comment='Honest Abe', email='abraham.lincoln@whitehouse.gov')
 # now we must add the new user id to the key. We'll need to specify all of our preferences at this point
 # because PGPy doesn't have any built-in key preference defaults at this time
 # this example is similar to GnuPG 2.1.x defaults, with no expiration or preferred keyserver
-    priv_key.add_uid(uid, usage={KeyFlags.Sign, KeyFlags.EncryptCommunications, KeyFlags.EncryptStorage},
-                hashes=[HashAlgorithm.SHA256, HashAlgorithm.SHA384, HashAlgorithm.SHA512, HashAlgorithm.SHA224],
-                ciphers=[SymmetricKeyAlgorithm.AES256, SymmetricKeyAlgorithm.AES192, SymmetricKeyAlgorithm.AES128],
-                compression=[CompressionAlgorithm.ZLIB, CompressionAlgorithm.BZ2, CompressionAlgorithm.ZIP, CompressionAlgorithm.Uncompressed])
+#    priv_key.add_uid(uid, usage={KeyFlags.Sign, KeyFlags.EncryptCommunications, KeyFlags.EncryptStorage},
+#                hashes=[HashAlgorithm.SHA256, HashAlgorithm.SHA384, HashAlgorithm.SHA512, HashAlgorithm.SHA224],
+#                ciphers=[SymmetricKeyAlgorithm.AES256, SymmetricKeyAlgorithm.AES192, SymmetricKeyAlgorithm.AES128],
+#                compression=[CompressionAlgorithm.ZLIB, CompressionAlgorithm.BZ2, CompressionAlgorithm.ZIP, CompressionAlgorithm.Uncompressed])
 
 print 'Paste OpenPGP Message, press Ctrl+D or Ctrl+Z(Windows only) when finished'
 print
@@ -178,8 +174,8 @@ if action == 's':
     message_from_blob = pgpy.PGPMessage.from_blob(msg_blob)
     print
     print 'Message=', repr(message_from_blob)
-    with priv_key.unlock("test"):
-        signed_message |= priv_key.sign(message_from_blob)
+    #with priv_key.unlock("test"):
+    signed_message |= priv_key.sign(message_from_blob)
     print
     print 'Message with signature =', repr(signed_message)
 
@@ -187,58 +183,16 @@ if action == 'd':
     message_from_blob = pgpy.PGPMessage.from_blob(msg_blob)
     print
     print 'Message=', repr(message_from_blob)
-    with priv_key.unlock("test"):
-        decrypted_message = priv_key.decrypt(message_from_blob)
+    #with priv_key.unlock("test"):
+    decrypted_message = priv_key.decrypt(message_from_blob)
         #decrypted_message2 = priv_key.parse(decrypted_message)
         #decrypted_message3 = priv_key.bytes_to_text(message_from_blob)
     print
     dec_text = str(decrypted_message)
-    print 'Decrypted Message =', dec_text
+    print 'Encoded Decrypted Message ='
+    print dec_text
+    print
     dec_bytes = decrypted_message.__bytes__()
-    print 'Decrypted Message =', str(dec_bytes)
-
-#h = SHA.new(message)
-cipher = PKCS1_v1_5.new(key)
-ciphertext = cipher.encrypt(message)
-
-#hex_enc_data = bin2hex(enc_data)
-print 'encrypted payload = ', repr(ciphertext)
-print
-
-
-# Compute the challenge pin
-h = hashlib.sha256()
-h.update(ciphertext)
-d = h.digest()
-
-assert len(d) == 32
-
-def get_button(byte):
-    ibyte = ord(byte)
-    if ibyte < 6:
-        return 1
-    return ibyte % 5 + 1
-
-b1, b2, b3 = get_button(d[0]), get_button(d[15]), get_button(d[31])
-
-print 'Sending the payload to the OnlyKey...'
-ok.send_large_message2(msg=Message.OKDECRYPT, payload=ciphertext, slot_id=slot)
-
-print 'Please enter the 3 digit challenge code on OnlyKey (and press ENTER if necessary)'
-print '{} {} {}'.format(b1, b2, b3)
-raw_input()
-print 'Trying to read the decrypted data from OnlyKey...'
-ok_decrypted = ''
-while ok_decrypted == '':
-    time.sleep(0.5)
-    ok_decrypted = ok.read_bytes(len(message), to_str=True)
-
-print 'Decrypted by OnlyKey, data=', repr(ok_decrypted)
-
-print 'Original Message =', repr(message)
-print 'Assert that the original message matches the data generated on the OnlyKey'
-assert repr(ok_decrypted) == repr(message)
-print 'Ok, data matches'
-print
+    print 'Decoded Decrypted Message =', str(dec_bytes)
 
 print 'Done'
