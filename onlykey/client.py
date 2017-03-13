@@ -252,7 +252,7 @@ class OnlyKey(object):
 
         return
 
-    def read_bytes(self, n=64, to_str=False, timeout_ms=5000):
+    def read_bytes(self, n=64, to_str=False, timeout_ms=100):
         """Read n bytes and return an array of uint8 (int)."""
         out = self._hid.read(n, timeout_ms=timeout_ms)
         logging.debug('read="%s"', ''.join([chr(c) for c in out]))
