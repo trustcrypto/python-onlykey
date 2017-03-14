@@ -1,0 +1,4 @@
+[submodule "PGPy"]
+	path = PGPy
+	url = https://github.com/trustcrypto/PGPy.git
+	branch = release/0.4.1
