@@ -12,6 +12,7 @@ $ cd python-onlykey
 $ python setup.py install
 $ cd PGPy
 $ python setup.py install
+$ cd ..
 ```
 
 ## QuickStart
