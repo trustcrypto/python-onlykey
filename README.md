@@ -7,8 +7,10 @@ Python client for interacting with the OnlyKey. Bundled with a CLI for configuri
 ## Installation
 
 ```
-$ git clone https://github.com/trustcrypto/python-onlykey.git
+$ git clone https://github.com/trustcrypto/python-onlykey.git --recursive
 $ cd python-onlykey
+$ python setup.py install
+$ cd PGPy
 $ python setup.py install
 ```
 
