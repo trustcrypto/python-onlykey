@@ -212,7 +212,7 @@ You will be prompted to
 
 `Paste OpenPGP Message, press Ctrl+D or Ctrl+Z(Windows only) when finished`
 
------BEGIN PGP MESSAGE-----
+`-----BEGIN PGP MESSAGE-----
 Version: Mailvelope v1.7.1
 Comment: https://www.mailvelope.com
 
@@ -231,7 +231,7 @@ z6Js78ouyVZZm3kkZXoyghSuxMjnWdShcLqarwvX7TPSPAEnWpu0CvycE+Ty
 LLC92hP82qyPiOkxQd3pU8nYOy+/jQtQ7XH0IvTW/JOCk8Du70UZPxkFfbQ8
 CsMk8A==
 =h1Xt
------END PGP MESSAGE-----
+-----END PGP MESSAGE-----`
 
 Paste the encrypted message as shown above, press return to go to a new line, press Ctrl+D to finish (Ctrl+Z Windows).
 
