@@ -144,16 +144,42 @@ OnlyKey>
 Bye!
 ```
 
-### Creating/Loading SSH key
+### Creating/Loading SSH key (ED25519 only)
 
 Create a new ed25519 private key and load it into the OnlyKey:
 
 ```
-$ onlykey-utils ssh new
-$ onlykey-utils ssh load
+$ python tests/ssh_auth_ed25519.py
 ```
 
 See [onlykey-agent](https://github.com/trustcrypto/onlykey-agent) for more informations.
+
+
+### Creating/Loading PGP key 
+
+Create a new RSA 1024 bit private key and load it into the OnlyKey:
+
+```
+$ python tests/rsa_decrypt_1024.py
+```
+
+Create a new RSA 2048 bit private key and load it into the OnlyKey:
+
+```
+$ python tests/rsa_decrypt_1024.py
+```
+
+Create a new RSA 3072 bit private key and load it into the OnlyKey:
+
+```
+$ python tests/rsa_decrypt_1024.py
+```
+
+Create a new RSA 4096 bit private key and load it into the OnlyKey:
+
+```
+$ python tests/rsa_decrypt_1024.py
+```
 
 ### Python client
 
