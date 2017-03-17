@@ -185,6 +185,76 @@ $ python tests/rsa_decrypt_4096.py
 
 The latest OnlyKey Chrome App can also be used to load RSA keys. See [OnlyKey-Chrome-App](https://github.com/trustcrypto/OnlyKey-Chrome-App) for more informations.
 
+### Testing PGP decryption
+
+If you already have a key loaded and you want to test decryption:
+
+```
+$ python tests/rsa_decrypt_testkey.py
+```
+
+You will be prompted to 
+
+`Enter RSA slot number to use for decryption (1 - 4)`
+
+Select the slot where your key is loaded, this will be used to do PKCS1 v 15 decyption of an encrypted message 
+
+
+### Decrypt PGP email messages using OnlyKey
+
+If you using a previously set RSA private key you can decrypt OpenPGP/GPG encrypted email messages:
+
+```
+$ python tests/decrypt_PGP_message.py
+```
+
+You will be prompted to 
+
+`Paste OpenPGP Message, press Ctrl+D or Ctrl+Z(Windows only) when finished`
+
+-----BEGIN PGP MESSAGE-----
+Version: Mailvelope v1.7.1
+Comment: https://www.mailvelope.com
+
+wcFMA322sr0GLHtKARAAqx//02T7y0MQq4+qbWV34AQxRUvpSQJwMT7li4LR
+nOK3m/QySqjqSunuGKV4H+4qHJ1sGOLlBicZrINQsqQmlvYQEvv3dkFD9kk1
+Bg7UyZbhYTGR9OivuHr2Ft3YWjgYBe1t4frmzGZFe+TfBH0EdSWDNz7ihTRC
+/JjhK8bQR6EUS6nbZMn3FSJ/NlBUxoKT9lfY4iC1/4gqvPs1hDmngvAPSEJQ
+6ZRIx6aDlt061Q4w4B++Y2No+3fKfet3Sx+UTZbE7jwD0sdySmpFbp4p42/M
+ocJuZFXz/bZOUy0wWVLcS50ThrH7kuN25z+a1JSFrZWbC9e321DqkmuIGe0O
+1LQbeVb0B27JiTjalfk1usriy0EoXdEnHDUwu+/oX5fDc4RH9hl/ul9Ig5q1
+xc3XJ0DjUNTtjz7PYGB1NWrJbwMfT3cottaO3LvulkbVLtvfEMrI/rc1r83B
+rRYQNzfmdDoNTQhT5VLE9GdLWD6ZpyE/FHe769n2qKtob7pwmtoo62yrrDV3
+aY/xHL1NiVuis51ebdGU/wA3mANnp8beyLhdmgwNbiX6dJDcUcRYnb9L0kSx
+P7M8IbeUOxMktC9ZRSzJmUGOqOm6NNBUGyT24cxaR6bZu9gZGWQxyu9WWObJ
+z6Js78ouyVZZm3kkZXoyghSuxMjnWdShcLqarwvX7TPSPAEnWpu0CvycE+Ty
+LLC92hP82qyPiOkxQd3pU8nYOy+/jQtQ7XH0IvTW/JOCk8Du70UZPxkFfbQ8
+CsMk8A==
+=h1Xt
+-----END PGP MESSAGE-----
+
+Paste the encrypted message as shown above, press return to go to a new line, press Ctrl+D to finish (Ctrl+Z Windows).
+
+You will be prompted to choose to sign or decrypt the message
+
+`Do you want to sign or decrypt the message?
+s=sign, d=decrypt`
+
+Press d and return to decrypt message.
+
+You will be prompted to choose the key slot where your private key is assigned (Only RSA supported currently)
+
+`Enter slot number to use for decryption, 1 - 4 for RSA, 1 - 32 for ECC`
+
+Press number and return to select slot
+
+Follow instructions to enter the challenge code onto the OnlyKey key pad.
+
+`Please enter the 3 digit challenge code on OnlyKey (and press ENTER if necessary)
+5 3 2`
+
+If decryption is successful the ASCII armored version and the plaintext version of the message will be displayed. If decryption fails the message "Error with RSA decryption" will be displayed.
+
 
 ### Python client
 
