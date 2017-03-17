@@ -6,14 +6,6 @@ Python client for interacting with the OnlyKey. Bundled with a CLI for configuri
 
 ## Installation
 
-The package is not published on PyPI yet.
-
-You can install it via pip:
-
-```
-$ pip install git+git://github.com/trustcrypto/python-onlykey.git
-```
-
 ```
 $ git clone https://github.com/trustcrypto/python-onlykey.git
 $ cd python-onlykey
