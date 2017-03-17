@@ -152,7 +152,9 @@ Create a new ed25519 private key and load it into the OnlyKey:
 $ python tests/ssh_auth_ed25519.py
 ```
 
-See [onlykey-agent](https://github.com/trustcrypto/onlykey-agent) for more informations.
+See [onlykey-agent](https://github.com/trustcrypto/onlykey-agent) for more information on SSH authentication.
+
+The latest OnlyKey Chrome App can also be used to load ECC keys. See [OnlyKey-Chrome-App](https://github.com/trustcrypto/OnlyKey-Chrome-App) for more informations.
 
 
 ### Creating/Loading PGP key 
@@ -166,20 +168,23 @@ $ python tests/rsa_decrypt_1024.py
 Create a new RSA 2048 bit private key and load it into the OnlyKey:
 
 ```
-$ python tests/rsa_decrypt_1024.py
+$ python tests/rsa_decrypt_2048.py
 ```
 
 Create a new RSA 3072 bit private key and load it into the OnlyKey:
 
 ```
-$ python tests/rsa_decrypt_1024.py
+$ python tests/rsa_decrypt_3072.py
 ```
 
 Create a new RSA 4096 bit private key and load it into the OnlyKey:
 
 ```
-$ python tests/rsa_decrypt_1024.py
+$ python tests/rsa_decrypt_4096.py
 ```
+
+The latest OnlyKey Chrome App can also be used to load RSA keys. See [OnlyKey-Chrome-App](https://github.com/trustcrypto/OnlyKey-Chrome-App) for more informations.
+
 
 ### Python client
 
