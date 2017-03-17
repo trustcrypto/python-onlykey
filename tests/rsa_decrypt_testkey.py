@@ -36,13 +36,9 @@ slot = int(raw_input())
 print 'Trying to read the public RSA N part 1...'
 ok.send_message(msg=Message.OKGETPUBKEY, payload=chr(slot))  #, payload=[1, 1])
 time.sleep(1.5)
-start_time = time.time()
 for _ in xrange(10):
-    ok_pubkey1 = ok.read_bytes(64, to_str=True)
+    ok_pubkey1 = ok.read_bytes(64, to_str=True, timeout_ms=1000)
     if len(ok_pubkey1) == 64:
-        break
-    elapsed_time = time.time() - start_time
-    if (elapsed_time) >= 5:
         break
     time.sleep(1)
 
@@ -51,13 +47,9 @@ print
 print 'received=', repr(ok_pubkey1)
 
 print 'Trying to read the public RSA N part 2...'
-start_time = time.time()
 for _ in xrange(10):
-    ok_pubkey2 = ok.read_bytes(64, to_str=True)
+    ok_pubkey2 = ok.read_bytes(64, to_str=True, timeout_ms=1000)
     if len(ok_pubkey2) == 64:
-        break
-    elapsed_time = time.time() - start_time
-    if (elapsed_time) >= 5:
         break
     time.sleep(1)
 
@@ -66,13 +58,9 @@ print
 print 'received=', repr(ok_pubkey2)
 
 print 'Trying to read the public RSA N part 3...'
-start_time = time.time()
 for _ in xrange(10):
-    ok_pubkey3 = ok.read_bytes(64, to_str=True)
+    ok_pubkey3 = ok.read_bytes(64, to_str=True, timeout_ms=1000)
     if len(ok_pubkey3) == 64:
-        break
-    elapsed_time = time.time() - start_time
-    if (elapsed_time) >= 5:
         break
     time.sleep(1)
 
@@ -81,13 +69,9 @@ print
 print 'received=', repr(ok_pubkey3)
 
 print 'Trying to read the public RSA N part 4...'
-start_time = time.time()
 for _ in xrange(10):
-    ok_pubkey4 = ok.read_bytes(64, to_str=True)
+    ok_pubkey4 = ok.read_bytes(64, to_str=True, timeout_ms=1000)
     if len(ok_pubkey4) == 64:
-        break
-    elapsed_time = time.time() - start_time
-    if (elapsed_time) >= 100:
         break
     time.sleep(1)
 
@@ -96,13 +80,9 @@ print
 print 'received=', repr(ok_pubkey4)
 
 print 'Trying to read the public RSA N part 5...'
-start_time = time.time()
 for _ in xrange(10):
-    ok_pubkey5 = ok.read_bytes(64, to_str=True)
+    ok_pubkey5 = ok.read_bytes(64, to_str=True, timeout_ms=1000)
     if len(ok_pubkey5) == 64:
-        break
-    elapsed_time = time.time() - start_time
-    if (elapsed_time) >= 5:
         break
     time.sleep(1)
 
@@ -111,13 +91,9 @@ print
 print 'received=', repr(ok_pubkey5)
 
 print 'Trying to read the public RSA N part 6...'
-start_time = time.time()
 for _ in xrange(10):
-    ok_pubkey6 = ok.read_bytes(64, to_str=True)
+    ok_pubkey6 = ok.read_bytes(64, to_str=True, timeout_ms=1000)
     if len(ok_pubkey6) == 64:
-        break
-    elapsed_time = time.time() - start_time
-    if (elapsed_time) >= 5:
         break
     time.sleep(1)
 
@@ -126,13 +102,9 @@ print
 print 'received=', repr(ok_pubkey6)
 
 print 'Trying to read the public RSA N part 7...'
-start_time = time.time()
 for _ in xrange(10):
-    ok_pubkey7 = ok.read_bytes(64, to_str=True)
+    ok_pubkey7 = ok.read_bytes(64, to_str=True, timeout_ms=1000)
     if len(ok_pubkey7) == 64:
-        break
-    elapsed_time = time.time() - start_time
-    if (elapsed_time) >= 5:
         break
     time.sleep(1)
 
@@ -141,13 +113,9 @@ print
 print 'received=', repr(ok_pubkey7)
 
 print 'Trying to read the public RSA N part 8...'
-start_time = time.time()
 for _ in xrange(10):
-    ok_pubkey8 = ok.read_bytes(64, to_str=True)
+    ok_pubkey8 = ok.read_bytes(64, to_str=True, timeout_ms=1000)
     if len(ok_pubkey8) == 64:
-        break
-    elapsed_time = time.time() - start_time
-    if (elapsed_time) >= 5:
         break
     time.sleep(1)
 
