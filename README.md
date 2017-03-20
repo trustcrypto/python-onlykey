@@ -4,6 +4,13 @@ Python client for interacting with the OnlyKey. Bundled with a CLI for configuri
 
 **Still in early development.**
 
+## Install Dependencies
+
+Tested on Ubuntu 16.04
+Requires git, setuptools, python-dev
+
+sudo apt-get install git python-setuptools python-dev
+
 ## Installation
 
 ```
