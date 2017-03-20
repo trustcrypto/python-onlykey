@@ -4,15 +4,15 @@ Python client for interacting with the OnlyKey. Bundled with a CLI for configuri
 
 **Still in early development.**
 
-## Ubuntu Install Dependencies
+<!---## Ubuntu Install Dependencies
 
 Tested on Ubuntu 16.04
-Requires git, setuptools, python-dev, libusb-1.0-0-dev, libudev-dev
+Requires git, setuptools, python-dev, python-pip, libusb-1.0-0-dev, libudev-dev
 ```
-$ sudo apt-get install git python-setuptools python-dev libusb-1.0-0-dev libudev-dev
+$ sudo apt-get install git python-setuptools python-dev libusb-1.0-0-dev libudev-dev python-pip
 ```
 
-Additionally, in order for non-root users to be able to communicate with OnlyKey a udev rule must be created as described [here](https://www.pjrc.com/teensy/td_download.html).
+Additionally, in order for non-root users to be able to communicate with OnlyKey a udev rule must be created as described [here](https://www.pjrc.com/teensy/td_download.html).--->
 
 ## Installation
 
