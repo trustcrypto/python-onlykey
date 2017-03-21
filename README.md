@@ -18,7 +18,10 @@ Additionally, in order for non-root users to be able to communicate with OnlyKey
 
 Tested on El Capitan
 ```
-$ sudo pip uninstall crypto
+$brew install pkg-config libffi
+ export PKG_CONFIG_PATH=/usr/local/Cellar/libffi/3.0.13/lib/pkgconfig/
+  pip install bcrypt 
+sudo pip uninstall crypto
   sudo pip uninstall pycrypto
   sudo pip install pycrypto
 ```
