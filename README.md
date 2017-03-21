@@ -29,9 +29,9 @@ $ sudo pip uninstall crypto
 ```
 $ git clone https://github.com/trustcrypto/python-onlykey.git --recursive
 $ cd python-onlykey
-$ python setup.py install
+$ sudo python setup.py install
 $ cd PGPy
-$ python setup.py install
+$ sudo python setup.py install
 $ cd ..
 ```
 
