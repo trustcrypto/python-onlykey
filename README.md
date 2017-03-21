@@ -14,6 +14,16 @@ $ sudo apt-get install git python-setuptools python-dev libusb-1.0-0-dev libudev
 
 Additionally, in order for non-root users to be able to communicate with OnlyKey a udev rule must be created as described [here](https://www.pjrc.com/teensy/td_download.html).--->
 
+<!---## Mac OS Install Dependencies
+
+Tested on El Capitan
+```
+$ sudo pip uninstall crypto
+  sudo pip uninstall pycrypto
+  sudo pip install pycrypto
+```
+--->
+
 ## Installation
 
 ```
