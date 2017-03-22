@@ -113,6 +113,7 @@ class OnlyKey(object):
     def _connect(self):
         try:
             self._hid.open(ID_VENDOR, ID_PRODUCT)
+            #self._hid.set_nonblocking(1)
         except:
             log.exception('failed to connect')
             raise OnlyKeyUnavailableException()
