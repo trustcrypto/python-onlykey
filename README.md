@@ -27,6 +27,15 @@ sudo pip uninstall crypto
 ```
 --->
 
+## Requirements
+
+Mac OS - El Capitan
+brew
+python 2.7
+```
+$ brew install python
+```
+
 ## Installation
 
 ```
