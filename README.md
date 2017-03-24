@@ -200,14 +200,18 @@ OnlyKey CLI v0.2
 Press the right arrow to insert the suggestion.
 Press Control-C to retry. Control-D to exit.
 
-OnlyKey> setslot 25 label EmailSigningKey
+OnlyKey> setslot 19 label EmailSigningKey
+
+Successfully set Label
+
+OnlyKey> setslot 20 label EmailDecryptKey
 
 Successfully set Label
 
 OnlyKey> getkeylabels
 
 Slot RSA Key 1: EmailSigningKey
-Slot RSA Key 2: <empty>
+Slot RSA Key 2: EmailDecryptKey
 Slot RSA Key 3: <empty>
 Slot RSA Key 4: <empty>
 Slot ECC Key 1: <empty>
