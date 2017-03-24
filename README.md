@@ -1,6 +1,14 @@
 # python-onlykey
 
-Python client for interacting with the OnlyKey. Bundled with a CLI for configuring and helpers for loading secrets.
+Python client for interacting with the OnlyKey. 
+
+OnlyKey-cli - A command line interface to the OnlyKey that can be used for configuration (Similar functionality to [OnlyKey Chrome App](https://chrome.google.com/webstore/detail/onlykey-configuration/adafilbceehejjehoccladhbkgbjmica?hl=en-US))
+
+OnlyKey-init - A command line tool for setting PIN on OnlyKey (Initial Configuration)
+
+OnlyKey-utils - A command line tool for loading keys.
+
+PGPMessage - Provides a tool for decrypting and signing OpenPGP/GPG messages using OnlyKey. 
 
 **Still in early development.**
 
