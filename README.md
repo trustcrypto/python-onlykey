@@ -39,11 +39,16 @@ sudo pip uninstall crypto
 
 Pre-compiled packaged apps have been provided here:
 
-[OnlyKey CLI]
+[OnlyKey CLI](https://github.com/trustcrypto/python-onlykey/releases/download/v0.1-alpha.1/cli)
 
-[OnlyKey PGP Message Tool]
+[OnlyKey PGP Message Tool](https://github.com/trustcrypto/python-onlykey/releases/download/v0.1-alpha.1/PGP_message)
 
-Once the file is downloaded it can be run on Mac OS by right clicking and agreeing to open the file you downloaded from the Internet.
+Once the file is downloaded in order to be able to run just by double clicking the file do the following:
+1) Open the terminal app and make the file executable with this command:
+```
+$ chmod +x <location of file you downloaded>
+```
+2) Right click the file and select "open"
 
 These have been tested on Mac OS (El Capitan), we are still working on getting packaged apps that will work on other platforms such as Windows.
 
