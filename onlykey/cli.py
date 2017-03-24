@@ -45,9 +45,20 @@ def utils():
 
             with open(privkey, 'rb') as f:
                 raw_privkey = f.read()
+                print
+                print ('Enter ECC key slot number to use (1 - 32) or enter 0 to list key labels')
+                print
+                slot = int(raw_input())
 
-            only_key.send_message(msg=Message.OKSETPRIV, payload=raw_privkey)
+            while slot == 0:
+                ok.displaykeylabels()
+                print
+                print ('Enter ECC key slot number to use (1 - 32) or enter 0 to list key labels')
+                print
+                slot = int(raw_input())
 
+            slot = slot + 100 # ECC keys in slot 101 - 132
+            only_key.set_ecc_key(slot, (1+16+32+64+128), raw_privkey) #set ECC key with all features
             time.sleep(1.5)
             print(only_key.read_string())
 
@@ -82,6 +93,7 @@ def cli():
     # Create some history first. (Easy for testing.)
     history = InMemoryHistory()
     history.append('getlabels')
+    history.append('getkeylabels')
     history.append('setslot')
     history.append('wipeslot')
     history.append('setpin')
@@ -147,6 +159,14 @@ def cli():
                 print(tmp[next(slots)].to_str())
                 print()
 
+        if data[0] == 'getkeylabels':
+            tmp = {}
+            for slot in only_key.getkeylabels():
+                tmp[slot.name] = slot
+            slots = iter(['RSA Key 1', 'RSA Key 2', 'RSA Key 3', 'RSA Key 4', 'ECC Key 1', 'ECC Key 2', 'ECC Key 3', 'ECC Key 4', 'ECC Key 5', 'ECC Key 6', 'ECC Key 7', 'ECC Key 8', 'ECC Key 9', 'ECC Key 10', 'ECC Key 11', 'ECC Key 12', 'ECC Key 13', 'ECC Key 14', 'ECC Key 19', 'ECC Key 20', 'ECC Key 21', 'ECC Key 22', 'ECC Key 23', 'ECC Key 24', 'ECC Key 25', 'ECC Key 26', 'ECC Key 27', 'ECC Key 28', 'ECC Key 29', 'ECC Key 30', 'ECC Key 31', 'ECC Key 32'])
+            for slot_name in slots:
+                print(tmp[slot_name].to_str())
+                print(tmp[next(slots)].to_str())
 
         elif data[0] == 'setslot':
             try:
