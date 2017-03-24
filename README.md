@@ -27,17 +27,17 @@ sudo pip uninstall crypto
 ```
 --->
 
-## Requirements
+## Run without installation
 
-Mac OS - El Capitan
+Pre-compiled packaged apps have been provided here:
 
-brew
+[OnlyKey CLI]
 
-python 2.7
+[OnlyKey PGP Message Tool]
 
-```
-$ brew install python
-```
+Once the file is downloaded it can be run on Mac OS by right clicking and agreeing to open the file you downloaded from the Internet.
+
+These have been tested on Mac OS (El Capitan), we are still working on getting packaged apps that will work on other platforms such as Windows.
 
 ## Installation
 
