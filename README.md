@@ -83,11 +83,11 @@ Successfully set PIN
 
 ### CLI
 
-The CLI is bundled with the package, it should be present globally after the install.
+The CLI is bundled with the package, it should be present globally after the install (Also available as packaged standalone app "cli").
 
 ```
 $ onlykey-cli
-OnlyKey CLI v0
+OnlyKey CLI v0.2
 Press the right arrow to insert the suggestion.
 Press Control-C to retry. Control-D to exit.
 
@@ -192,6 +192,30 @@ OnlyKey>
 Bye!
 ```
 
+Additionally, the CLI can be used to set key labels. Labels 19 - 22 correspond to RSA Keys 1 - 4 and labels 23 - 54 correspond to ECC Keys 1 - 32. In a future version we will add a setkeylabel function to make this transparent to user.
+
+```
+$ onlykey-cli
+OnlyKey CLI v0.2
+Press the right arrow to insert the suggestion.
+Press Control-C to retry. Control-D to exit.
+
+OnlyKey> setslot 25 label EmailSigningKey
+
+Successfully set Label
+
+OnlyKey> getkeylabels
+
+Slot RSA Key 1: EmailSigningKey
+Slot RSA Key 2: <empty>
+Slot RSA Key 3: <empty>
+Slot RSA Key 4: <empty>
+Slot ECC Key 1: <empty>
+Slot ECC Key 2: <empty>
+...
+
+```
+
 ### Creating/Loading SSH key (ED25519 only)
 
 Create a new ed25519 private key and load it into the OnlyKey:
@@ -250,70 +274,208 @@ Select the slot where your key is loaded, this will be used to do PKCS1 v 15 dec
 
 ### Decrypt PGP email messages using OnlyKey
 
-If you using a previously set RSA private key you can decrypt OpenPGP/GPG encrypted email messages:
+If you using a previously set RSA private key with decryption capabilitiesyou can decrypt OpenPGP/GPG encrypted email messages:
 
 ```
-$ python tests/decrypt_PGP_message.py
+$ PGP_message.py
 ```
 
-You will be prompted to 
-
-`Paste OpenPGP Message, press Ctrl+D or Ctrl+Z(Windows only) when finished`
-
+`Do you want to sign or decrypt a message?`
+`s = sign, d = decrypt`
 ```
+d
+
+Enter RSA key slot number to use (1 - 4) or enter 0 to list key labels
+
+2
+
+Paste OpenPGP Message, press return to go to new line, and then press Ctrl+D or Ctrl+Z (Windows only)
+
 -----BEGIN PGP MESSAGE-----
 Version: Mailvelope v1.7.1
 Comment: https://www.mailvelope.com
 
-wcFMA322sr0GLHtKARAAqx//02T7y0MQq4+qbWV34AQxRUvpSQJwMT7li4LR
-nOK3m/QySqjqSunuGKV4H+4qHJ1sGOLlBicZrINQsqQmlvYQEvv3dkFD9kk1
-Bg7UyZbhYTGR9OivuHr2Ft3YWjgYBe1t4frmzGZFe+TfBH0EdSWDNz7ihTRC
-/JjhK8bQR6EUS6nbZMn3FSJ/NlBUxoKT9lfY4iC1/4gqvPs1hDmngvAPSEJQ
-6ZRIx6aDlt061Q4w4B++Y2No+3fKfet3Sx+UTZbE7jwD0sdySmpFbp4p42/M
-ocJuZFXz/bZOUy0wWVLcS50ThrH7kuN25z+a1JSFrZWbC9e321DqkmuIGe0O
-1LQbeVb0B27JiTjalfk1usriy0EoXdEnHDUwu+/oX5fDc4RH9hl/ul9Ig5q1
-xc3XJ0DjUNTtjz7PYGB1NWrJbwMfT3cottaO3LvulkbVLtvfEMrI/rc1r83B
-rRYQNzfmdDoNTQhT5VLE9GdLWD6ZpyE/FHe769n2qKtob7pwmtoo62yrrDV3
-aY/xHL1NiVuis51ebdGU/wA3mANnp8beyLhdmgwNbiX6dJDcUcRYnb9L0kSx
-P7M8IbeUOxMktC9ZRSzJmUGOqOm6NNBUGyT24cxaR6bZu9gZGWQxyu9WWObJ
-z6Js78ouyVZZm3kkZXoyghSuxMjnWdShcLqarwvX7TPSPAEnWpu0CvycE+Ty
-LLC92hP82qyPiOkxQd3pU8nYOy+/jQtQ7XH0IvTW/JOCk8Du70UZPxkFfbQ8
-CsMk8A==
-=h1Xt
+wcFMA322sr0GLHtKAQ/9Hxs3Fe7vNMGMAphp5ddJCBYSx8aL4N1JRS5O3mrw
+KkJfNlHn0YcMoC2J4iMrHTNWj0JeyQiGy5mwstAqL8g5Or8HBuqKTycfhHJV
+mfTvXhRTE9WY+0JqYBbg02MjKzYuqrhCKfsu9+T/q58T/75XYE8bYwehsXpJ
+2stjIj+wjrRRk4Dx/nGegUAmIAAQPmeizzOwLgJbBSZgK1pfrKwuCOpdxH8v
+QRLoX2abpipGhhpkhje2PAtTlX2CGES857KThwFzeAJj94k+VAYfsZOi65gg
+yMeF3h8V8KugBnZY9kOJFbi5j84iflvgZa/ZlMzLLHWDhgeYQR7rE/zZxIgL
+CjW1Iq2QibM8ug7ri4MfxhrHGN9Ci1EnnIVbMHq4kcPrCr20qouZqbXPuXcG
+pJ2eKQahH7Zz9cwNB6FoVgG23z9YYp3Q2tS9Cm9hvzJz+dPvy+OvmVqw4oCF
+y4yvFRj82xoL7pDzhAPgeC7d3I4zV2Q9ObV5rQFBe8W1G0eukoS3k/UZJXJO
+hIw0VBaYkw0MivKceezk36KhgA4LhNQxiOx0YVk+YYryRC7muyYtRlDoSpGe
+1dqI+rBDayvsW4hHu5Y6Sb5N1LnHBZg7OSsz/S5fSAR4lcWpbSF3vyBl3tPQ
+mVcbHFgpPjUq71lU31RyqybmkBLdYNNvX8iGeZXWIVTSXgHalMeNCTLiL/yr
+JZWTQif+8lfAh3aERtqaJRowOxM/fVutJ7Y+xA+fAEeqzbO8cFvik+ww/8Km
+uk2Px9ELdgmlEJQ7IXp1hp46r9tv3lqHmtDyL5t/XL+R7QMjI3Y=
+=TBU9
+-----END PGP MESSAGE-----
+^D
+
+You should see your OnlyKey blink 3 times
+
+Sending the payload to the OnlyKey...
+
+Please enter the 3 digit challenge code on OnlyKey (and press ENTER if necessary)
+2 5 2
+
+Trying to read the decrypted data from OnlyKey
+For RSA with 4096 keysize this may take up to 9 seconds...
+
+Decoded Decrypted Message = ?3umsg.txtX?E?Secret message that I want to encrypt!?????6?*?gQ?6??m??
+
+Encoded Decrypted Message =
+-----BEGIN PGP MESSAGE-----
+Version: PGPy v0.4.1
+
+yzN1B21zZy50eHRY1UWaU2VjcmV0IG1lc3NhZ2UgdGhhdCBJIHdhbnQgdG8gZW5j
+cnlwdCHTFLG2vRg/NpEq6mdRA8E2sALVbZzA
+=Lqt2
 -----END PGP MESSAGE-----
 ```
 
-Paste the encrypted message as shown above, press return to go to a new line, press Ctrl+D to finish (Ctrl+Z Windows).
+If decryption is successful the ASCII armored version of the message will be displayed. If decryption fails the message "Error with RSA decryption" will be displayed.
 
-You will be prompted to choose to sign or decrypt the message
+### Sign text email message using OnlyKey
 
-`Do you want to sign or decrypt the message?
-s=sign, d=decrypt`
+If you using a previously set RSA private key with signing capabilities you can sign text messages in OpenPGP/GPG format:
 
-Press d and return to decrypt message.
-
-You will be prompted to choose the key slot where your private key is assigned (Only RSA supported currently)
-
-`Enter slot number to use for decryption, 1 - 4 for RSA, 1 - 32 for ECC`
-
-Press number and return to select slot
-
-Follow instructions to enter the challenge code onto the OnlyKey key pad.
-
-`Please enter the 3 digit challenge code on OnlyKey (and press ENTER if necessary)
-5 3 2`
-
-If decryption is successful the ASCII armored version and the plaintext version of the message will be displayed. If decryption fails the message "Error with RSA decryption" will be displayed.
-
-
-### Python client
-
-```python
-from onlykey import OnlyKey, Message
-
-# Automatically connect
-ok = OnlyKey()
-
-ok.sendmessage(msg=Message.OKGETLABELS)
-print ok.read_string()
 ```
+$ PGP_message.py
+```
+
+`Do you want to sign or decrypt a message?`
+`s = sign, d = decrypt`
+```
+s
+
+Enter RSA key slot number to use (1 - 4) or enter 0 to list key labels
+
+1
+You should see your OnlyKey blink 3 times
+
+Trying to read the public RSA N part 1...
+
+Key Size = 512
+
+Do you want to sign a text message or add signature to a PGP Message?
+t = text message, p = PGP Message
+
+t
+
+Type or paste the text message, press return to go to new line, and then press Ctrl+D or Ctrl+Z (Windows only)
+
+this message is from me!
+
+You should see your OnlyKey blink 3 times
+
+Sending the payload to the OnlyKey...
+
+Please enter the 3 digit challenge code on OnlyKey (and press ENTER if necessary)
+4 2 3
+
+Trying to read the signature from OnlyKey
+For RSA with 4096 keysize this may take up to 9 seconds...
+
+Encoded Signed Message =
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA256
+
+this message is from me!
+-----BEGIN PGP SIGNATURE-----
+Version: PGPy v0.4.1
+
+wsFcBAABCAAGBQJY1UMbAAoJEFrjcMPEcl4WjCwP/0OMg9+Jll3b0r5l6Xbz/0uR
+ofW0NUC7jIcv/VJeGdF92aQrreeFcSLGJmQtOfDOIfxZUJ5fMq9jZapomEounVIy
+oEha/FWVGOyiK4OznSgBtkq2DUj3QQjp/tmQf7rAnYiliO6BOkTiJmib8CZaZTXx
+rbQEiLm7kUa4VFoYsum3qS6e2eICfZb/A45XMBjra0PhbZH8Et51IWCT52ighGP8
+LAE2s5U+2eLLXad/95QB3w9VaGtZmUvrEPb0vlOSeI6Wj/6aDde9+t1eZUAhsdwD
+AndKfCvoapGd3KV0JwkXg6OTr2U/cE5DHBpFYYHjeWmKcLs09v0O7BwcXSwY62UL
+0kddPiIxTU+AgPeK+A+xdsvZ6+j1ZZNZVMEG4RKFQnKignSSUR3AmkNQNAemzdBp
+Ki18Nl26zSuj5le+I5QjlGNJ8QSieXNGmbjlnj4GMNxCgM2XR6OmaK63oDkS/xp+
+ECd8yjzPWx5pDuYMEDKGvv8iw0kNe/b5ZYUTDhvZxlUeL5RtDzdAi2x4vVT8mbmu
+/lbnuy8A01geQEFsbMk+4ON9MktjvezYPbjNUGrhBxFqd2XKhIIwSueghdOym/Xr
+q6ZOiNRpqxG2aiRZ4flDn01qlYrtpGxLyQowxo4DVeBOTfPY0y+s7ni6KVadAFkd
+nHlZ6TZaI4Awu6b9tIAR
+=1llp
+-----END PGP SIGNATURE-----
+```
+
+If signature is successful the ASCII armored version of the message will be displayed. If signature fails the message "Error with RSA signature" will be displayed.
+
+### Add a signature to a PGP message using OnlyKey
+
+If you using a previously set RSA private key with signing capabilities you can sign text messages in OpenPGP/GPG format:
+
+```
+$ PGP_message.py
+```
+
+`Do you want to sign or decrypt a message?`
+`s = sign, d = decrypt`
+```
+s
+
+Enter RSA key slot number to use (1 - 4) or enter 0 to list key labels
+
+1
+
+You should see your OnlyKey blink 3 times
+
+Key Size = 512
+
+
+Do you want to sign a text message or add signature to a PGP Message?
+t = text message, p = PGP Message
+
+p
+
+Paste OpenPGP Message, press return to go to new line, and then press Ctrl+D or Ctrl+Z (Windows only)
+
+-----BEGIN PGP MESSAGE-----
+Version: PGPy v0.4.1
+
+yzN1B21zZy50eHRY1UWaU2VjcmV0IG1lc3NhZ2UgdGhhdCBJIHdhbnQgdG8gZW5j
+cnlwdCHTFLG2vRg/NpEq6mdRA8E2sALVbZzA
+=Lqt2
+-----END PGP MESSAGE-----
+^D
+
+You should see your OnlyKey blink 3 times
+
+Please enter the 3 digit challenge code on OnlyKey (and press ENTER if necessary)
+3 2 4
+
+Trying to read the signature from OnlyKey
+For RSA with 4096 keysize this may take up to 9 seconds...
+
+Encoded Signed Message =
+-----BEGIN PGP MESSAGE-----
+Version: PGPy v0.4.1
+
+yzN1B21zZy50eHRY1UWaU2VjcmV0IG1lc3NhZ2UgdGhhdCBJIHdhbnQgdG8gZW5j
+cnlwdCHTFLG2vRg/NpEq6mdRA8E2sALVbZzA
+=Lqt2
+-----END PGP MESSAGE-----
+-----BEGIN PGP MESSAGE-----
+Version: PGPy v0.4.1
+
+xA0DAAgBX/X2Pr84qJgAyzN1B21zZy50eHRY1UWaU2VjcmV0IG1lc3NhZ2UgdGhh
+dCBJIHdhbnQgdG8gZW5jcnlwdCHTFLG2vRg/NpEq6mdRA8E2sALVbZzAwsFcBAAB
+CAAGBQJY1UciAAoJEF/19j6/OKiY67AQAKwEsTOvYr98S8QMxXoV1d3sUQDu0mCM
+7fASd10YR6YRHq2jcvy/D9+ZRc0dlZdUj+3GjbYbrxe10GeB0+EeJnCpaALLvfFm
+2+9XmM/w3KFHE2pAe+gvN8s2+hP8i7UWRRgcFQCSLvr+VP1yhfG0O7qdMnYgl6A7
+3TXPk4+PnH5qbuWiDDrl9XfdDw4wtFWOxRwq+GXM4hgLU4datouv3cmJA0ikY3Uw
+BIgxSP+Hv6ku94tOlACu0R4jOzq+jQBkgWkVViYlNCOS4EdaU9776wrhKIjRuibd
+yzerkZlMj91GrThC9Ox/sEbmoXpoa79Z8qXZi2wJ4AqNi4xnEUdtkGFgZaaJUsDn
+bbPlNLxictjcqFk9Q2LasbtAOT+f6yD4YgNqBV33fbZXVFiXgYdxqKb0BrcJBCQQ
+LcvrazK1byvdBCDiaoHatavaqKKjK9Fs3pCtm0jEfAaiSQStCMF4jRUGOxGWeRav
+kaCP7MvGtsNiR3kjDXO9Y79KNNn0ID/AZ9/Z9Ho1wSwUe95BG+WixaFcwz0KlDbZ
+bVV0mkPX7/orqD2ihVvmXXB9VcdXn6oKsNA2gBUQp4a80NnvGnh4bdtXoypZkNoe
+3bXNvRAne0kSPxjNzhBjJF9F1/EgjR0gHzi677AuhrRN1CkdaHLnnopBjkUmtU+0
+BNBU7972zW9q
+=9w/g
+-----END PGP MESSAGE-----
+```
+If signature is successful the ASCII armored version of the message will be displayed. If signature fails the message "Error with RSA signature" will be displayed.
