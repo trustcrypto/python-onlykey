@@ -35,7 +35,9 @@ sudo pip uninstall crypto
 ```
 --->
 
-## Run without installation
+## Mac OS Run without installation
+
+Tested on El Capitan
 
 Pre-compiled packaged apps have been provided here:
 
