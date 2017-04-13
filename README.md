@@ -12,7 +12,7 @@ PGPMessage - Provides a tool for decrypting and signing OpenPGP/GPG messages usi
 
 **Still in early development.**
 
-#Ubuntu Install Dependencies
+## Ubuntu Install Dependencies
 
 Tested on Ubuntu 16.04
 ```
