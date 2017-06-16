@@ -162,12 +162,12 @@ class OnlyKey(object):
                 usage_page = d['usage_page']
                 path = d['path']
 
-            if (vendor_id, product_id) in DEVICE_IDS:
-                devices.setdefault(serial_number, [None, None])
-                if usage_page == 0x1 or interface_number == 0:
-                    #devices[serial_number][0] = path
-                    print 'Found OnlyKey Here', path
-                    self._hid.open_path(path)
+                if (vendor_id, product_id) in DEVICE_IDS:
+                    devices.setdefault(serial_number, [None, None])
+                    if usage_page == 0x1 or interface_number == 0:
+                        #devices[serial_number][0] = path
+                        print 'Found OnlyKey Here', path
+                        self._hid.open_path(path)
 
                 #self._hid.open(ID_VENDOR, ID_PRODUCT)
 
