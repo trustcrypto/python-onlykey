@@ -6,6 +6,7 @@ import hashlib
 
 import hid
 from aenum import Enum
+from sys import platform
 
 log = logging.getLogger(__name__)
 
@@ -150,8 +151,27 @@ class OnlyKey(object):
 
     def _connect(self):
         try:
-            self._hid.open(ID_VENDOR, ID_PRODUCT)
-            self._hid.set_nonblocking(1)
+            # self._hid.enumerate
+            # self._hid.open(ID_VENDOR, ID_PRODUCT)
+            devices = {}
+            for d in self._hid.enumerate(0, 0):
+                vendor_id = d['vendor_id']
+                product_id = d['product_id']
+                serial_number = d['serial_number']
+                interface_number = d['interface_number']
+                usage_page = d['usage_page']
+                path = d['path']
+
+            if (vendor_id, product_id) in DEVICE_IDS:
+                devices.setdefault(serial_number, [None, None])
+                if usage_page == 0x1 or interface_number == 0:
+                    #devices[serial_number][0] = path
+                    print 'Found OnlyKey Here', path
+                    self._hid.open_path(path)
+
+                #self._hid.open(ID_VENDOR, ID_PRODUCT)
+
+            self._hid.set_nonblocking(True)
         except:
             log.exception('failed to connect')
             raise OnlyKeyUnavailableException()
