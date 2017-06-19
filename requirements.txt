@@ -1,4 +1,5 @@
 ed25519
+hidapi
 six
 prompt_toolkit
 aenum

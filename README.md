@@ -1,6 +1,6 @@
 # python-onlykey
 
-Python client for interacting with the OnlyKey. 
+Python client for interacting with the OnlyKey.
 
 OnlyKey-cli - A command line interface to the OnlyKey that can be used for configuration (Similar functionality to [OnlyKey Chrome App](https://chrome.google.com/webstore/detail/onlykey-configuration/adafilbceehejjehoccladhbkgbjmica?hl=en-US))
 
@@ -8,34 +8,13 @@ OnlyKey-init - A command line tool for setting PIN on OnlyKey (Initial Configura
 
 OnlyKey-utils - A command line tool for loading keys.
 
-PGPMessage - Provides a tool for decrypting and signing OpenPGP/GPG messages using OnlyKey. 
+PGPMessage - Provides a tool for decrypting and signing OpenPGP/GPG messages using OnlyKey.
 
 **Still in early development.**
 
-## Ubuntu Install Dependencies
+## Run without installation (Packaged App)
 
-Tested on Ubuntu 16.04
-```
-$ sudo apt-get install git python-setuptools python-dev libusb-1.0-0-dev libudev-dev python-pip libssl-dev
-$ sudo pip install cffi
-```
-
-Additionally, in order for non-root users to be able to communicate with OnlyKey a udev rule must be created as described [here](https://www.pjrc.com/teensy/td_download.html).
-
-<!---## Mac OS Install Dependencies
-
-Tested on El Capitan
-```
-$brew install pkg-config libffi
- export PKG_CONFIG_PATH=/usr/local/Cellar/libffi/3.0.13/lib/pkgconfig/
-  pip install bcrypt 
-sudo pip uninstall crypto
-  sudo pip uninstall pycrypto
-  sudo pip install pycrypto
-```
---->
-
-## Mac OS Run without installation
+### Mac OS Run without installation
 
 Tested on El Capitan
 
@@ -54,7 +33,72 @@ $ chmod +x <location of file you downloaded>
 
 These have been tested on Mac OS (El Capitan), we are still working on getting packaged apps that will work on other platforms such as Windows.
 
+### Windows Run without installation
+
+Coming soon
+
 ## Installation
+
+### Windows Dependencies
+
+Python 2.7 - https://www.python.org/downloads/release/python-2713/
+git - https://git-scm.com/download/win
+
+<!---## Mac OS Install Dependencies
+
+Tested on El Capitan
+```
+$brew install pkg-config libffi
+ export PKG_CONFIG_PATH=/usr/local/Cellar/libffi/3.0.13/lib/pkgconfig/
+  pip install bcrypt
+sudo pip uninstall crypto
+  sudo pip uninstall pycrypto
+  sudo pip install pycrypto
+```
+--->
+
+### Windows Install
+
+```
+$ git clone https://github.com/trustcrypto/python-onlykey.git --recursive
+$ cd python-onlykey
+$ python.exe setup.py install
+$ cd PGPy
+$ python.exe setup.py install
+$ cd ..
+```
+
+To Run
+
+```
+$  c:\Python27\Scripts\onlykey-cli.exe
+```
+
+Installing onlykey-cli-script.py script to c:\Python27\Scripts
+Installing onlykey-cli.exe script to c:\Python27\Scripts
+Installing onlykey-cli.exe.manifest script to c:\Python27\Scripts
+Installing onlykey-utils-script.py script to c:\Python27\Scripts
+Installing onlykey-utils.exe script to c:\Python27\Scripts
+Installing onlykey-utils.exe.manifest script to c:\Python27\Scripts
+Installing onlykey-init-script.py script to c:\Python27\Scripts
+Installing onlykey-init.exe script to c:\Python27\Scripts
+Installing onlykey-init.exe.manifest script to c:\Python27\Scripts
+
+### Ubuntu/Debian Linux Dependencies
+
+Tested on Ubuntu 16.04
+```
+$ sudo apt-get install git python-setuptools python-dev libusb-1.0-0-dev libudev-dev python-pip libssl-dev
+$ sudo pip install cffi
+```
+
+Additionally, in order for non-root users to be able to communicate with OnlyKey a udev rule must be created as described [here](https://www.pjrc.com/teensy/td_download.html).
+
+### Arch Linux Dependencies
+
+sudo pacman -Sy git python2-setuptools python2 libusb python2-pip
+
+### Linux Install
 
 ```
 $ git clone https://github.com/trustcrypto/python-onlykey.git --recursive
@@ -189,7 +233,7 @@ OnlyKey> setslot 1 add_char4 2
 
 Successfully set Character4
 
-OnlyKey> 
+OnlyKey>
 
 Bye!
 ```
@@ -235,7 +279,7 @@ See [onlykey-agent](https://github.com/trustcrypto/onlykey-agent) for more infor
 The latest OnlyKey Chrome App can also be used to load ECC keys. See [OnlyKey-Chrome-App](https://github.com/trustcrypto/OnlyKey-Chrome-App) for more informations.
 
 
-### Creating/Loading PGP key 
+### Creating/Loading PGP key
 
 Create a new RSA 1024 bit private key and load it into the OnlyKey:
 
@@ -271,11 +315,11 @@ If you already have a key loaded and you want to test decryption:
 $ python tests/rsa_decrypt_testkey.py
 ```
 
-You will be prompted to 
+You will be prompted to
 
 `Enter RSA slot number to use for decryption (1 - 4)`
 
-Select the slot where your key is loaded, this will be used to do PKCS1 v 15 decyption of an encrypted message 
+Select the slot where your key is loaded, this will be used to do PKCS1 v 15 decyption of an encrypted message
 
 
 ### Decrypt PGP email messages using OnlyKey
