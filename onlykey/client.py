@@ -161,11 +161,10 @@ class OnlyKey(object):
             	usage_page = d['usage_page']
             	path = d['path']
 
-            	if (vendor_id, product_id) in DEVICE_IDS:
-            		if usage_page == 0xf1d0 or interface_number == 0:
-            			print("%s" % path)
-                        self._hid.open_path(path)
-                        self._hid.set_nonblocking(True)
+        		if (vendor_id, product_id) in DEVICE_IDS:
+        			if usage_page == 0xf1d0 or interface_number == 0:
+                                	self._hid.open_path(path)
+                                	self._hid.set_nonblocking(True)
         except:
             log.exception('failed to connect')
             raise OnlyKeyUnavailableException()
