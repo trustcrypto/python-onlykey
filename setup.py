@@ -10,7 +10,7 @@ with open(path.join(here, 'README.md'), encoding='utf-8') as f:
 
 setup(
     name='onlykey',
-    version='0.0.1',
+    version='0.0.2',
     description='OnlyKey client and command-line tool',
     long_description=long_description,
 
@@ -26,5 +26,5 @@ setup(
             'onlykey-init=onlykey.cli:init',
         ],
     },
-    install_requires=['hidapi', 'aenum', 'six', 'prompt_toolkit', 'ed25519'],
+    install_requires=['cython', 'aenum', 'six', 'prompt_toolkit', 'ed25519'],
 )

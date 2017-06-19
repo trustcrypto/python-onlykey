@@ -1,5 +1,4 @@
 ed25519
-Cython
+six
 prompt_toolkit
-hidapi
 aenum
