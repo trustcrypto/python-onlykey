@@ -26,5 +26,5 @@ setup(
             'onlykey-init=onlykey.cli:init',
         ],
     },
-    install_requires=['hidapi', 'cython', 'aenum', 'six', 'prompt_toolkit', 'ed25519'],
+    install_requires=['hidapi', 'aenum', 'six', 'prompt_toolkit', 'ed25519', 'cython'],
 )
