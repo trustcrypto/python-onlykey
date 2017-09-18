@@ -88,15 +88,30 @@ Installing onlykey-init.exe.manifest script to c:\Python27\Scripts
 
 Tested on Ubuntu 16.04
 ```
+$ sudo apt update && apt upgrade
 $ sudo apt-get install git python-setuptools python-dev libusb-1.0-0-dev libudev-dev python-pip libssl-dev
-$ sudo pip install cffi
+$ sudo pip install -U setuptools pip
+$ sudo pip install Cython cffi
 ```
 
 Additionally, in order for non-root users to be able to communicate with OnlyKey a udev rule must be created as described [here](https://www.pjrc.com/teensy/td_download.html).
 
 ### Arch Linux Dependencies
 
-sudo pacman -Sy git python2-setuptools python2 libusb python2-pip
+```
+$ sudo pacman -Sy git python2-setuptools python2 libusb python2-pip
+$ sudo pip install -U setuptools pip
+$ sudo pip install Cython cffi
+```
+
+### Fedora/RedHat Dependencies
+```
+$ yum update
+$ yum install python-pip python-devel libusb-devel libudev-devel \
+              gcc redhat-rpm-config
+$ sudo pip install -U setuptools pip
+$ sudo pip install Cython cffi
+```
 
 ### Linux Install
 
