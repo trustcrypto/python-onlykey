@@ -232,9 +232,9 @@ class OnlyKey(object):
             raw_bytes.append(0)
 
         # Send the message
-        logging.debug('sending message')
-        print 'send_message', len(raw_bytes)
-        print raw_bytes
+        logging.debug('sending message ')
+        logging.debug('length ' len(raw_bytes))
+        logging.debug(raw_bytes)
         self._hid.write(raw_bytes)
 
     def send_large_message(self, payload=None, msg=None, slot_id=chr(101)):
