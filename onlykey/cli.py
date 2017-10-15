@@ -149,7 +149,9 @@ def cli():
         print()
         data = raw.split()
         # nexte = prompt_pass
-        if data[0] == 'getlabels':
+        if data[0] == "settime":
+            only_key.set_time(time.time())
+        elif data[0] == 'getlabels':
             tmp = {}
             for slot in only_key.getlabels():
                 tmp[slot.name] = slot
