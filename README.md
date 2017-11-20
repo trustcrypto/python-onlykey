@@ -8,6 +8,8 @@ OnlyKey-init - A command line tool for setting PIN on OnlyKey (Initial Configura
 
 OnlyKey-utils - A command line tool for loading keys.
 
+OnlyKey-settime - A command line tool for setting the time on OnlyKey.
+
 PGPMessage - Provides a tool for decrypting and signing OpenPGP/GPG messages using OnlyKey.
 
 **Still in early development.**
@@ -141,6 +143,17 @@ Successfully set PIN
 [...]
 ```
 
+### Set time
+
+You can set the time on the OnlyKey using `onlykey-settime`.
+
+The time needs to be set to be able to use OTP. If the time is not set, the generated code will be NOTSET.
+
+If you are on Linux, you can use the following udev rule to run `onlykey-settime` when the OnlyKey is inserted:
+
+```
+ACTION=="add", KERNEL=="event[0-9]*", SUBSYSTEM=="input", ATTRS{name}=="Teensyduino Keyboard/RawHID", ENV{ID_VENDOR_ID}=="16c0", ENV{ID_MODEL_ID}=="04[789ABCD]?", RUN+="onlykey-settime"
+```
 
 ### CLI
 

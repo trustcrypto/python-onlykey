@@ -1,6 +1,8 @@
 # coding: utf-8
 from __future__ import unicode_literals, print_function
 
+import base64
+import binascii
 import time
 import logging
 import os
@@ -121,7 +123,6 @@ def cli():
         key = prompt('Key: ',
                           is_password=Condition(lambda cli: hidden[0]),
                           key_bindings_registry=key_bindings_manager.registry)
-        #need base32 to hex conversion
         return key
 
     def prompt_pin():
@@ -149,7 +150,9 @@ def cli():
         print()
         data = raw.split()
         # nexte = prompt_pass
-        if data[0] == 'getlabels':
+        if data[0] == "settime":
+            only_key.set_time(time.time())
+        elif data[0] == 'getlabels':
             tmp = {}
             for slot in only_key.getlabels():
                 tmp[slot.name] = slot
@@ -199,6 +202,14 @@ def cli():
                 only_key.setslot(slot_id, MessageField.DELAY3, data[3])
             elif data[2] == 'type':
                  only_key.setslot(slot_id, MessageField.TFATYPE, data[3])
+            elif data[2] == 'googletotpkey':
+                totpkey = prompt_key()
+                totpkey = base64.b32decode(totpkey)
+                totpkey = binascii.hexlify(totpkey)
+                # pad with zeros for even digits
+                totpkey = totpkey.zfill(len(totpkey) + len(totpkey) % 2)
+                payload = [int(totpkey[i: i+2], 16) for i in range(0, len(totpkey), 2)]
+                only_key.setslot(slot_id, MessageField.TOTPKEY, payload)
             elif data[2] == 'totpkey':
                 totpkey = prompt_key()
                 only_key.setslot(slot_id, MessageField.TOTPKEY, totpkey)

@@ -24,6 +24,7 @@ setup(
             'onlykey-cli=onlykey.cli:main',
             'onlykey-utils=onlykey.cli:utils',
             'onlykey-init=onlykey.cli:init',
+            'onlykey-settime=onlykey.settime:main'
         ],
     },
     install_requires=['hidapi', 'aenum', 'six', 'prompt_toolkit', 'ed25519', 'cython'],
