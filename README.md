@@ -8,8 +8,6 @@ OnlyKey-init - A command line tool for setting PIN on OnlyKey (Initial Configura
 
 OnlyKey-utils - A command line tool for loading keys.
 
-OnlyKey-settime - A command line tool for setting the time on OnlyKey.
-
 PGPMessage - Provides a tool for decrypting and signing OpenPGP/GPG messages using OnlyKey.
 
 **Still in early development.**
@@ -64,9 +62,9 @@ sudo pip uninstall crypto
 ```
 $ git clone https://github.com/trustcrypto/python-onlykey.git --recursive
 $ cd python-onlykey
-$ python.exe setup.py install
+$ pip2 install .
 $ cd PGPy
-$ python.exe setup.py install
+$ pip2 install .
 $ cd ..
 ```
 
@@ -90,39 +88,24 @@ Installing onlykey-init.exe.manifest script to c:\Python27\Scripts
 
 Tested on Ubuntu 16.04
 ```
-$ sudo apt update && apt upgrade
 $ sudo apt-get install git python-setuptools python-dev libusb-1.0-0-dev libudev-dev python-pip libssl-dev
-$ sudo pip install -U setuptools pip
-$ sudo pip install Cython cffi
+$ sudo pip install cffi
 ```
 
 Additionally, in order for non-root users to be able to communicate with OnlyKey a udev rule must be created as described [here](https://www.pjrc.com/teensy/td_download.html).
 
 ### Arch Linux Dependencies
 
-```
-$ sudo pacman -Sy git python2-setuptools python2 libusb python2-pip
-$ sudo pip install -U setuptools pip
-$ sudo pip install Cython cffi
-```
-
-### Fedora/RedHat Dependencies
-```
-$ yum update
-$ yum install python-pip python-devel libusb-devel libudev-devel \
-              gcc redhat-rpm-config
-$ sudo pip install -U setuptools pip
-$ sudo pip install Cython cffi
-```
+sudo pacman -Sy git python2-setuptools python2 libusb python2-pip
 
 ### Linux Install
 
 ```
 $ git clone https://github.com/trustcrypto/python-onlykey.git --recursive
 $ cd python-onlykey
-$ sudo python setup.py install
+$ pip2 install .
 $ cd PGPy
-$ sudo python setup.py install
+$ pip2 install .
 $ cd ..
 ```
 
@@ -143,17 +126,6 @@ Successfully set PIN
 [...]
 ```
 
-### Set time
-
-You can set the time on the OnlyKey using `onlykey-settime`.
-
-The time needs to be set to be able to use OTP. If the time is not set, the generated code will be NOTSET.
-
-If you are on Linux, you can use the following udev rule to run `onlykey-settime` when the OnlyKey is inserted:
-
-```
-ACTION=="add", KERNEL=="event[0-9]*", SUBSYSTEM=="input", ATTRS{name}=="Teensyduino Keyboard/RawHID", ENV{ID_VENDOR_ID}=="16c0", ENV{ID_MODEL_ID}=="04[789ABCD]?", RUN+="onlykey-settime"
-```
 
 ### CLI
 
