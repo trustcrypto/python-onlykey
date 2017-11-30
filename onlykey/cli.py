@@ -147,29 +147,29 @@ def cli():
 
         elif sys.argv[1] == 'setslot':
             try:
-                if slot_id == '1a':
+                if sys.argv[2] == '1a':
                     slot_id = 1
-                elif slot_id == '2a':
+                elif sys.argv[2] == '2a':
                     slot_id = 2
-                elif slot_id == '3a':
+                elif sys.argv[2] == '3a':
                     slot_id = 3
-                elif slot_id == '4a':
+                elif sys.argv[2] == '4a':
                     slot_id = 4
-                elif slot_id == '5a':
+                elif sys.argv[2] == '5a':
                     slot_id = 5
-                elif slot_id == '6a':
+                elif sys.argv[2] == '6a':
                     slot_id = 6
-                elif slot_id == '1b':
+                elif sys.argv[2] == '1b':
                     slot_id = 7
-                elif slot_id == '2b':
+                elif sys.argv[2] == '2b':
                     slot_id = 8
-                elif slot_id == '3b':
+                elif sys.argv[2] == '3b':
                     slot_id = 9
-                elif slot_id == '4b':
+                elif sys.argv[2] == '4b':
                     slot_id = 10
-                elif slot_id == '5b':
+                elif sys.argv[2] == '5b':
                     slot_id = 11
-                elif slot_id == '6b':
+                elif sys.argv[2] == '6b':
                     slot_id = 12
             except:
                 print("setslot <id> <type> [value]")
@@ -180,24 +180,24 @@ def cli():
                 only_key.setslot(slot_id, MessageField.LABEL, sys.argv[4])
             elif sys.argv[3] == 'url':
                 only_key.setslot(slot_id, MessageField.URL, sys.argv[4])
-            elif sys.argv[3] == 'add_char1':
+            elif sys.argv[3] == 'add_char2':
                 only_key.setslot(slot_id, MessageField.NEXTKEY1, sys.argv[4])
             elif sys.argv[3] == 'delay1':
                 only_key.setslot(slot_id, MessageField.DELAY1, sys.argv[4])
             elif sys.argv[3] == 'username':
                 only_key.setslot(slot_id, MessageField.USERNAME, sys.argv[4])
-            elif sys.argv[3] == 'add_char2':
+            elif sys.argv[3] == 'add_char3':
                 only_key.setslot(slot_id, MessageField.NEXTKEY2, sys.argv[4])
             elif sys.argv[3] == 'delay2':
                 only_key.setslot(slot_id, MessageField.DELAY2, sys.argv[4])
             elif sys.argv[3] == 'password':
                 password = prompt_pass()
                 only_key.setslot(slot_id, MessageField.PASSWORD, password)
-            elif sys.argv[3] == 'add_char3':
+            elif sys.argv[3] == 'add_char5':
                 only_key.setslot(slot_id, MessageField.NEXTKEY3, sys.argv[4])
             elif sys.argv[3] == 'delay3':
                 only_key.setslot(slot_id, MessageField.DELAY3, sys.argv[4])
-            elif sys.argv[3] == 'type':
+            elif sys.argv[3] == '2fa':
                  only_key.setslot(slot_id, MessageField.TFATYPE, sys.argv[4])
             elif sys.argv[3] == 'gkey':
                 totpkey = prompt_key()
@@ -210,6 +210,10 @@ def cli():
             elif sys.argv[3] == 'totpkey':
                 totpkey = prompt_key()
                 only_key.setslot(slot_id, MessageField.TOTPKEY, totpkey)
+            elif sys.argv[3] == 'add_char1':
+                only_key.setslot(slot_id, MessageField.NEXTKEY4, sys.argv[4])
+            elif sys.argv[3] == 'add_char4':
+                only_key.setslot(slot_id, MessageField.NEXTKEY5, sys.argv[4])
             else:
                 print("setslot <id> <type> [value]")
                 print("<type> must be ['label', 'url', 'add_char1', 'delay1', 'username', 'add_char2', 'delay2', 'password', 'add_char3', 'delay3', 'type', 'totpkey', 'add_char4', 'delay4', 'idletimeout', 'wipemode', 'keytypespeed', 'keylayout']")
@@ -217,29 +221,29 @@ def cli():
 
         elif sys.argv[1] == 'wipeslot':
             try:
-                if slot_id == '1a':
+                if sys.argv[2] == '1a':
                     slot_id = 1
-                elif slot_id == '2a':
+                elif sys.argv[2] == '2a':
                     slot_id = 2
-                elif slot_id == '3a':
+                elif sys.argv[2] == '3a':
                     slot_id = 3
-                elif slot_id == '4a':
+                elif sys.argv[2] == '4a':
                     slot_id = 4
-                elif slot_id == '5a':
+                elif sys.argv[2] == '5a':
                     slot_id = 5
-                elif slot_id == '6a':
+                elif sys.argv[2] == '6a':
                     slot_id = 6
-                elif slot_id == '1b':
+                elif sys.argv[2] == '1b':
                     slot_id = 7
-                elif slot_id == '2b':
+                elif sys.argv[2] == '2b':
                     slot_id = 8
-                elif slot_id == '3b':
+                elif sys.argv[2] == '3b':
                     slot_id = 9
-                elif slot_id == '4b':
+                elif sys.argv[2] == '4b':
                     slot_id = 10
-                elif slot_id == '5b':
+                elif sys.argv[2] == '5b':
                     slot_id = 11
-                elif slot_id == '6b':
+                elif sys.argv[2] == '6b':
                     slot_id = 12
             except:
                 print("wipeslot <id>")
@@ -309,29 +313,29 @@ def cli():
 
             elif data[0] == 'setslot':
                 try:
-                    if slot_id == '1a':
+                    if data[1] == '1a':
                         slot_id = 1
-                    elif slot_id == '2a':
+                    elif data[1] == '2a':
                         slot_id = 2
-                    elif slot_id == '3a':
+                    elif data[1] == '3a':
                         slot_id = 3
-                    elif slot_id == '4a':
+                    elif data[1] == '4a':
                         slot_id = 4
-                    elif slot_id == '5a':
+                    elif data[1] == '5a':
                         slot_id = 5
-                    elif slot_id == '6a':
+                    elif data[1] == '6a':
                         slot_id = 6
-                    elif slot_id == '1b':
+                    elif data[1] == '1b':
                         slot_id = 7
-                    elif slot_id == '2b':
+                    elif data[1] == '2b':
                         slot_id = 8
-                    elif slot_id == '3b':
+                    elif data[1] == '3b':
                         slot_id = 9
-                    elif slot_id == '4b':
+                    elif data[1] == '4b':
                         slot_id = 10
-                    elif slot_id == '5b':
+                    elif data[1] == '5b':
                         slot_id = 11
-                    elif slot_id == '6b':
+                    elif data[1] == '6b':
                         slot_id = 12
                 except:
                     print("setslot <id> <type> [value]")
@@ -342,24 +346,24 @@ def cli():
                     only_key.setslot(slot_id, MessageField.LABEL, data[3])
                 elif data[2] == 'url':
                     only_key.setslot(slot_id, MessageField.URL, data[3])
-                elif data[2] == 'add_char1':
+                elif data[2] == 'add_char2':
                     only_key.setslot(slot_id, MessageField.NEXTKEY1, data[3])
                 elif data[2] == 'delay1':
                     only_key.setslot(slot_id, MessageField.DELAY1, data[3])
                 elif data[2] == 'username':
                     only_key.setslot(slot_id, MessageField.USERNAME, data[3])
-                elif data[2] == 'add_char2':
+                elif data[2] == 'add_char3':
                     only_key.setslot(slot_id, MessageField.NEXTKEY2, data[3])
                 elif data[2] == 'delay2':
                     only_key.setslot(slot_id, MessageField.DELAY2, data[3])
                 elif data[2] == 'password':
                     password = prompt_pass()
                     only_key.setslot(slot_id, MessageField.PASSWORD, password)
-                elif data[2] == 'add_char3':
+                elif data[2] == 'add_char5':
                     only_key.setslot(slot_id, MessageField.NEXTKEY3, data[3])
                 elif data[2] == 'delay3':
                     only_key.setslot(slot_id, MessageField.DELAY3, data[3])
-                elif data[2] == 'type':
+                elif data[2] == '2fa':
                      only_key.setslot(slot_id, MessageField.TFATYPE, data[3])
                 elif data[2] == 'gkey':
                     totpkey = prompt_key()
@@ -372,35 +376,39 @@ def cli():
                 elif data[2] == 'totpkey':
                     totpkey = prompt_key()
                     only_key.setslot(slot_id, MessageField.TOTPKEY, totpkey)
+                elif data[2] == 'add_char1':
+                    only_key.setslot(slot_id, MessageField.NEXTKEY3, data[3])
+                elif data[2] == 'add_char4':
+                    only_key.setslot(slot_id, MessageField.NEXTKEY3, data[3])
                 else:
                     print("setslot <id> <type> [value]")
                     print("<type> must be ['label', 'url', 'add_char1', 'delay1', 'username', 'add_char2', 'delay2', 'password', 'add_char3', 'delay3', 'type', 'totpkey', 'add_char4', 'delay4', 'idletimeout', 'wipemode', 'keytypespeed', 'keylayout']")
                 continue
             elif data[0] == 'wipeslot':
                 try:
-                    if slot_id == '1a':
+                    if data[1] == '1a':
                         slot_id = 1
-                    elif slot_id == '2a':
+                    elif data[1] == '2a':
                         slot_id = 2
-                    elif slot_id == '3a':
+                    elif data[1] == '3a':
                         slot_id = 3
-                    elif slot_id == '4a':
+                    elif data[1] == '4a':
                         slot_id = 4
-                    elif slot_id == '5a':
+                    elif data[1] == '5a':
                         slot_id = 5
-                    elif slot_id == '6a':
+                    elif data[1] == '6a':
                         slot_id = 6
-                    elif slot_id == '1b':
+                    elif data[1] == '1b':
                         slot_id = 7
-                    elif slot_id == '2b':
+                    elif data[1] == '2b':
                         slot_id = 8
-                    elif slot_id == '3b':
+                    elif data[1] == '3b':
                         slot_id = 9
-                    elif slot_id == '4b':
+                    elif data[1] == '4b':
                         slot_id = 10
-                    elif slot_id == '5b':
+                    elif data[1] == '5b':
                         slot_id = 11
-                    elif slot_id == '6b':
+                    elif data[1] == '6b':
                         slot_id = 12
                 except:
                     print("wipeslot <id>")

@@ -116,19 +116,21 @@ $ cd ..
   - <type> must be one of the following:
     - label - Slot label i.e. My Google Acct
     - url - URL to login page
-    - add_char1 - 1 for TAB, 2 for RETURN
     - delay1 - set a 0 - 9 second delay
+    - add_char1 - Additional character before username 1 for TAB, 0 to clear
     - username - Username to login
-    - add_char2 - 1 for TAB, 2 for RETURN
+    - add_char2 - Additional character after username 1 for TAB, 2 for RETURN
     - delay2 - set a 0 - 9 second delay
     - password - Password to login
-    - add_char3 - 1 for TAB, 2 for RETURN
+    - add_char3 - Additional character after password 1 for TAB, 2 for RETURN
     - delay3 - set a 0 - 9 second delay
-    - type - type of two factor authentication
+    - add_char4 - Additional character before OTP 1 for TAB
+    - 2fa - type of two factor authentication
       - g - Google Authenticator
       - y - Yubico OTP
       - u - U2F
     - totpkey - Google Authenticator key
+    - add_char5 - Additional character after OTP 2 for RETURN
 
 - wipeslot <id>
   - <id> must be slot number 1a - 6b

@@ -104,14 +104,16 @@ class Message(Enum):
 class MessageField(Enum):
     LABEL = 1
     URL = 15
-    NEXTKEY1 = 16
     DELAY1 = 17
+    NEXTKEY4 = 18
     USERNAME = 2
+    NEXTKEY1 = 16
     NEXTKEY2 = 3
     DELAY2 = 4
     PASSWORD = 5
     NEXTKEY3 = 6
     DELAY3 = 7
+    NEXTKEY5 = 19
     TFATYPE = 8
     TOTPKEY = 9
     YUBIAUTH = 10
