@@ -111,9 +111,9 @@ $ cd ..
 
 - getkeylabels - Returns key labels for RSA keys 1-4 and ECC keys 1 -32
 
-- setslot <id> <type> [value]
-  - <id> must be slot number 1a - 6b
-  - <type> must be one of the following:
+- setslot [id] [type] [value]
+  - [id] must be slot number 1a - 6b
+  - [type] must be one of the following:
     - label - Slot label i.e. My Google Acct
     - url - URL to login page
     - delay1 - set a 0 - 9 second delay
@@ -177,7 +177,7 @@ All sensitive data is wiped.
 
 You can run commands in two ways:
 
-1) Directly in terminal
+**1) Directly in terminal**
 
 Like this:
 
@@ -226,7 +226,7 @@ Slot 6b:
 
 ```
 
-2) Interactive Mode
+**2) Interactive Mode**
 
 Or you can run commands in an interactive shell like this:
 
