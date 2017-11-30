@@ -13,19 +13,15 @@ setup(
     version='0.0.2',
     description='OnlyKey client and command-line tool',
     long_description=long_description,
-
     url='https://github.com/trustcrypto/python-onlykey',
-    author='Thomas Sileo',
-    author_email='t@a4.io',
+    author='CryptoTrust',
+    author_email='admin@crp.to',
     license='MIT',
     packages=find_packages(exclude=['contrib', 'docs', 'tests']),
     entry_points = {
         'console_scripts': [
-            'onlykey-cli=onlykey.cli:main',
-            'onlykey-utils=onlykey.cli:utils',
-            'onlykey-init=onlykey.cli:init',
-            'onlykey-settime=onlykey.settime:main'
+            'onlykey-cli=onlykey.cli:main'
         ],
     },
-    install_requires=['hidapi', 'aenum', 'six', 'prompt_toolkit', 'ed25519', 'cython'],
+    install_requires=['hidapi', 'aenum', 'six', 'prompt_toolkit', 'ed25519>=1.4', 'ecdsa>=0.13', 'Cython>=0.23.4'],
 )

@@ -175,7 +175,7 @@ class OnlyKey(object):
         			if usage_page == 0xf1d0 or interface_number == 0:
                                 	self._hid.open_path(path)
                                 	self._hid.set_nonblocking(True)
-                            
+
         except:
             log.exception('failed to connect')
             raise OnlyKeyUnavailableException()
@@ -235,6 +235,9 @@ class OnlyKey(object):
             elif isinstance(payload, list):
                 logging.debug('payload=%s', ''.join([chr(c) for c in payload]))
                 raw_bytes.extend(payload)
+            elif isinstance(payload, int):
+                logging.debug('payload=%d', payload)
+                raw_bytes.append(payload)
             else:
                 raise Exception('`payload` must be either `str` or `list`')
 
@@ -702,3 +705,23 @@ class OnlyKey(object):
         print 'Decrypted by OnlyKey, data=', repr(ok_decrypted)
 
         return ok_decrypted
+
+    def generate_backup_key(self):
+        """ED25519 with backup flag"""
+        print 'WARNING - Only run this on a trusted device, save the backup key to a secure location, and then securely delete the backup key'
+        ecc_type = 161
+        default_slot = 132
+
+        self.set_ecc_key(default_slot, ecc_type, chr(0))
+        time.sleep(.5)
+
+        log.info('Trying to read the private key...')
+        for _ in xrange(2):
+            ok_priv = self.read_bytes(64, to_str=True, timeout_ms=10)
+            if len(ok_priv) == 64:
+                break
+
+        ok_priv = ok_priv[0:32]
+        print 'Store backup key in a secure location (i.e. USB drive in a safe)=', repr(ok_priv)
+        print
+        ok_priv = 0;
