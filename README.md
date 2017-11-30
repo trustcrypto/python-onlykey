@@ -7,7 +7,7 @@ OnlyKey-cli - A command line interface to the OnlyKey that can be used for confi
 PGPMessage - Provides a tool for decrypting and signing OpenPGP/GPG messages using OnlyKey.
 
 **Still in early development.**
-
+<!---
 ## Run without installation (Packaged App)
 
 ### Mac OS Run without installation
@@ -38,9 +38,10 @@ Coming soon
 ### Windows Dependencies
 
 Python 2.7 - https://www.python.org/downloads/release/python-2713/
+
 git - https://git-scm.com/download/win
 
-<!---## Mac OS Install Dependencies
+## Mac OS Install Dependencies
 
 Tested on El Capitan
 ```
@@ -54,6 +55,8 @@ sudo pip uninstall crypto
 --->
 
 ### Windows Install
+
+Requires Python 2.7 and Git
 
 ```
 $ git clone https://github.com/trustcrypto/python-onlykey.git --recursive
@@ -82,13 +85,13 @@ $ sudo apt-get install git python-setuptools python-dev libusb-1.0-0-dev libudev
 $ sudo pip install cffi
 ```
 
-Additionally, in order for non-root users to be able to communicate with OnlyKey a udev rule must be created as described [here](https://www.pjrc.com/teensy/td_download.html).
-
 ### Arch Linux Dependencies
 
 sudo pacman -Sy git python2-setuptools python2 libusb python2-pip
 
 ### Linux Install
+
+Additionally, in order for non-root users to be able to communicate with OnlyKey a udev rule must be created as described [here](https://www.pjrc.com/teensy/td_download.html).
 
 ```
 $ git clone https://github.com/trustcrypto/python-onlykey.git --recursive
