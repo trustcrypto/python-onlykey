@@ -2,11 +2,11 @@
 
 Python client for interacting with the OnlyKey.
 
-OnlyKey-cli - A command line interface to the OnlyKey that can be used for configuration (Similar functionality to [OnlyKey Chrome App](https://chrome.google.com/webstore/detail/onlykey-configuration/adafilbceehejjehoccladhbkgbjmica?hl=en-US))
+OnlyKey-cli - A command line interface to the OnlyKey that can be used for configuration (Similar functionality to [OnlyKey App](https://docs.crp.to/app.html))
 
-PGPMessage - Provides a tool for decrypting and signing OpenPGP/GPG messages using OnlyKey.
+PGPMessage - **Still in early development.** - Provides a tool for decrypting and signing OpenPGP/GPG messages using OnlyKey.
 
-**Still in early development.**
+
 <!---
 ## Run without installation (Packaged App)
 
@@ -547,3 +547,8 @@ BNBU7972zW9q
 -----END PGP MESSAGE-----
 ```
 If signature is successful the ASCII armored version of the message will be displayed. If signature fails the message "Error with RSA signature" will be displayed.
+
+
+## Source
+
+[Python OnlyKey on Github](https://github.com/trustcrypto/python-onlykey)
