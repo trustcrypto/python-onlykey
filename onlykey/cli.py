@@ -34,12 +34,12 @@ def cli():
 
     def prompt_pass():
         print('Type Control-T to toggle password visible.')
-        password = prompt('Password/Key: ', is_password=Condition(lambda cli: hidden[0]))
+        password = prompt('Password/Key: ', is_password=True)
         return password
 
     def prompt_key():
         print('Type Control-T to toggle key visible.')
-        key = prompt('Key: ', is_password=Condition(lambda cli: hidden[0]))
+        key = prompt('Key: ', is_password=True)
         return key
 
     def prompt_pin():
@@ -257,8 +257,7 @@ def cli():
 
         # Print help.
         print('OnlyKey CLI v0.2')
-        print('Press the right arrow to insert the suggestion.')
-        print('Press Control-C to retry. Control-D to exit.')
+        print('Control-D to exit.')
         print()
 
         def mprompt():
