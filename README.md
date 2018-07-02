@@ -4,7 +4,7 @@ Python client for interacting with the OnlyKey.
 
 OnlyKey-cli - A command line interface to the OnlyKey that can be used for configuration (Similar functionality to [OnlyKey App](https://docs.crp.to/app.html))
 
-PGPMessage - **Still in early development.** - Provides a tool for decrypting and signing OpenPGP/GPG messages using OnlyKey.
+PGPMessage - **Still in early development.** - Provides a tool for decrypting and signing OpenPGP/GPG messages using OnlyKey (python only OpenPGP implementation).
 
 
 <!---
@@ -43,14 +43,11 @@ git - https://git-scm.com/download/win
 
 ## Mac OS Install Dependencies
 
-Tested on El Capitan
+Tested on Sierra
 ```
-$brew install pkg-config libffi
- export PKG_CONFIG_PATH=/usr/local/Cellar/libffi/3.0.13/lib/pkgconfig/
-  pip install bcrypt
 sudo pip uninstall crypto
-  sudo pip uninstall pycrypto
-  sudo pip install pycrypto
+sudo pip uninstall pycrypto
+easy_install pycrypto
 ```
 --->
 

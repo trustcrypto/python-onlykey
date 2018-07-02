@@ -9,10 +9,8 @@ import os
 import sys
 
 from prompt_toolkit import prompt
-from prompt_toolkit.history import InMemoryHistory
-from prompt_toolkit.interface import AbortAction
-from prompt_toolkit.auto_suggest import AutoSuggestFromHistory
-from prompt_toolkit.key_binding.manager import KeyBindingManager
+from prompt_toolkit import Application
+from prompt_toolkit.key_binding import KeyBindings
 from prompt_toolkit.keys import Keys
 from prompt_toolkit.filters import Condition
 import ed25519
@@ -24,37 +22,24 @@ only_key = OnlyKey()
 def cli():
 
     logging.basicConfig(level=logging.DEBUG)
-    # Create some history first. (Easy for testing.)
-    history = InMemoryHistory()
-    history.append('getlabels')
-    history.append('getkeylabels')
-    history.append('setslot')
-    history.append('wipeslot')
-    history.append('setpin')
-    history.append('setsdpin')
-    history.append('setpdpin')
 
     # ContrlT handling
     hidden = [True]  # Nonlocal
-    key_bindings_manager = KeyBindingManager()
+    key_bindings = KeyBindings()
 
-    @key_bindings_manager.registry.add_binding(Keys.ControlT)
+    @key_bindings.add('c-t')
     def _(event):
         ' When ControlT has been pressed, toggle visibility. '
         hidden[0] = not hidden[0]
 
     def prompt_pass():
         print('Type Control-T to toggle password visible.')
-        password = prompt('Password/Key: ',
-                          is_password=Condition(lambda cli: hidden[0]),
-                          key_bindings_registry=key_bindings_manager.registry)
+        password = prompt('Password/Key: ', is_password=Condition(lambda cli: hidden[0]))
         return password
 
     def prompt_key():
         print('Type Control-T to toggle key visible.')
-        key = prompt('Key: ',
-                          is_password=Condition(lambda cli: hidden[0]),
-                          key_bindings_registry=key_bindings_manager.registry)
+        key = prompt('Key: ', is_password=Condition(lambda cli: hidden[0]))
         return key
 
     def prompt_pin():
@@ -277,10 +262,7 @@ def cli():
         print()
 
         def mprompt():
-            return prompt('OnlyKey> ',
-                   auto_suggest=AutoSuggestFromHistory(),
-                   enable_history_search=True,
-                   on_abort=AbortAction.RETRY)
+            return prompt('OnlyKey> ')
 
         nexte = mprompt
 
