@@ -4,9 +4,6 @@ Python client for interacting with the OnlyKey.
 
 OnlyKey-cli - A command line interface to the OnlyKey that can be used for configuration (Similar functionality to [OnlyKey App](https://docs.crp.to/app.html))
 
-PGPMessage - **Still in early development.** - Provides a tool for decrypting and signing OpenPGP/GPG messages using OnlyKey (python only OpenPGP implementation).
-
-
 <!---
 ## Run without installation (Packaged App)
 
@@ -51,135 +48,26 @@ easy_install pycrypto
 ```
 --->
 
-### Windows Install
+## Python OnlyKey Quickstart Guide
 
-Requires Python 2.7 and Git
+*Requires Python 2.7*
 
+1) Install Python OnlyKey on your client machine:
 ```
-$ git clone https://github.com/trustcrypto/python-onlykey.git --recursive
-$ cd python-onlykey
-$ pip2 install .
-$ cd PGPy
-$ pip2 install .
-$ cd ..
+$ pip install onlykey
 ```
 
-To Run
+*On Windows systems onlykey-cli.exe is placed into c:\Python27\Scripts*
 
-```
-$  c:\Python27\Scripts\onlykey-cli.exe
-```
-
-Installing onlykey-cli-script.py script to c:\Python27\Scripts
-Installing onlykey-cli.exe script to c:\Python27\Scripts
-Installing onlykey-cli.exe.manifest script to c:\Python27\Scripts
-
-### Ubuntu/Debian Linux Dependencies
-
-Tested on Ubuntu 16.04
-```
-$ sudo apt-get install git python-setuptools python-dev libusb-1.0-0-dev libudev-dev python-pip libssl-dev
-$ sudo pip install cffi
-```
-
-### Arch Linux Dependencies
-
-sudo pacman -Sy git python2-setuptools python2 libusb python2-pip
-
-### Linux Install
-
-Additionally, in order for non-root users to be able to communicate with OnlyKey a udev rule must be created as described [here](https://www.pjrc.com/teensy/td_download.html).
-
-```
-$ git clone https://github.com/trustcrypto/python-onlykey.git --recursive
-$ cd python-onlykey
-$ pip2 install .
-$ cd PGPy
-$ pip2 install .
-$ cd ..
-```
-
-## QuickStart
-
-### Command Options
-
-- init - A command line tool for setting PIN on OnlyKey (Initial Configuration)
-
-- settime - A command for setting time on OnlyKey, time is needed for TOTP (Google Authenticator)
-
-- getlabels - Returns slot labels
-
-- getkeylabels - Returns key labels for RSA keys 1-4 and ECC keys 1 -32
-
-- setslot [id] [type] [value]
-  - [id] must be slot number 1a - 6b
-  - [type] must be one of the following:
-    - label - Slot label i.e. My Google Acct
-    - url - URL to login page
-    - delay1 - set a 0 - 9 second delay
-    - add_char1 - Additional character before username 1 for TAB, 0 to clear
-    - username - Username to login
-    - add_char2 - Additional character after username 1 for TAB, 2 for RETURN
-    - delay2 - set a 0 - 9 second delay
-    - password - Password to login
-    - add_char3 - Additional character after password 1 for TAB, 2 for RETURN
-    - delay3 - set a 0 - 9 second delay
-    - add_char4 - Additional character before OTP 1 for TAB
-    - 2fa - type of two factor authentication
-      - g - Google Authenticator
-      - y - Yubico OTP
-      - u - U2F
-    - totpkey - Google Authenticator key
-    - add_char5 - Additional character after OTP 2 for RETURN
-
-- wipeslot <id>
-  - <id> must be slot number 1a - 6b
-
-- backupkey - Generates a backup key in key slot 32 and returns the generated private key
-
-- idletimeout - OnlyKey locks after ideletimeout is reached (1 – 255 minutes; default = 30; 0 to disable)
-
-- wipemode - Configure how the OnlyKey responds to
-a factory reset. WARNING - Setting to Full Wipe mode cannot be changed.
-  - 1 - Sensitive Data Only (default)
-All sensitive data is wiped.
-  - 2 - Full Wipe (recommended for plausible deniability users) Entire device is wiped. Firmware must be reloaded.
-
-- keylayout - Set keyboard layout
-  - 1 - USA_ENGLISH	(Default)
-  - 2 - CANADIAN_FRENCH
-  - 3 - CANADIAN_MULTILINGUAL
-  - 4 - DANISH
-  - 5 - FINNISH
-  - 6 - FRENCH
-  - 7 - FRENCH_BELGIAN
-  - 8 - FRENCH_SWISS
-  - 9 - GERMAN
-  - 10 - GERMAN_MAC
-  - 11 - GERMAN_SWISS
-  - 12 - ICELANDIC
-  - 13 - IRISH
-  - 14 - ITALIAN
-  - 15 - NORWEGIAN
-  - 16 - PORTUGUESE
-  - 17 - PORTUGUESE_BRAZILIAN
-  - 18 - SPANISH
-  - 19 - SPANISH_LATIN_AMERICA
-  - 20 - SWEDISH
-  - 21 - TURKISH
-  - 22 - UNITED_KINGDOM
-  - 23 - CZECH
-  - 24 - SERBIAN_LATIN_ONLY
-
-- keytypespeed - 1 = slowest; 10 = fastest [4 = default]
-
-### Running Commands
+2) Running Commands:
 
 You can run commands in two ways:
 
-**1) Directly in terminal**
+**Directly in terminal**
+or
+**Interactive Mode**
 
-Like this:
+Run commands directly in the terminal like this:
 
 ```
 $ onlykey-cli getlabels
@@ -226,14 +114,11 @@ Slot 6b:
 
 ```
 
-**2) Interactive Mode**
-
-Or you can run commands in an interactive shell like this:
+Run commands in Interactive Mode like this:
 
 ```
 $ onlykey-cli
-OnlyKey CLI v0.2
-Press the right arrow to insert the suggestion.
+OnlyKey CLI v0.3
 Press Control-C to retry. Control-D to exit.
 
 OnlyKey> getlabels
@@ -336,10 +221,141 @@ OnlyKey>
 
 Bye!
 ```
+## Installation
 
-### Decrypt PGP email messages using OnlyKey
+### Linux UDEV Rule
+
+In order for non-root users in Linux to be able to communicate with OnlyKey a udev rule must be created as described [here](https://docs.crp.to/linux.html).
+
+### MacOS Install with dependencies
+Brew is required. To install visit https://brew.sh/
+```
+$ brew update && brew upgrade
+$ brew install python
+$ pip install onlykey
+```
+
+### Ubuntu Install with dependencies
+```
+$ apt update && apt upgrade
+$ apt install python-pip python-dev libusb-1.0-0-dev libudev-dev
+$ pip install onlykey
+```
+
+### Debian Install with dependencies
+```
+$ apt update && apt upgrade
+$ apt install python-pip python-dev libusb-1.0-0-dev libudev-dev
+$ pip install onlykey
+```
+
+### Arch Linux Dependencies
+```
+$ sudo pacman -Sy git python2-setuptools python2 libusb python2-pip
+$ pip install onlykey
+```
+
+### Fedora/RedHat/CentOS Install with dependencies
+```
+$ yum update
+$ yum install python-pip python-devel libusb-devel libudev-devel \
+              gcc redhat-rpm-config
+$ pip install onlykey
+```
+
+### OpenSUSE Install with dependencies
+```
+$ zypper install python-pip python-devel libusb-1_0-devel libudev-devel
+$ pip install onlykey
+```
+
+## Command Options
+
+- init - A command line tool for setting PIN on OnlyKey (Initial Configuration)
+
+- settime - A command for setting time on OnlyKey, time is needed for TOTP (Google Authenticator)
+
+- getlabels - Returns slot labels
+
+- getkeylabels - Returns key labels for RSA keys 1-4 and ECC keys 1 -32
+
+- setslot [id] [type] [value]
+  - [id] must be slot number 1a - 6b
+  - [type] must be one of the following:
+    - label - Slot label i.e. My Google Acct
+    - url - URL to login page
+    - delay1 - set a 0 - 9 second delay
+    - add_char1 - Additional character before username 1 for TAB, 0 to clear
+    - username - Username to login
+    - add_char2 - Additional character after username 1 for TAB, 2 for RETURN
+    - delay2 - set a 0 - 9 second delay
+    - password - Password to login
+    - add_char3 - Additional character after password 1 for TAB, 2 for RETURN
+    - delay3 - set a 0 - 9 second delay
+    - add_char4 - Additional character before OTP 1 for TAB
+    - 2fa - type of two factor authentication
+      - g - Google Authenticator
+      - y - Yubico OTP
+      - u - U2F
+    - totpkey - Google Authenticator key
+    - add_char5 - Additional character after OTP 2 for RETURN
+
+- wipeslot <id>
+  - <id> must be slot number 1a - 6b
+
+- backupkey - Generates a backup key in key slot 32 and returns the generated private key
+
+- idletimeout - OnlyKey locks after ideletimeout is reached (1 – 255 minutes; default = 30; 0 to disable)
+
+- wipemode - Configure how the OnlyKey responds to
+a factory reset. WARNING - Setting to Full Wipe mode cannot be changed.
+  - 1 - Sensitive Data Only (default)
+All sensitive data is wiped.
+  - 2 - Full Wipe (recommended for plausible deniability users) Entire device is wiped. Firmware must be reloaded.
+
+- keylayout - Set keyboard layout
+  - 1 - USA_ENGLISH	(Default)
+  - 2 - CANADIAN_FRENCH
+  - 3 - CANADIAN_MULTILINGUAL
+  - 4 - DANISH
+  - 5 - FINNISH
+  - 6 - FRENCH
+  - 7 - FRENCH_BELGIAN
+  - 8 - FRENCH_SWISS
+  - 9 - GERMAN
+  - 10 - GERMAN_MAC
+  - 11 - GERMAN_SWISS
+  - 12 - ICELANDIC
+  - 13 - IRISH
+  - 14 - ITALIAN
+  - 15 - NORWEGIAN
+  - 16 - PORTUGUESE
+  - 17 - PORTUGUESE_BRAZILIAN
+  - 18 - SPANISH
+  - 19 - SPANISH_LATIN_AMERICA
+  - 20 - SWEDISH
+  - 21 - TURKISH
+  - 22 - UNITED_KINGDOM
+  - 23 - CZECH
+  - 24 - SERBIAN_LATIN_ONLY
+
+- keytypespeed - 1 = slowest; 10 = fastest [4 = default]
+
+## Advanced Options
+
+### Decrypt PGP email messages using OnlyKey (Experimental)
 
 If you using a previously set RSA private key with decryption capabilities you can decrypt OpenPGP/GPG encrypted email messages:
+
+First install modified version of PGPy:
+
+```
+$ git clone https://github.com/trustcrypto/python-onlykey.git --recursive
+$ cd python-onlykey/PGPy
+$ pip install .
+```
+
+Next use the PGP_message script to decrypt PGP messages:
 
 ```
 $ PGP_message.py
@@ -469,7 +485,7 @@ nHlZ6TZaI4Awu6b9tIAR
 
 If signature is successful the ASCII armored version of the message will be displayed. If signature fails the message "Error with RSA signature" will be displayed.
 
-### Add a signature to a PGP message using OnlyKey
+### Add a signature to a PGP message using OnlyKey (Experimental)
 
 If you using a previously set RSA private key with signing capabilities you can sign text messages in OpenPGP/GPG format:
 
