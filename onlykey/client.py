@@ -371,6 +371,7 @@ class OnlyKey(object):
         slots = []
         for _ in range(36):
             data = self.read_string().split('|')
+            print 'Received= ', repr(data)
             slot_number = ord(data[0])
             if 25 <= slot_number <= 60:
                 slots.append(Slot(slot_number, label=data[1]))

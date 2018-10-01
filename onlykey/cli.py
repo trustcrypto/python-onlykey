@@ -88,12 +88,15 @@ def cli():
                 time.sleep(1.5)
                 print(only_key.read_string())
 
+        elif sys.argv[1] == 'settime':
+            only_key.set_time(time.time())
+
         elif sys.argv[1] == 'init':
             while 1:
                 if only_key.read_string(timeout_ms=500) != 'UNINITIALIZED':
                     break
 
-            for msg in [Message.OKSETPIN, Message.OKSETPDPIN, Message.OKSETSDPIN]:
+            for msg in [Message.OKSETPIN]:
                 only_key.send_message(msg=msg)
                 print(only_key.read_string())
                 print
@@ -108,8 +111,35 @@ def cli():
                 print(only_key.read_string())
                 print
 
-        elif sys.argv[1] == 'settime':
-            only_key.set_time(time.time())
+            for msg in [Message.OKSETPDPIN]:
+                only_key.send_message(msg=msg)
+                print(only_key.read_string() + ' for second profile')
+                print
+                raw_input('Press the Enter key once you are done')
+                only_key.send_message(msg=msg)
+                print(only_key.read_string() + ' for second profile')
+                only_key.send_message(msg=msg)
+                print(only_key.read_string())
+                print
+                raw_input('Press the Enter key once you are done')
+                only_key.send_message(msg=msg)
+                print(only_key.read_string())
+                print
+
+            for msg in [Message.OKSETSDPIN]:
+                only_key.send_message(msg=msg)
+                print(only_key.read_string())
+                print
+                raw_input('Press the Enter key once you are done')
+                only_key.send_message(msg=msg)
+                print(only_key.read_string())
+                only_key.send_message(msg=msg)
+                print(only_key.read_string())
+                print
+                raw_input('Press the Enter key once you are done')
+                only_key.send_message(msg=msg)
+                print(only_key.read_string())
+                print
 
         elif sys.argv[1] == 'getlabels':
             tmp = {}
@@ -256,7 +286,7 @@ def cli():
     else:
 
         # Print help.
-        print('OnlyKey CLI v0.2')
+        print('OnlyKey CLI v0.4')
         print('Control-D to exit.')
         print()
 
@@ -273,6 +303,55 @@ def cli():
             # nexte = prompt_pass
             if data[0] == "settime":
                 only_key.set_time(time.time())
+            if data[0] == "init":
+                while 1:
+                    if only_key.read_string(timeout_ms=500) != 'UNINITIALIZED':
+                        break
+
+                for msg in [Message.OKSETPIN]:
+                    only_key.send_message(msg=msg)
+                    print(only_key.read_string())
+                    print
+                    raw_input('Press the Enter key once you are done')
+                    only_key.send_message(msg=msg)
+                    print(only_key.read_string())
+                    only_key.send_message(msg=msg)
+                    print(only_key.read_string())
+                    print
+                    raw_input('Press the Enter key once you are done')
+                    only_key.send_message(msg=msg)
+                    print(only_key.read_string())
+                    print
+
+                for msg in [Message.OKSETPDPIN]:
+                    only_key.send_message(msg=msg)
+                    print(only_key.read_string() + ' for second profile')
+                    print
+                    raw_input('Press the Enter key once you are done')
+                    only_key.send_message(msg=msg)
+                    print(only_key.read_string() + ' for second profile')
+                    only_key.send_message(msg=msg)
+                    print(only_key.read_string())
+                    print
+                    raw_input('Press the Enter key once you are done')
+                    only_key.send_message(msg=msg)
+                    print(only_key.read_string())
+                    print
+
+                for msg in [Message.OKSETSDPIN]:
+                    only_key.send_message(msg=msg)
+                    print(only_key.read_string())
+                    print
+                    raw_input('Press the Enter key once you are done')
+                    only_key.send_message(msg=msg)
+                    print(only_key.read_string())
+                    only_key.send_message(msg=msg)
+                    print(only_key.read_string())
+                    print
+                    raw_input('Press the Enter key once you are done')
+                    only_key.send_message(msg=msg)
+                    print(only_key.read_string())
+                    print
             elif data[0] == 'getlabels':
                 tmp = {}
                 for slot in only_key.getlabels():

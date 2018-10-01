@@ -51,53 +51,75 @@ easy_install pycrypto
 ```
 --->
 
+## Installation
+
 ### Windows Install
 
-Requires Python 2.7 and Git
-
 ```
-$ git clone https://github.com/trustcrypto/python-onlykey.git --recursive
-$ cd python-onlykey
-$ pip2 install .
-$ cd PGPy
-$ pip2 install .
-$ cd ..
+$ pip install onlykey
 ```
 
-To Run
-
-```
-$  c:\Python27\Scripts\onlykey-cli.exe
-```
+You should see a message showing where the executable is installed.
 
 Installing onlykey-cli-script.py script to c:\Python27\Scripts
 Installing onlykey-cli.exe script to c:\Python27\Scripts
 Installing onlykey-cli.exe.manifest script to c:\Python27\Scripts
 
-### Ubuntu/Debian Linux Dependencies
+This is usually c:\Python27\Scripts\onlykey-cli.exe
 
-Tested on Ubuntu 16.04
-```
-$ sudo apt-get install git python-setuptools python-dev libusb-1.0-0-dev libudev-dev python-pip libssl-dev
-$ sudo pip install cffi
-```
-
-### Arch Linux Dependencies
-
-sudo pacman -Sy git python2-setuptools python2 libusb python2-pip
-
-### Linux Install
-
-Additionally, in order for non-root users to be able to communicate with OnlyKey a udev rule must be created as described [here](https://www.pjrc.com/teensy/td_download.html).
+### MacOS Install with dependencies
+Python2 and pip are required. To setup a Python environment on MacOS we recommend Anaconda https://www.anaconda.com/download/#macos
 
 ```
-$ git clone https://github.com/trustcrypto/python-onlykey.git --recursive
-$ cd python-onlykey
-$ pip2 install .
-$ cd PGPy
-$ pip2 install .
-$ cd ..
+$ pip install onlykey
 ```
+
+### Ubuntu Install with dependencies
+
+```
+$ apt update && apt upgrade
+$ apt install python-pip python-dev libusb-1.0-0-dev libudev-dev
+$ pip install onlykey
+```
+
+### Debian Install with dependencies
+
+```
+$ apt update && apt upgrade
+$ apt install python-pip python-dev libusb-1.0-0-dev libudev-dev
+$ pip install onlykey
+```
+
+### Fedora/RedHat/CentOS Install with dependencies
+
+```
+$ yum update
+$ yum install python-pip python-devel libusb-devel libudev-devel \
+              gcc redhat-rpm-config
+$ pip install onlykey
+```
+### OpenSUSE Install with dependencies
+
+```
+$ zypper install python-pip python-devel libusb-1_0-devel libudev-devel
+$ pip install onlykey
+```
+
+### Arch Linux Install with dependencies
+
+```
+$ sudo pacman -Sy git python2-setuptools python2 libusb python2-pip
+$ pip install onlykey
+```
+
+### FreeBSD Install with dependencies
+
+See forum thread - https://groups.google.com/forum/#!category-topic/onlykey/new-features-and-feature-requests/CEYwdXjB508
+
+### Linux UDEV Rule
+
+In order for non-root users in Linux to be able to communicate with OnlyKey a udev rule must be created as described [here](https://docs.crp.to/linux).
+
 
 ## QuickStart
 
@@ -545,6 +567,18 @@ BNBU7972zW9q
 ```
 If signature is successful the ASCII armored version of the message will be displayed. If signature fails the message "Error with RSA signature" will be displayed.
 
+## PGPMessage Support
+
+Install w/PGPMessage support. Requires Python 2.7 and Git.
+
+```
+$ git clone https://github.com/trustcrypto/python-onlykey.git --recursive
+$ cd python-onlykey
+$ pip2 install .
+$ cd PGPy
+$ pip2 install .
+$ cd ..
+```
 
 ## Source
 
