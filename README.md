@@ -41,7 +41,7 @@ Python 2.7 - https://www.python.org/downloads/release/python-2713/
 
 git - https://git-scm.com/download/win
 
-## Mac OS Install Dependencies
+## Mac OS Install 
 
 Tested on Sierra
 ```
