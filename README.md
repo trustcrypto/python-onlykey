@@ -68,7 +68,7 @@ Installing onlykey-cli.exe.manifest script to c:\Python27\Scripts
 
 This is usually c:\Python27\Scripts\onlykey-cli.exe
 
-### MacOS Install with dependencies
+### MacOS Install 
 Python 2.7 and pip are required. To setup a Python environment on MacOS we recommend Anaconda https://www.anaconda.com/download/#macos
 
 ```
