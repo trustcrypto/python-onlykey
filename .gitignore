@@ -16,3 +16,4 @@ tests/signedfw.txt
 tests/fw_sign_ed25519.py
 
 tests/inputfw.txt
+

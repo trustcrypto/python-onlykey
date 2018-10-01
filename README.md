@@ -54,6 +54,7 @@ easy_install pycrypto
 ## Installation
 
 ### Windows Install
+Python 2.7 and pip are required. To setup a Python environment on Windows we recommend Anaconda https://www.anaconda.com/download/#windows
 
 ```
 $ pip install onlykey
@@ -68,7 +69,7 @@ Installing onlykey-cli.exe.manifest script to c:\Python27\Scripts
 This is usually c:\Python27\Scripts\onlykey-cli.exe
 
 ### MacOS Install with dependencies
-Python2 and pip are required. To setup a Python environment on MacOS we recommend Anaconda https://www.anaconda.com/download/#macos
+Python 2.7 and pip are required. To setup a Python environment on MacOS we recommend Anaconda https://www.anaconda.com/download/#macos
 
 ```
 $ pip install onlykey
