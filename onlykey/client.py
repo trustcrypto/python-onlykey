@@ -174,7 +174,7 @@ class OnlyKey(object):
         		path = d['path']
 
         		if (vendor_id, product_id) in DEVICE_IDS:
-        			if usage_page == 0xf1d0 or interface_number == 0:
+        			if usage_page == 0xf1d0 or interface_number == 1:
                                 	self._hid.open_path(path)
                                 	self._hid.set_nonblocking(True)
 

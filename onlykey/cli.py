@@ -231,7 +231,7 @@ def cli():
                 only_key.setslot(slot_id, MessageField.NEXTKEY5, sys.argv[4])
             else:
                 print("setslot <id> <type> [value]")
-                print("<type> must be ['label', 'url', 'add_char1', 'delay1', 'username', 'add_char2', 'delay2', 'password', 'add_char3', 'delay3', 'type', 'totpkey', 'add_char4', 'delay4', 'idletimeout', 'wipemode', 'keytypespeed', 'keylayout']")
+                print("<type> must be ['label', 'url', 'add_char1', 'delay1', 'username', 'add_char2', 'delay2', 'password', 'add_char3', 'delay3', '2fa', 'totpkey', 'add_char4', 'add_char5']")
             return
 
         elif sys.argv[1] == 'wipeslot':
@@ -286,7 +286,7 @@ def cli():
     else:
 
         # Print help.
-        print('OnlyKey CLI v0.4')
+        print('OnlyKey CLI v0.5')
         print('Control-D to exit.')
         print()
 
@@ -442,7 +442,7 @@ def cli():
                     only_key.setslot(slot_id, MessageField.NEXTKEY3, data[3])
                 else:
                     print("setslot <id> <type> [value]")
-                    print("<type> must be ['label', 'url', 'add_char1', 'delay1', 'username', 'add_char2', 'delay2', 'password', 'add_char3', 'delay3', 'type', 'totpkey', 'add_char4', 'delay4', 'idletimeout', 'wipemode', 'keytypespeed', 'keylayout']")
+                    print("<type> must be ['label', 'url', 'add_char1', 'delay1', 'username', 'add_char2', 'delay2', 'password', 'add_char3', 'delay3', '2fa', 'totpkey', 'add_char4', 'add_char5']")
                 continue
             elif data[0] == 'wipeslot':
                 try:

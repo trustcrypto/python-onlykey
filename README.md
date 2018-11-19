@@ -41,7 +41,7 @@ Python 2.7 - https://www.python.org/downloads/release/python-2713/
 
 git - https://git-scm.com/download/win
 
-## Mac OS Install 
+## Mac OS Install
 
 Tested on Sierra
 ```
@@ -68,7 +68,7 @@ Installing onlykey-cli.exe.manifest script to c:\Python27\Scripts
 
 This is usually c:\Python27\Scripts\onlykey-cli.exe
 
-### MacOS Install 
+### MacOS Install
 Python 2.7 and pip are required. To setup a Python environment on MacOS we recommend Anaconda https://www.anaconda.com/download/#macos
 
 ```
@@ -225,7 +225,7 @@ Slot 5b:
 Slot 6a:
 Slot 6b:
 
-$ onlykey-cli setslot 1 label ok
+$ onlykey-cli setslot 1a label ok
 Successfully set Label
 $ onlykey-cli getlabels
 
@@ -279,7 +279,7 @@ Slot 5b:
 Slot 6a:
 Slot 6b:
 
-OnlyKey> setslot 1 label ok
+OnlyKey> setslot 1a label ok
 
 Successfully set Label
 
@@ -303,55 +303,55 @@ Slot 5b:
 Slot 6a:
 Slot 6b:
 
-OnlyKey> setslot 1 url accounts.google.com
+OnlyKey> setslot 1a url accounts.google.com
 
 Successfully set URL
 
-OnlyKey> setslot 1 add_char1 2
+OnlyKey> setslot 1a add_char1 2
 
 Successfully set Character1
 
-OnlyKey> setslot 1 delay1 2
+OnlyKey> setslot 1a delay1 2
 
 Successfully set Delay1
 
-OnlyKey> setslot 1 username onlykey.1234
+OnlyKey> setslot 1a username onlykey.1234
 
 Successfully set Username
 
-OnlyKey> setslot 1 add_char2 2
+OnlyKey> setslot 1a add_char2 2
 
 Successfully set Character2
 
-OnlyKey> setslot 1 delay2 2
+OnlyKey> setslot 1a delay2 2
 
 Successfully set Delay2
 
-OnlyKey> setslot 1 password
+OnlyKey> setslot 1a password
 
 Type Control-T to toggle password visible.
 Password: *********
 Successfully set Password
 
-OnlyKey> setslot 1 add_char3 2
+OnlyKey> setslot 1a add_char3 2
 
 Successfully set Character3
 
-OnlyKey> setslot 1 delay3 2
+OnlyKey> setslot 1a delay3 2
 
 Successfully set Delay3
 
-OnlyKey> setslot 1 type g
+OnlyKey> setslot 1a 2fa g
 
 Successfully set 2FA Type
 
-OnlyKey> setslot 1 totpkey
+OnlyKey> setslot 1a totpkey
 
 Type Control-T to toggle password visible.
 Password: ********************************
 Successfully set TOTP Key
 
-OnlyKey> setslot 1 add_char4 2
+OnlyKey> setslot 1a add_char4 2
 
 Successfully set Character4
 
