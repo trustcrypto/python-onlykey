@@ -340,7 +340,7 @@ class OnlyKey(object):
         # Returns the raw list
         return out
 
-    def read_string(self, timeout_ms=2000):
+    def read_string(self, timeout_ms=100):
         """Read an ASCII string."""
         return ''.join([chr(item) for item in self.read_bytes(MAX_INPUT_REPORT_SIZE, timeout_ms=timeout_ms) if item != 0])
 
@@ -367,12 +367,13 @@ class OnlyKey(object):
         No need to read messages.
         """
         self.send_message(msg=Message.OKGETLABELS, slot_id=107)
-        time.sleep(2)
+        time.sleep(0)
         slots = []
         for _ in range(36):
             data = self.read_string().split('|')
-            print 'Received= ', repr(data)
+            print 'data ', repr(data)
             slot_number = ord(data[0])
+            print 'slot_number ', repr(slot_number)
             if 25 <= slot_number <= 60:
                 slots.append(Slot(slot_number, label=data[1]))
         return slots
