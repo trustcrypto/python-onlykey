@@ -19,8 +19,8 @@ from client import OnlyKey, Message, MessageField
 
 only_key = OnlyKey()
 
-def cli():
 
+def cli():
     logging.basicConfig(level=logging.DEBUG)
 
     # ContrlT handling
@@ -72,19 +72,19 @@ def cli():
                 with open(privkey, 'rb') as f:
                     raw_privkey = f.read()
                     print
-                    print ('Enter ECC key slot number to use (1 - 32) or enter 0 to list key labels')
+                    print('Enter ECC key slot number to use (1 - 32) or enter 0 to list key labels')
                     print
                     slot = int(raw_input())
 
                 while slot == 0:
                     ok.displaykeylabels()
                     print
-                    print ('Enter ECC key slot number to use (1 - 32) or enter 0 to list key labels')
+                    print('Enter ECC key slot number to use (1 - 32) or enter 0 to list key labels')
                     print
                     slot = int(raw_input())
 
-                slot = slot + 100 # ECC keys in slot 101 - 132
-                only_key.set_ecc_key(slot, (1+16+32+64+128), raw_privkey) #set ECC key with all features
+                slot = slot + 100  # ECC keys in slot 101 - 132
+                only_key.set_ecc_key(slot, (1 + 16 + 32 + 64 + 128), raw_privkey)  # set ECC key with all features
                 time.sleep(1.5)
                 print(only_key.read_string())
 
@@ -155,7 +155,12 @@ def cli():
             tmp = {}
             for slot in only_key.getkeylabels():
                 tmp[slot.name] = slot
-            slots = iter(['RSA Key 1', 'RSA Key 2', 'RSA Key 3', 'RSA Key 4', 'ECC Key 1', 'ECC Key 2', 'ECC Key 3', 'ECC Key 4', 'ECC Key 5', 'ECC Key 6', 'ECC Key 7', 'ECC Key 8', 'ECC Key 9', 'ECC Key 10', 'ECC Key 11', 'ECC Key 12', 'ECC Key 13', 'ECC Key 14', 'ECC Key 15', 'ECC Key 16', 'ECC Key 17', 'ECC Key 18', 'ECC Key 19', 'ECC Key 20', 'ECC Key 21', 'ECC Key 22', 'ECC Key 23', 'ECC Key 24', 'ECC Key 25', 'ECC Key 26', 'ECC Key 27', 'ECC Key 28', 'ECC Key 29', 'ECC Key 30', 'ECC Key 31', 'ECC Key 32'])
+            slots = iter(
+                ['RSA Key 1', 'RSA Key 2', 'RSA Key 3', 'RSA Key 4', 'ECC Key 1', 'ECC Key 2', 'ECC Key 3', 'ECC Key 4',
+                 'ECC Key 5', 'ECC Key 6', 'ECC Key 7', 'ECC Key 8', 'ECC Key 9', 'ECC Key 10', 'ECC Key 11',
+                 'ECC Key 12', 'ECC Key 13', 'ECC Key 14', 'ECC Key 15', 'ECC Key 16', 'ECC Key 17', 'ECC Key 18',
+                 'ECC Key 19', 'ECC Key 20', 'ECC Key 21', 'ECC Key 22', 'ECC Key 23', 'ECC Key 24', 'ECC Key 25',
+                 'ECC Key 26', 'ECC Key 27', 'ECC Key 28', 'ECC Key 29', 'ECC Key 30', 'ECC Key 31', 'ECC Key 32'])
             for slot_name in slots:
                 print(tmp[slot_name].to_str())
                 print(tmp[next(slots)].to_str())
@@ -214,14 +219,14 @@ def cli():
             elif sys.argv[3] == 'delay3':
                 only_key.setslot(slot_id, MessageField.DELAY3, sys.argv[4])
             elif sys.argv[3] == '2fa':
-                 only_key.setslot(slot_id, MessageField.TFATYPE, sys.argv[4])
+                only_key.setslot(slot_id, MessageField.TFATYPE, sys.argv[4])
             elif sys.argv[3] == 'gkey':
                 totpkey = prompt_key()
                 totpkey = base64.b32decode(totpkey)
                 totpkey = binascii.hexlify(totpkey)
                 # pad with zeros for even digits
                 totpkey = totpkey.zfill(len(totpkey) + len(totpkey) % 2)
-                payload = [int(totpkey[i: i+2], 16) for i in range(0, len(totpkey), 2)]
+                payload = [int(totpkey[i: i + 2], 16) for i in range(0, len(totpkey), 2)]
                 only_key.setslot(slot_id, MessageField.TOTPKEY, payload)
             elif sys.argv[3] == 'totpkey':
                 totpkey = prompt_key()
@@ -232,7 +237,8 @@ def cli():
                 only_key.setslot(slot_id, MessageField.NEXTKEY5, sys.argv[4])
             else:
                 print("setslot <id> <type> [value]")
-                print("<type> must be ['label', 'url', 'add_char1', 'delay1', 'username', 'add_char2', 'delay2', 'password', 'add_char3', 'delay3', '2fa', 'totpkey', 'add_char4', 'add_char5']")
+                print(
+                    "<type> must be ['label', 'url', 'add_char1', 'delay1', 'username', 'add_char2', 'delay2', 'password', 'add_char3', 'delay3', '2fa', 'totpkey', 'add_char4', 'add_char5']")
             return
 
         elif sys.argv[1] == 'wipeslot':
@@ -272,13 +278,13 @@ def cli():
             only_key.generate_backup_key()
 
         elif sys.argv[1] == 'idletimeout':
-             only_key.setslot(1, MessageField.IDLETIMEOUT, int(sys.argv[2]))
+            only_key.setslot(1, MessageField.IDLETIMEOUT, int(sys.argv[2]))
         elif sys.argv[1] == 'wipemode':
-             only_key.setslot(1, MessageField.WIPEMODE, int(sys.argv[2]))
+            only_key.setslot(1, MessageField.WIPEMODE, int(sys.argv[2]))
         elif sys.argv[1] == 'keytypespeed':
-             only_key.setslot(1, MessageField.KEYTYPESPEED, int(sys.argv[2]))
+            only_key.setslot(1, MessageField.KEYTYPESPEED, int(sys.argv[2]))
         elif sys.argv[1] == 'keylayout':
-             only_key.setslot(1, MessageField.KEYLAYOUT, int(sys.argv[2]))
+            only_key.setslot(1, MessageField.KEYLAYOUT, int(sys.argv[2]))
 
         elif sys.argv[1]:
             print('Command not found')
@@ -367,7 +373,12 @@ def cli():
                 tmp = {}
                 for slot in only_key.getkeylabels():
                     tmp[slot.name] = slot
-                slots = iter(['RSA Key 1', 'RSA Key 2', 'RSA Key 3', 'RSA Key 4', 'ECC Key 1', 'ECC Key 2', 'ECC Key 3', 'ECC Key 4', 'ECC Key 5', 'ECC Key 6', 'ECC Key 7', 'ECC Key 8', 'ECC Key 9', 'ECC Key 10', 'ECC Key 11', 'ECC Key 12', 'ECC Key 13', 'ECC Key 14', 'ECC Key 19', 'ECC Key 20', 'ECC Key 21', 'ECC Key 22', 'ECC Key 23', 'ECC Key 24', 'ECC Key 25', 'ECC Key 26', 'ECC Key 27', 'ECC Key 28', 'ECC Key 29', 'ECC Key 30', 'ECC Key 31', 'ECC Key 32'])
+                slots = iter(['RSA Key 1', 'RSA Key 2', 'RSA Key 3', 'RSA Key 4', 'ECC Key 1', 'ECC Key 2', 'ECC Key 3',
+                              'ECC Key 4', 'ECC Key 5', 'ECC Key 6', 'ECC Key 7', 'ECC Key 8', 'ECC Key 9',
+                              'ECC Key 10', 'ECC Key 11', 'ECC Key 12', 'ECC Key 13', 'ECC Key 14', 'ECC Key 19',
+                              'ECC Key 20', 'ECC Key 21', 'ECC Key 22', 'ECC Key 23', 'ECC Key 24', 'ECC Key 25',
+                              'ECC Key 26', 'ECC Key 27', 'ECC Key 28', 'ECC Key 29', 'ECC Key 30', 'ECC Key 31',
+                              'ECC Key 32'])
                 for slot_name in slots:
                     print(tmp[slot_name].to_str())
                     print(tmp[next(slots)].to_str())
@@ -425,14 +436,14 @@ def cli():
                 elif data[2] == 'delay3':
                     only_key.setslot(slot_id, MessageField.DELAY3, data[3])
                 elif data[2] == '2fa':
-                     only_key.setslot(slot_id, MessageField.TFATYPE, data[3])
+                    only_key.setslot(slot_id, MessageField.TFATYPE, data[3])
                 elif data[2] == 'gkey':
                     totpkey = prompt_key()
                     totpkey = base64.b32decode(totpkey)
                     totpkey = binascii.hexlify(totpkey)
                     # pad with zeros for even digits
                     totpkey = totpkey.zfill(len(totpkey) + len(totpkey) % 2)
-                    payload = [int(totpkey[i: i+2], 16) for i in range(0, len(totpkey), 2)]
+                    payload = [int(totpkey[i: i + 2], 16) for i in range(0, len(totpkey), 2)]
                     only_key.setslot(slot_id, MessageField.TOTPKEY, payload)
                 elif data[2] == 'totpkey':
                     totpkey = prompt_key()
@@ -443,7 +454,8 @@ def cli():
                     only_key.setslot(slot_id, MessageField.NEXTKEY3, data[3])
                 else:
                     print("setslot <id> <type> [value]")
-                    print("<type> must be ['label', 'url', 'add_char1', 'delay1', 'username', 'add_char2', 'delay2', 'password', 'add_char3', 'delay3', '2fa', 'totpkey', 'add_char4', 'add_char5']")
+                    print(
+                        "<type> must be ['label', 'url', 'add_char1', 'delay1', 'username', 'add_char2', 'delay2', 'password', 'add_char3', 'delay3', '2fa', 'totpkey', 'add_char4', 'add_char5']")
                 continue
             elif data[0] == 'wipeslot':
                 try:
@@ -504,7 +516,6 @@ def cli():
                     only_key.setslot(1, MessageField.KEYLAYOUT, int(data[1]))
                 except:
                     continue
-
 
 
 def main():
