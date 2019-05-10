@@ -155,11 +155,9 @@ def cli():
             tmp = {}
             for slot in only_key.getkeylabels():
                 tmp[slot.name] = slot
-            slots = iter(['RSA Key 1', 'RSA Key 2', 'RSA Key 3', 'RSA Key 4', 'ECC Key 1', 'ECC Key 2', 'ECC Key 3', 'ECC Key 4', 'ECC Key 5', 'ECC Key 6', 'ECC Key 7', 'ECC Key 8', 'ECC Key 9', 'ECC Key 10', 'ECC Key 11', 'ECC Key 12', 'ECC Key 13', 'ECC Key 14', 'ECC Key 15', 'ECC Key 16', 'ECC Key 17', 'ECC Key 18', 'ECC Key 19', 'ECC Key 20', 'ECC Key 21', 'ECC Key 22', 'ECC Key 23', 'ECC Key 24', 'ECC Key 25', 'ECC Key 26', 'ECC Key 27', 'ECC Key 28', 'ECC Key 29', 'ECC Key 30', 'ECC Key 31', 'ECC Key 32'])
+            slots = iter(['RSA Key 1', 'RSA Key 2', 'RSA Key 3', 'RSA Key 4', 'ECC Key 1', 'ECC Key 2', 'ECC Key 3', 'ECC Key 4', 'ECC Key 5', 'ECC Key 6', 'ECC Key 7', 'ECC Key 8', 'ECC Key 9', 'ECC Key 10', 'ECC Key 11', 'ECC Key 12', 'ECC Key 13', 'ECC Key 14', 'ECC Key 15', 'ECC Key 16', 'ECC Key 17', 'ECC Key 18', 'ECC Key 19', 'ECC Key 20', 'ECC Key 21', 'ECC Key 22', 'ECC Key 23', 'ECC Key 24', 'ECC Key 25', 'ECC Key 26', 'ECC Key 27', 'ECC Key 28', 'ECC Key 29'])
             for slot_name in slots:
                 print(tmp[slot_name].to_str())
-                print(tmp[next(slots)].to_str())
-                print()
 
         elif sys.argv[1] == 'setslot':
             try:
@@ -187,6 +185,8 @@ def cli():
                     slot_id = 11
                 elif sys.argv[2] == '6b':
                     slot_id = 12
+                elif sys.argv[2] >= int('25'):
+                    slot_id = int(sys.argv[2])
             except:
                 print("setslot <id> <type> [value]")
                 print("<id> must be slot number 1a - 6b")
@@ -194,6 +194,10 @@ def cli():
 
             if sys.argv[3] == 'label':
                 only_key.setslot(slot_id, MessageField.LABEL, sys.argv[4])
+            elif sys.argv[3] == 'ecc_key_label':
+                only_key.setslot(slot_id+28, MessageField.LABEL, sys.argv[4])
+            elif sys.argv[3] == 'rsa_key_label':
+                only_key.setslot(slot_id+24, MessageField.LABEL, sys.argv[4])
             elif sys.argv[3] == 'url':
                 only_key.setslot(slot_id, MessageField.URL, sys.argv[4])
             elif sys.argv[3] == 'add_char2':
@@ -232,7 +236,7 @@ def cli():
                 only_key.setslot(slot_id, MessageField.NEXTKEY5, sys.argv[4])
             else:
                 print("setslot <id> <type> [value]")
-                print("<type> must be ['label', 'url', 'add_char1', 'delay1', 'username', 'add_char2', 'delay2', 'password', 'add_char3', 'delay3', '2fa', 'totpkey', 'add_char4', 'add_char5']")
+                print("<type> must be ['label', 'ecc_key_label', 'rsa_key_label', 'url', 'add_char1', 'delay1', 'username', 'add_char2', 'delay2', 'password', 'add_char3', 'delay3', '2fa', 'totpkey', 'add_char4', 'add_char5']")
             return
 
         elif sys.argv[1] == 'wipeslot':
@@ -261,6 +265,8 @@ def cli():
                     slot_id = 11
                 elif sys.argv[2] == '6b':
                     slot_id = 12
+                elif sys.argv[2] >= int('25'):
+                    slot_id = int(sys.argv[2])
             except:
                 print("wipeslot <id>")
                 print("<id> must be slot number 1a - 6b")
@@ -277,6 +283,16 @@ def cli():
              only_key.setslot(1, MessageField.WIPEMODE, int(sys.argv[2]))
         elif sys.argv[1] == 'keytypespeed':
              only_key.setslot(1, MessageField.KEYTYPESPEED, int(sys.argv[2]))
+        elif sys.argv[1] == 'led_brightness':
+             only_key.setslot(1, MessageField.LEDBRIGHTNESS, int(sys.argv[2]))
+        elif sys.argv[1] == '2nd_profile_mode':
+             only_key.setslot(1, MessageField.SECPROFILEMODE, int(sys.argv[2]))
+        elif sys.argv[1] == 'pgp_challenge_mode':
+             only_key.setslot(1, MessageField.PGPCHALENGEMODE, int(sys.argv[2]))
+        elif sys.argv[1] == 'ssh_challenge_mode':
+             only_key.setslot(1, MessageField.SSHCHALENGEMODE, int(sys.argv[2]))
+        elif sys.argv[1] == 'backup_key_mode':
+             only_key.setslot(1, MessageField.BACKUPMODE, int(sys.argv[2]))
         elif sys.argv[1] == 'keylayout':
              only_key.setslot(1, MessageField.KEYLAYOUT, int(sys.argv[2]))
 
@@ -287,7 +303,7 @@ def cli():
     else:
 
         # Print help.
-        print('OnlyKey CLI v0.5')
+        print('OnlyKey CLI v0.6')
         print('Control-D to exit.')
         print()
 
@@ -367,10 +383,9 @@ def cli():
                 tmp = {}
                 for slot in only_key.getkeylabels():
                     tmp[slot.name] = slot
-                slots = iter(['RSA Key 1', 'RSA Key 2', 'RSA Key 3', 'RSA Key 4', 'ECC Key 1', 'ECC Key 2', 'ECC Key 3', 'ECC Key 4', 'ECC Key 5', 'ECC Key 6', 'ECC Key 7', 'ECC Key 8', 'ECC Key 9', 'ECC Key 10', 'ECC Key 11', 'ECC Key 12', 'ECC Key 13', 'ECC Key 14', 'ECC Key 19', 'ECC Key 20', 'ECC Key 21', 'ECC Key 22', 'ECC Key 23', 'ECC Key 24', 'ECC Key 25', 'ECC Key 26', 'ECC Key 27', 'ECC Key 28', 'ECC Key 29', 'ECC Key 30', 'ECC Key 31', 'ECC Key 32'])
+                slots = iter(['RSA Key 1', 'RSA Key 2', 'RSA Key 3', 'RSA Key 4', 'ECC Key 1', 'ECC Key 2', 'ECC Key 3', 'ECC Key 4', 'ECC Key 5', 'ECC Key 6', 'ECC Key 7', 'ECC Key 8', 'ECC Key 9', 'ECC Key 10', 'ECC Key 11', 'ECC Key 12', 'ECC Key 13', 'ECC Key 14', 'ECC Key 19', 'ECC Key 20', 'ECC Key 21', 'ECC Key 22', 'ECC Key 23', 'ECC Key 24', 'ECC Key 25', 'ECC Key 26', 'ECC Key 27', 'ECC Key 28', 'ECC Key 29'])
                 for slot_name in slots:
                     print(tmp[slot_name].to_str())
-                    print(tmp[next(slots)].to_str())
 
             elif data[0] == 'setslot':
                 try:
@@ -398,6 +413,8 @@ def cli():
                         slot_id = 11
                     elif data[1] == '6b':
                         slot_id = 12
+                    elif data[1] >= int('25'):
+                        slot_id = int(data[1])
                 except:
                     print("setslot <id> <type> [value]")
                     print("<id> must be slot number 1a - 6b")
@@ -405,6 +422,10 @@ def cli():
 
                 if data[2] == 'label':
                     only_key.setslot(slot_id, MessageField.LABEL, data[3])
+                elif data[2] == 'ecc_key_label':
+                    only_key.setslot(slot_id+28, MessageField.LABEL, data[3])
+                elif data[2] == 'rsa_key_label':
+                    only_key.setslot(slot_id+24, MessageField.LABEL, data[3])
                 elif data[2] == 'url':
                     only_key.setslot(slot_id, MessageField.URL, data[3])
                 elif data[2] == 'add_char2':
@@ -443,7 +464,7 @@ def cli():
                     only_key.setslot(slot_id, MessageField.NEXTKEY3, data[3])
                 else:
                     print("setslot <id> <type> [value]")
-                    print("<type> must be ['label', 'url', 'add_char1', 'delay1', 'username', 'add_char2', 'delay2', 'password', 'add_char3', 'delay3', '2fa', 'totpkey', 'add_char4', 'add_char5']")
+                    print("<type> must be ['label', 'ecc_key_label', 'rsa_key_label', 'url', 'add_char1', 'delay1', 'username', 'add_char2', 'delay2', 'password', 'add_char3', 'delay3', '2fa', 'totpkey', 'add_char4', 'add_char5']")
                 continue
             elif data[0] == 'wipeslot':
                 try:
@@ -471,6 +492,8 @@ def cli():
                         slot_id = 11
                     elif data[1] == '6b':
                         slot_id = 12
+                    elif data[1] >= int('25'):
+                        slot_id = int(data[1])
                 except:
                     print("wipeslot <id>")
                     print("<id> must be slot number 1a - 6b")
@@ -497,6 +520,31 @@ def cli():
             elif data[0] == 'keytypespeed':
                 try:
                     only_key.setslot(1, MessageField.KEYTYPESPEED, int(data[1]))
+                except:
+                    continue
+            elif data[0] == 'led_brightness':
+                try:
+                    only_key.setslot(1, MessageField.LEDBRIGHTNESS, int(data[1]))
+                except:
+                    continue
+            elif data[0] == 'pgp_challenge_mode':
+                try:
+                    only_key.setslot(1, MessageField.PGPCHALENGEMODE, int(data[1]))
+                except:
+                    continue
+            elif data[0] == 'ssh_challenge_mode':
+                try:
+                    only_key.setslot(1, MessageField.SSHCHALENGEMODE, int(data[1]))
+                except:
+                    continue
+            elif data[0] == 'backup_key_mode':
+                try:
+                    only_key.setslot(1, MessageField.BACKUPMODE, int(data[1]))
+                except:
+                    continue
+            elif data[0] == '2nd_profile_mode':
+                try:
+                    only_key.setslot(1, MessageField.SECPROFILEMODE, int(data[1]))
                 except:
                     continue
             elif data[0] == 'keylayout':
