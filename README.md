@@ -138,6 +138,8 @@ In order for non-root users in Linux to be able to communicate with OnlyKey a ud
   - [id] must be slot number 1a - 6b
   - [type] must be one of the following:
     - label - Slot label i.e. My Google Acct
+    - rsa_key_label - Key label for RSA keys 1 - 4
+    - ecc_key_label - Key label for ECC keys 1 - 29
     - url - URL to login page
     - delay1 - set a 0 - 9 second delay
     - add_char1 - Additional character before username 1 for TAB, 0 to clear
