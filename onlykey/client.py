@@ -171,17 +171,22 @@ class OnlyKey(object):
             # self._hid.enumerate
             # self._hid.open(ID_VENDOR, ID_PRODUCT)
             for d in hid.enumerate(0, 0):
-        		vendor_id = d['vendor_id']
-        		product_id = d['product_id']
-        		serial_number = d['serial_number']
-        		interface_number = d['interface_number']
-        		usage_page = d['usage_page']
-        		path = d['path']
+                vendor_id = d['vendor_id']
+                product_id = d['product_id']
+                serial_number = d['serial_number']
+                interface_number = d['interface_number']
+                usage_page = d['usage_page']
+                path = d['path']
 
-        		if (vendor_id, product_id) in DEVICE_IDS:
-        			if usage_page == 0xf1d0 or interface_number == 1:
-                                	self._hid.open_path(path)
-                                	self._hid.set_nonblocking(True)
+                if (vendor_id, product_id) in DEVICE_IDS:
+                    if serial_number == '1000000000':
+                        if usage_page == 0xffab or interface_number == 2:
+                            self._hid.open_path(path)
+                            self._hid.set_nonblocking(True)
+                    else:
+                        if usage_page == 0xf1d0 or interface_number == 1:
+                            self._hid.open_path(path)
+                            self._hid.set_nonblocking(True)
 
         except:
             log.exception('failed to connect')

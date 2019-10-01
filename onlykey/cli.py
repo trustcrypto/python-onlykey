@@ -303,7 +303,7 @@ def cli():
     else:
 
         # Print help.
-        print('OnlyKey CLI v0.6')
+        print('OnlyKey CLI v1.0.1')
         print('Control-D to exit.')
         print()
 
