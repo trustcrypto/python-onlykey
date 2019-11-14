@@ -12,7 +12,7 @@ setup(
     name='onlykey',
     version='1.1.0',
     description='OnlyKey client and command-line tool',
-    long_description=long_description,
+    # long_description=long_description,
     url='https://github.com/trustcrypto/python-onlykey',
     author='CryptoTrust',
     author_email='admin@crp.to',
