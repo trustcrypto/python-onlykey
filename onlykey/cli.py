@@ -563,3 +563,6 @@ def main():
         print()
         print('Bye!')
         pass
+
+if __name__ == "__main__":
+    main()
