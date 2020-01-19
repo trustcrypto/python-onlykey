@@ -93,25 +93,25 @@ priv_key = pgpy.PGPKey()
 #             ciphers=[SymmetricKeyAlgorithm.AES256, SymmetricKeyAlgorithm.AES192, SymmetricKeyAlgorithm.AES128],
 #             compression=[CompressionAlgorithm.ZLIB, CompressionAlgorithm.BZ2, CompressionAlgorithm.ZIP, CompressionAlgorithm.Uncompressed])
 
-print
-print 'Do you want to sign or decrypt a message?'
-print 's = sign, d = decrypt'
-print
+print()
+print('Do you want to sign or decrypt a message?')
+print('s = sign, d = decrypt')
+print()
 
 action = raw_input()
 
-print
-print 'Enter RSA key slot number to use (1 - 4) or enter 0 to list key labels'
-print
+print()
+print('Enter RSA key slot number to use (1 - 4) or enter 0 to list key labels')
+print()
 
 slot = int(raw_input())
 ok.slot(slot)
 
 while slot== 0:
     ok.displaykeylabels()
-    print
-    print 'Enter slot number to use (1 - 4) or enter 0 to list key labels'
-    print
+    print()
+    print('Enter slot number to use (1 - 4) or enter 0 to list key labels')
+    print()
     slot = int(raw_input())
     ok.slot(slot)
 
@@ -128,60 +128,60 @@ if action == 's':
                  compression=[CompressionAlgorithm.ZLIB, CompressionAlgorithm.BZ2, CompressionAlgorithm.ZIP, CompressionAlgorithm.Uncompressed],
                  key_expires=timedelta(days=365))
 
-    print
-    print 'Do you want to sign a text message or add signature to a PGP Message?'
-    print 't = text message, p = PGP Message'
-    print
+    print()
+    print('Do you want to sign a text message or add signature to a PGP Message?')
+    print('t = text message, p = PGP Message')
+    print()
     action2 = raw_input()
     if action2 == 't':
-        print
-        print 'Type or paste the text message, press return to go to new line, and then press Ctrl+D or Ctrl+Z (Windows only)'
-        print
+        print()
+        print('Type or paste the text message, press return to go to new line, and then press Ctrl+D or Ctrl+Z (Windows only)')
+        print()
         msg_blob = sys.stdin.read()
         message_from_blob = priv_key.sign2(msg_blob)
-        print 'Encoded Signed Message ='
-        print '-----BEGIN PGP SIGNED MESSAGE-----'
-        print 'Hash: SHA256'
-        print
+        print('Encoded Signed Message =')
+        print('-----BEGIN PGP SIGNED MESSAGE-----')
+        print('Hash: SHA256')
+        print()
     if action2 == 'p':
-        print
-        print 'Paste OpenPGP Message, press return to go to new line, and then press Ctrl+D or Ctrl+Z (Windows only)'
-        print
+        print()
+        print('Paste OpenPGP Message, press return to go to new line, and then press Ctrl+D or Ctrl+Z (Windows only)')
+        print()
         msg_blob = sys.stdin.read()
         message_from_blob = pgpy.PGPMessage.from_blob(msg_blob)
-        print
-        print 'Message=', repr(message_from_blob)
+        print()
+        print('Message=', repr(message_from_blob))
         message_from_blob |= priv_key.sign2(message_from_blob)
-        print 'Encoded Signed Message ='
+        print('Encoded Signed Message =')
     #print
     #sign_bytes = message_from_blob.__bytes__()
     #print 'Message Bytes=', repr(sign_bytes)
     #print
     sign_text = str(message_from_blob)
-    print msg_blob, sign_text
-    print
+    print(msg_blob, sign_text)
+    print()
     #print 'Decoded Signed Message =', str(sign_bytes)
 if action == 'd':
     #pub_key = makepub()
-    print
-    print 'Paste OpenPGP Message, press return to go to new line, and then press Ctrl+D or Ctrl+Z (Windows only)'
-    print
+    print()
+    print('Paste OpenPGP Message, press return to go to new line, and then press Ctrl+D or Ctrl+Z (Windows only)')
+    print()
     msg_blob = sys.stdin.read()
     message_from_blob = pgpy.PGPMessage.from_blob(msg_blob)
-    print
-    print 'Message=', repr(message_from_blob)
+    print()
+    print('Message=', repr(message_from_blob))
     #with priv_key.unlock("test"):
     decrypted_message = priv_key.decrypt(message_from_blob)
         #decrypted_message2 = priv_key.parse(decrypted_message)
         #decrypted_message3 = priv_key.bytes_to_text(message_from_blob)
-    print
+    print()
     dec_bytes = decrypted_message.__bytes__()
-    print 'Decoded Decrypted Message =', str(dec_bytes)
-    print
+    print('Decoded Decrypted Message =', str(dec_bytes))
+    print()
     dec_text = str(decrypted_message)
-    print 'Encoded Decrypted Message ='
-    print dec_text
+    print('Encoded Decrypted Message =')
+    print(dec_text)
 
 
 
-print 'Done'
+print('Done')
