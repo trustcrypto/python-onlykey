@@ -98,13 +98,13 @@ print('Do you want to sign or decrypt a message?')
 print('s = sign, d = decrypt')
 print()
 
-action = raw_input()
+action = input()
 
 print()
 print('Enter RSA key slot number to use (1 - 4) or enter 0 to list key labels')
 print()
 
-slot = int(raw_input())
+slot = int(input())
 ok.slot(slot)
 
 while slot== 0:
@@ -112,7 +112,7 @@ while slot== 0:
     print()
     print('Enter slot number to use (1 - 4) or enter 0 to list key labels')
     print()
-    slot = int(raw_input())
+    slot = int(input())
     ok.slot(slot)
 
 
@@ -132,7 +132,7 @@ if action == 's':
     print('Do you want to sign a text message or add signature to a PGP Message?')
     print('t = text message, p = PGP Message')
     print()
-    action2 = raw_input()
+    action2 = input()
     if action2 == 't':
         print()
         print('Type or paste the text message, press return to go to new line, and then press Ctrl+D or Ctrl+Z (Windows only)')

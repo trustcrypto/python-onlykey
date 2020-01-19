@@ -11,16 +11,15 @@ print('Generating a new ed25519 key pair...')
 privkey, pubkey = ed25519.create_keypair(entropy=os.urandom)
 print('Done')
 print()
-
 print('privkey=', repr(privkey.to_seed()))
-print('privkey hex=', ''.join([c.encode('hex') for c in privkey.to_seed()]))
+print('privkey hex=', privkey.to_seed().hex())
 print('pubkey=', repr(pubkey.to_bytes()))
-print('pubkey hex=', pubkey.to_ascii(encoding='hex'))
+print('pubkey hex=', pubkey.to_ascii(encoding='hex').decode("utf-8"))
 print()
 
 print()
 print('Initialize OnlyKey client...')
-ok = OnlyKey()
+ok = OnlyKey(connect=True)
 print('Done')
 print()
 
@@ -35,6 +34,7 @@ print('You should see your OnlyKey blink 3 times')
 print()
 
 print('Setting SSH private...')
+
 ok.set_ecc_key(101, (1+64), privkey.to_seed())
 # ok.set_ecc_privsend_message(msg=Message.OKSETPRIV, payload=privkey.to_seed())
 time.sleep(1.5)
@@ -45,16 +45,18 @@ print('You should see your OnlyKey blink 3 times')
 print()
 
 print('Trying to read the pubkey...')
-ok.send_message(msg=Message.OKGETPUBKEY, payload=chr(101))  #, payload=[1, 1])
+ok.send_message(msg=Message.OKGETPUBKEY, payload=101, slot_id=65)  #, payload=[1, 1])
 time.sleep(1.5)
-for _ in xrange(10):
+for i in range(10):
+    print(i)
     ok_pubkey = ok.read_bytes(32, to_str=True)
+    print(ok_pubkey)
     if len(ok_pubkey) == 32:
         break
     time.sleep(1)
 
 print()
-
+print(ok_pubkey)
 print('received=', repr(ok_pubkey))
 
 if not ok_pubkey:
@@ -116,7 +118,7 @@ ok.send_large_message2(msg=Message.OKSIGNCHALLENGE, payload=test_payload, slot_i
 # at the same time as real requests and tricking the user into signing the wrong data
 print('Please enter the 3 digit challenge code on OnlyKey (and press ENTER if necessary)')
 print('{} {} {}'.format(b1, b2, b3))
-raw_input()
+input()
 signature = ''
 while signature == '':
     time.sleep(0.5)

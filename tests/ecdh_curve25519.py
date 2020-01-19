@@ -67,9 +67,9 @@ message = 'Secret Message'
 counter = "\x00\x00\x00\x01"
 shared_secret = curve.calculateAgreement(alice_private_key, bob_public_key)
 h = hashlib.sha256()
-h.update(counter)
+h.update(counter.encode())
 h.update(shared_secret)
-h.update(message)
+h.update(message.encode())
 d = h.digest()
 KEK = d
 
@@ -105,7 +105,7 @@ payload = alice_public_key
 #
 
 
-print 'Payload containing ephemeral public key', repr(payload)
+print('Payload containing ephemeral public key', repr(payload))
 print()
 
 # Compute the challenge pin
@@ -115,8 +115,7 @@ d = h.digest()
 
 assert len(d) == 32
 
-def get_button(byte):
-    ibyte = ord(byte)
+def get_button(ibyte):
     if ibyte < 6:
         return 1
     return ibyte % 5 + 1
@@ -155,7 +154,7 @@ ok.send_large_message2(msg=Message.OKDECRYPT, payload=payload, slot_id=101)
 # at the same time as real requests and tricking the user into signing the wrong data
 print('Please enter the 3 digit challenge code on OnlyKey (and press ENTER if necessary)')
 print('{} {} {}'.format(b1, b2, b3))
-raw_input()
+input()
 print('Trying to read the shared secret from OnlyKey...')
 ok_shared_secret = ''
 while ok_shared_secret == '':

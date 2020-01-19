@@ -152,7 +152,7 @@ ok.send_large_message2(msg=Message.OKSIGNCHALLENGE, payload=test_payload2, slot_
 
 print('Please enter the 3 digit challenge code on OnlyKey (and press ENTER if necessary)')
 print('{} {} {}'.format(b1, b2, b3))
-raw_input()
+input()
 print('Trying to read the signature part 1...')
 signature1 = ''
 while signature1 == '':

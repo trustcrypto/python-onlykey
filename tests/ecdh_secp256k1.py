@@ -143,7 +143,7 @@ ok.send_large_message2(msg=Message.OKDECRYPT, payload=payload, slot_id=101)
 # at the same time as real requests and tricking the user into signing the wrong data
 print('Please enter the 3 digit challenge code on OnlyKey (and press ENTER if necessary)')
 print('{} {} {}'.format(b1, b2, b3))
-raw_input()
+input()
 shared_secret1 = alice.get_ecdh_key(bob.get_pubkey())
 shared_secret2 = bob.get_ecdh_key(alice.get_pubkey())
 print('Trying to read the shared secret from OnlyKey...')

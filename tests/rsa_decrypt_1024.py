@@ -153,7 +153,7 @@ ok.send_large_message2(msg=Message.OKDECRYPT, payload=ciphertext, slot_id=1)
 
 print('Please enter the 3 digit challenge code on OnlyKey (and press ENTER if necessary)')
 print('{} {} {}'.format(b1, b2, b3))
-raw_input()
+input()
 print('Trying to read the decrypted data from OnlyKey...')
 ok_decrypted = ''
 while ok_decrypted == '':
