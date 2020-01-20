@@ -74,14 +74,14 @@ def cli():
                     print
                     print ('Enter ECC key slot number to use (1 - 32) or enter 0 to list key labels')
                     print
-                    slot = int(raw_input())
+                    slot = int(input())
 
                 while slot == 0:
                     ok.displaykeylabels()
                     print
                     print ('Enter ECC key slot number to use (1 - 32) or enter 0 to list key labels')
                     print
-                    slot = int(raw_input())
+                    slot = int(input())
 
                 slot = slot + 100 # ECC keys in slot 101 - 132
                 only_key.set_ecc_key(slot, (1+16+32+64+128), raw_privkey) #set ECC key with all features
@@ -100,13 +100,13 @@ def cli():
                 only_key.send_message(msg=msg)
                 print(only_key.read_string())
                 print
-                raw_input('Press the Enter key once you are done')
+                input('Press the Enter key once you are done')
                 only_key.send_message(msg=msg)
                 print(only_key.read_string())
                 only_key.send_message(msg=msg)
                 print(only_key.read_string())
                 print
-                raw_input('Press the Enter key once you are done')
+                input('Press the Enter key once you are done')
                 only_key.send_message(msg=msg)
                 print(only_key.read_string())
                 print
@@ -115,13 +115,13 @@ def cli():
                 only_key.send_message(msg=msg)
                 print(only_key.read_string() + ' for second profile')
                 print
-                raw_input('Press the Enter key once you are done')
+                input('Press the Enter key once you are done')
                 only_key.send_message(msg=msg)
                 print(only_key.read_string() + ' for second profile')
                 only_key.send_message(msg=msg)
                 print(only_key.read_string())
                 print
-                raw_input('Press the Enter key once you are done')
+                input('Press the Enter key once you are done')
                 only_key.send_message(msg=msg)
                 print(only_key.read_string())
                 print
@@ -130,13 +130,13 @@ def cli():
                 only_key.send_message(msg=msg)
                 print(only_key.read_string())
                 print
-                raw_input('Press the Enter key once you are done')
+                input('Press the Enter key once you are done')
                 only_key.send_message(msg=msg)
                 print(only_key.read_string())
                 only_key.send_message(msg=msg)
                 print(only_key.read_string())
                 print
-                raw_input('Press the Enter key once you are done')
+                input('Press the Enter key once you are done')
                 only_key.send_message(msg=msg)
                 print(only_key.read_string())
                 print
@@ -329,13 +329,13 @@ def cli():
                     only_key.send_message(msg=msg)
                     print(only_key.read_string())
                     print
-                    raw_input('Press the Enter key once you are done')
+                    input('Press the Enter key once you are done')
                     only_key.send_message(msg=msg)
                     print(only_key.read_string())
                     only_key.send_message(msg=msg)
                     print(only_key.read_string())
                     print
-                    raw_input('Press the Enter key once you are done')
+                    input('Press the Enter key once you are done')
                     only_key.send_message(msg=msg)
                     print(only_key.read_string())
                     print
@@ -344,13 +344,13 @@ def cli():
                     only_key.send_message(msg=msg)
                     print(only_key.read_string() + ' for second profile')
                     print
-                    raw_input('Press the Enter key once you are done')
+                    input('Press the Enter key once you are done')
                     only_key.send_message(msg=msg)
                     print(only_key.read_string() + ' for second profile')
                     only_key.send_message(msg=msg)
                     print(only_key.read_string())
                     print
-                    raw_input('Press the Enter key once you are done')
+                    input('Press the Enter key once you are done')
                     only_key.send_message(msg=msg)
                     print(only_key.read_string())
                     print
@@ -359,13 +359,13 @@ def cli():
                     only_key.send_message(msg=msg)
                     print(only_key.read_string())
                     print
-                    raw_input('Press the Enter key once you are done')
+                    input('Press the Enter key once you are done')
                     only_key.send_message(msg=msg)
                     print(only_key.read_string())
                     only_key.send_message(msg=msg)
                     print(only_key.read_string())
                     print
-                    raw_input('Press the Enter key once you are done')
+                    input('Press the Enter key once you are done')
                     only_key.send_message(msg=msg)
                     print(only_key.read_string())
                     print
@@ -563,3 +563,6 @@ def main():
         print()
         print('Bye!')
         pass
+
+if __name__ == "__main__":
+    main()

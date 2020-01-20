@@ -9,7 +9,7 @@ import axolotl_curve25519 as curve
 
 from onlykey import OnlyKey, Message
 
-print 'Generating a new curve25519 key pair...'
+print('Generating a new curve25519 key pair...')
 randm32 = os.urandom(32)
 randm64 = os.urandom(64)
 
@@ -21,19 +21,19 @@ randm64 = os.urandom(64)
 
 alice_private_key = curve.generatePrivateKey(randm32)
 alice_public_key = curve.generatePublicKey(alice_private_key)
-print
+print()
 
-print 'bob privkey=', repr(bob_private_key)
-print 'bob pubkey=', repr(bob_public_key)
-print 'alice privkey=', repr(alice_private_key)
-print 'alice pubkey=', repr(alice_public_key)
-print
+print('bob privkey=', repr(bob_private_key))
+print('bob pubkey=', repr(bob_public_key))
+print('alice privkey=', repr(alice_private_key))
+print('alice pubkey=', repr(alice_public_key))
+print()
 
-print
-print 'Initialize OnlyKey client...'
+print()
+print('Initialize OnlyKey client...')
 ok = OnlyKey()
-print 'Done'
-print
+print('Done')
+print()
 
 time.sleep(2)
 
@@ -42,10 +42,10 @@ empty = 'a'
 while not empty:
     empty = ok.read_string(timeout_ms=100)
 
-print 'You should see your OnlyKey blink 3 times'
-print
+print('You should see your OnlyKey blink 3 times')
+print()
 
-print 'Setting ECC private...'
+print('Setting ECC private...')
 ok.set_ecc_key(101, (1+32), bob_private_key)
 # Slot 101 - 132 for ECC
 # Type 1 = Ed25519, Type 2 = p256r1, Type 3 = p256k1
@@ -56,20 +56,20 @@ ok.set_ecc_key(101, (1+32), bob_private_key)
 # if authentication key = type + 16
 # For this example it will be a decryption key
 time.sleep(1.5)
-print ok.read_string()
+print(ok.read_string())
 
 time.sleep(2)
-print 'You should see your OnlyKey blink 3 times'
-print
+print('You should see your OnlyKey blink 3 times')
+print()
 
 
 message = 'Secret Message'
 counter = "\x00\x00\x00\x01"
 shared_secret = curve.calculateAgreement(alice_private_key, bob_public_key)
 h = hashlib.sha256()
-h.update(counter)
+h.update(counter.encode())
 h.update(shared_secret)
-h.update(message)
+h.update(message.encode())
 d = h.digest()
 KEK = d
 
@@ -105,8 +105,8 @@ payload = alice_public_key
 #
 
 
-print 'Payload containing ephemeral public key', repr(payload)
-print
+print('Payload containing ephemeral public key', repr(payload))
+print()
 
 # Compute the challenge pin
 h = hashlib.sha256()
@@ -115,15 +115,14 @@ d = h.digest()
 
 assert len(d) == 32
 
-def get_button(byte):
-    ibyte = ord(byte)
+def get_button(ibyte):
     if ibyte < 6:
         return 1
     return ibyte % 5 + 1
 
 b1, b2, b3 = get_button(d[0]), get_button(d[15]), get_button(d[31])
 
-print 'Sending the payload to the OnlyKey...'
+print('Sending the payload to the OnlyKey...')
 ok.send_large_message2(msg=Message.OKDECRYPT, payload=payload, slot_id=101)
 
 # Tim - The OnlyKey can send the code to enter but it would be better if the app generates
@@ -153,23 +152,23 @@ ok.send_large_message2(msg=Message.OKDECRYPT, payload=payload, slot_id=101)
 
 # This method prevents some malware on a users system from sending fake requests to be signed
 # at the same time as real requests and tricking the user into signing the wrong data
-print 'Please enter the 3 digit challenge code on OnlyKey (and press ENTER if necessary)'
-print '{} {} {}'.format(b1, b2, b3)
-raw_input()
-print 'Trying to read the shared secret from OnlyKey...'
+print('Please enter the 3 digit challenge code on OnlyKey (and press ENTER if necessary)')
+print('{} {} {}'.format(b1, b2, b3))
+input()
+print('Trying to read the shared secret from OnlyKey...')
 ok_shared_secret = ''
 while ok_shared_secret == '':
     time.sleep(0.5)
     ok_shared_secret = ok.read_bytes(len(shared_secret), to_str=True)
 
-print 'OnlyKey Shared Secret =', repr(ok_shared_secret)
+print('OnlyKey Shared Secret =', repr(ok_shared_secret))
 
-print 'Local Shared Secret =', repr(ok_shared_secret)
-print
-print 'Assert that both shared secrets match'
+print('Local Shared Secret =', repr(ok_shared_secret))
+print()
+print('Assert that both shared secrets match')
 assert repr(shared_secret) == repr(ok_shared_secret)
-print 'Ok, secrets match'
-print
+print('Ok, secrets match')
+print()
 
 #print 'Trying to read the KEK from OnlyKey...'
 #ok_KEK = ''
@@ -179,11 +178,11 @@ print
 
 #print 'OnlyKey KEK =', repr(ok_KEK)
 
-print 'Local KEK =', repr(KEK)
-print
+print('Local KEK =', repr(KEK))
+print()
 #print 'Assert that both KEKs match'
 #assert repr(KEK) == repr(ok_KEK)
 #print 'Ok, KEKs match'
 #print
 
-print 'Done'
+print('Done')
