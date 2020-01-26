@@ -52,7 +52,7 @@ def pack_long(n):
     it seems to be want you wanted? it's 64 bytes.
     """
     h = '%x' % n
-    s = ('0'*(len(h) % 2) + h).decode('hex')
+    s = bytes.fromhex('0'*(len(h) % 2) + h)
     return s
 
 def bin2hex(binStr):
@@ -61,15 +61,15 @@ def bin2hex(binStr):
 def hex2bin(hexStr):
         return binascii.unhexlify(hexStr)
 
-hexPrivKey = bin2hex(binPrivKey)
-hexPubKey = bin2hex(binPubKey)
+hexPrivKey = binPrivKey.hex()
+hexPubKey = binPubKey.hex()
 
 # p and q are long ints that are no more than 1/2 the size of pubkey
 # I need to convert these into a single byte array put p in the first
 # half byte[0] of the byte array and q in the second half byte[(type*128) / 2]
 # send the byte array to OnlyKey splitting into 56 bytes per packet
-q_and_p = pack_long(q) + pack_long(p)
-public_n = pack_long(n)
+q_and_p = q.to_bytes(64, "little") + p.to_bytes(64, "little")
+public_n = n.to_bytes(128, "little")
 #
 ok.send_large_message3(msg=Message.OKSETPRIV, slot_id=1, key_type=(1+32), payload=q_and_p)
 
@@ -90,10 +90,10 @@ print('You should see your OnlyKey blink 3 times')
 print()
 
 print('Trying to read the public RSA N part 1...')
-ok.send_message(msg=Message.OKGETPUBKEY, payload=chr(1))  #, payload=[1, 1])
+ok.send_message(msg=Message.OKGETPUBKEY, payload=bytes([1,1]))  #, payload=[1, 1])
 time.sleep(1.5)
-for _ in xrange(10):
-    ok_pubkey1 = ok.read_bytes(64, to_str=True, timeout_ms=1000)
+for _ in range(10):
+    ok_pubkey1 = ok.read_bytes(64, timeout_ms=1000)
     if len(ok_pubkey1) == 64:
         break
     time.sleep(1)
@@ -103,8 +103,8 @@ print()
 print('received=', repr(ok_pubkey1))
 
 print('Trying to read the public RSA N part 2...')
-for _ in xrange(10):
-    ok_pubkey2 = ok.read_bytes(64, to_str=True, timeout_ms=1000)
+for _ in range(10):
+    ok_pubkey2 = ok.read_bytes(64, timeout_ms=1000)
     if len(ok_pubkey2) == 64:
         break
     time.sleep(1)

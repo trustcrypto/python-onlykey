@@ -8,7 +8,7 @@ import sys
 
 import pgpy
 from pgpy import PGPKey
-from pgpy.constants import PubKeyAlgorithm, KeyFlags, HashAlgorithm, SymmetricKeyAlgorithm, CompressionAlgorithm, ok
+from pgpy.constants import PubKeyAlgorithm, KeyFlags, HashAlgorithm, SymmetricKeyAlgorithm, CompressionAlgorithm
 from pgpy.packet.fields import RSAPub,MPI,RSAPriv
 from pgpy.packet.packets import PubKeyV4,PrivKeyV4
 
@@ -17,6 +17,8 @@ from datetime import timedelta
 import binascii
 
 from onlykey import OnlyKey, Message
+
+ok = OnlyKey()
 
 def custRSAPub(n,e):
     res = RSAPriv()
@@ -63,8 +65,8 @@ def makekey():
     #        key_expires=timedelta(days=365))
     #p = n[:(len(n)/2)]
     #q = n[(len(n)/2):]
-    n = n.encode("HEX")
-    N = long(n, 16)
+    n = n.hex()
+    N = int(n, 16)
     #p = p.encode("HEX")
     #p = long(p, 16)
     #q = q.encode("HEX")
@@ -138,7 +140,7 @@ if action == 's':
         print('Type or paste the text message, press return to go to new line, and then press Ctrl+D or Ctrl+Z (Windows only)')
         print()
         msg_blob = sys.stdin.read()
-        message_from_blob = priv_key.sign2(msg_blob)
+        message_from_blob = priv_key.sign(msg_blob)
         print('Encoded Signed Message =')
         print('-----BEGIN PGP SIGNED MESSAGE-----')
         print('Hash: SHA256')
