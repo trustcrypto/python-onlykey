@@ -10,7 +10,6 @@ from aenum import Enum
 from sys import platform
 
 log = logging.getLogger(__name__)
-logging.basicConfig(level=logging.DEBUG)
 
 DEVICE_IDS = [
     (0x16C0, 0x0486),  # OnlyKey
@@ -252,7 +251,6 @@ class OnlyKey(object):
                 raw_bytes += bytes([payload])
             else:
                 raise Exception('`payload` must be either `str` or `list`, got `{}`'.format(type(payload)))
-
         # Pad the ouput with 0s
         while len(raw_bytes) < MAX_INPUT_REPORT_SIZE:
             raw_bytes += bytes([0])
@@ -271,21 +269,18 @@ class OnlyKey(object):
         for chunk in chunks:
             # print chunk
             # print [ord(c) for c in chunk]
-            current_payload = [255]  # 255 means that it's not the last payload
+            current_payload = bytes([255])  # 255 means that it's not the last payload
             # If it's less than the max size, set explicitely the size
             if len(chunk) < 58:
-                current_payload = [len(chunk)]
+                current_payload = bytes([len(chunk)])
 
             # Append the actual payload
             if isinstance(chunk, list):
-                current_payload.extend(chunk)
+                current_payload += bytes(chunk)
             else:
-                for c in chunk:
-                    current_payload.append(ord(c))
+                current_payload += chunk
 
             self.send_message(payload=current_payload, msg=msg)
-
-        return
 
 
     def send_large_message2(self, payload=None, msg=None, slot_id=101):
@@ -303,17 +298,15 @@ class OnlyKey(object):
             if len(chunk) < 57:
                 current_payload = [slot_id, len(chunk)]
 
+            current_payload = bytes(current_payload)
+
             # Append the actual payload
             if isinstance(chunk, list):
-                current_payload.extend(chunk)
+                current_payload += bytes(chunk)
             else:
-                for c in chunk:
-                    current_payload.append(c)
+                current_payload += chunk
 
             self.send_message(payload=current_payload, msg=msg)
-
-        return
-
 
 
     def send_large_message3(self, payload=None, msg=None, slot_id=101, key_type=1):
@@ -324,35 +317,32 @@ class OnlyKey(object):
         # Split the payload in multiple chunks
         chunks = [payload[x:x+MAX_LARGE_PAYLOAD_SIZE-1] for x in range(0, len(payload), 57)]
         for chunk in chunks:
-            # print chunk
-            # print [ord(c) for c in chunk]
-            current_payload = [slot_id, key_type]
+            current_payload = bytes([slot_id, key_type])
 
             # Append the actual payload
             if isinstance(chunk, list):
-                current_payload.extend(chunk)
+                current_payload += bytes(chunk)
             else:
-                for c in chunk:
-                    current_payload.append(ord(c))
+                current_payload += chunk
 
-            self.send_message(payload=current_payload, msg=msg)
+        self.send_message(payload=current_payload, msg=msg)
 
-        return
-
-    def read_bytes(self, n=64, to_str=False, timeout_ms=100) -> bytes:
+    def read_bytes(self, n=64, to_str=False, timeout_ms=100):
         """Read n bytes and return an array of uint8 (int)."""
         out = self._hid.read(n, timeout=timeout_ms)
-        log.debug('read="%s"', out.decode())
         if to_str:
             # Returns the bytes a string if requested
-            return out.decode("utf-8")
+            return out.hex()
 
         # Returns the raw list
         return out
 
     def read_string(self, timeout_ms=100):
         """Read an ASCII string."""
-        return self.read_bytes(MAX_INPUT_REPORT_SIZE, timeout_ms=timeout_ms).decode("ascii")
+        return self.read_chunk(timeout_ms=timeout_ms).decode("ascii")
+
+    def read_chunk(self, timeout_ms=100):
+        return self.read_bytes(MAX_INPUT_REPORT_SIZE, timeout_ms=timeout_ms)
 
     def getlabels(self):
         """Fetch the list of `Slot` from the OnlyKey.
@@ -377,13 +367,14 @@ class OnlyKey(object):
         No need to read messages.
         """
         self.send_message(msg=Message.OKGETLABELS, slot_id=107)
-        time.sleep(0)
         slots = []
         for _ in range(33):
-            data = self.read_string().split('|')
-            slot_number = ord(data[0])
+            data = self.read_chunk()
+            bef, _, aft = data.partition(b"|")
+            slot_number = bef[0]
             if 25 <= slot_number <= 57:
                 slots.append(Slot(slot_number, label=data[1]))
+
         return slots
 
     def displaykeylabels(self):
@@ -568,14 +559,14 @@ class OnlyKey(object):
         ok_pubkey1 = ''
         while ok_pubkey1 == '':
             time.sleep(0.5)
-            ok_pubkey1= self.read_bytes(64, to_str=True)
+            ok_pubkey1= self.read_bytes(64)
 
         print()
         print('received=', repr(ok_pubkey1))
 
         print('Trying to read the public RSA N part 2...')
         for _ in range(10):
-            ok_pubkey2 = self.read_bytes(64, to_str=True)
+            ok_pubkey2 = self.read_bytes(64)
             if len(ok_pubkey2) == 64:
                 break
 
@@ -584,7 +575,7 @@ class OnlyKey(object):
 
         print('Trying to read the public RSA N part 3...')
         for _ in range(10):
-            ok_pubkey3 = self.read_bytes(64, to_str=True)
+            ok_pubkey3 = self.read_bytes(64)
             if len(ok_pubkey3) == 64:
                 break
 
@@ -594,7 +585,7 @@ class OnlyKey(object):
 
         print('Trying to read the public RSA N part 4...')
         for _ in range(10):
-            ok_pubkey4 = self.read_bytes(64, to_str=True)
+            ok_pubkey4 = self.read_bytes(64)
             if len(ok_pubkey4) == 64:
                 break
 
@@ -604,7 +595,7 @@ class OnlyKey(object):
 
         print('Trying to read the public RSA N part 5...')
         for _ in range(10):
-            ok_pubkey5 = self.read_bytes(64, to_str=True)
+            ok_pubkey5 = self.read_bytes(64)
             if len(ok_pubkey5) == 64:
                 break
 
@@ -614,7 +605,7 @@ class OnlyKey(object):
 
         print('Trying to read the public RSA N part 6...')
         for _ in range(10):
-            ok_pubkey6 = self.read_bytes(64, to_str=True)
+            ok_pubkey6 = self.read_bytes(64)
             if len(ok_pubkey6) == 64:
                 break
 
@@ -624,7 +615,7 @@ class OnlyKey(object):
 
         print('Trying to read the public RSA N part 7...')
         for _ in range(10):
-            ok_pubkey7 = self.read_bytes(64, to_str=True)
+            ok_pubkey7 = self.read_bytes(64)
             if len(ok_pubkey7) == 64:
                 break
 
@@ -634,7 +625,7 @@ class OnlyKey(object):
         print('Trying to read the public RSA N part 8...')
 
         for _ in range(10):
-            ok_pubkey8 = self.read_bytes(64, to_str=True)
+            ok_pubkey8 = self.read_bytes(64)
             if len(ok_pubkey8) == 64:
                 break
 
@@ -647,7 +638,7 @@ class OnlyKey(object):
 
         print('Received Public Key generated by OnlyKey')
         ok_pubkey = ok_pubkey1 + ok_pubkey2 + ok_pubkey3 + ok_pubkey4 + ok_pubkey5 + ok_pubkey6 + ok_pubkey7 + ok_pubkey8
-        print('Public N='), repr(ok_pubkey)
+        print('Public N=', repr(ok_pubkey))
         print()
 
         print('Key Size =', len(ok_pubkey))

@@ -64,10 +64,10 @@ print()
 
 
 message = 'Secret Message'
-counter = "\x00\x00\x00\x01"
+counter = b"\x00\x00\x00\x01"
 shared_secret = curve.calculateAgreement(alice_private_key, bob_public_key)
 h = hashlib.sha256()
-h.update(counter.encode())
+h.update(counter)
 h.update(shared_secret)
 h.update(message.encode())
 d = h.digest()
@@ -159,7 +159,7 @@ print('Trying to read the shared secret from OnlyKey...')
 ok_shared_secret = ''
 while ok_shared_secret == '':
     time.sleep(0.5)
-    ok_shared_secret = ok.read_bytes(len(shared_secret), to_str=True)
+    ok_shared_secret = ok.read_bytes(64, to_str=True)
 
 print('OnlyKey Shared Secret =', repr(ok_shared_secret))
 

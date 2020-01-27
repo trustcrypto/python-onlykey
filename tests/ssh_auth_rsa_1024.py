@@ -187,16 +187,16 @@ print('Length=', len(signature))
 print('local messege to sign=', repr(h.hexdigest()))
 verifier = PKCS1_v1_5.new(key)
 if verifier.verify(h, signature):
-   print "The local signature is authentic."
+   print("The local signature is authentic.")
 else:
-  print "The local signature is not authentic."
+  print("The local signature is not authentic.")
 
 print('OnlyKey messege to sign=', repr(test_payload2))
 verifier = PKCS1_v1_5.new(key)
 if verifier.verify(h, ok_signature):
-    print "The OnlyKey signature is authentic."
+    print("The OnlyKey signature is authentic.")
 else:
-   print "The OnlyKey signature is not authentic."
+   print("The OnlyKey signature is not authentic.")
 
 
 

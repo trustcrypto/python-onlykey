@@ -52,7 +52,7 @@ def pack_long(n):
     it seems to be want you wanted? it's 64 bytes.
     """
     h = '%x' % n
-    s = ('0'*(len(h) % 2) + h).decode('hex')
+    s = bytes.fromhex('0'*(len(h) % 2) + h)
     return s
 
 def bin2hex(binStr):
