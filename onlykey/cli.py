@@ -1,6 +1,10 @@
 # coding: utf-8
 from __future__ import unicode_literals, print_function
+from __future__ import absolute_import
 
+from builtins import input
+from builtins import next
+from builtins import range
 import base64
 import binascii
 import time
@@ -15,7 +19,7 @@ from prompt_toolkit.keys import Keys
 from prompt_toolkit.filters import Condition
 import ed25519
 
-from client import OnlyKey, Message, MessageField
+from .client import OnlyKey, Message, MessageField
 
 only_key = OnlyKey()
 
@@ -71,16 +75,16 @@ def cli():
 
                 with open(privkey, 'rb') as f:
                     raw_privkey = f.read()
-                    print
+                    print ()
                     print ('Enter ECC key slot number to use (1 - 32) or enter 0 to list key labels')
-                    print
+                    print ()
                     slot = int(input())
 
                 while slot == 0:
                     ok.displaykeylabels()
-                    print
+                    print ()
                     print ('Enter ECC key slot number to use (1 - 32) or enter 0 to list key labels')
-                    print
+                    print ()
                     slot = int(input())
 
                 slot = slot + 100 # ECC keys in slot 101 - 132
@@ -99,47 +103,47 @@ def cli():
             for msg in [Message.OKSETPIN]:
                 only_key.send_message(msg=msg)
                 print(only_key.read_string())
-                print
+                print ()
                 input('Press the Enter key once you are done')
                 only_key.send_message(msg=msg)
                 print(only_key.read_string())
                 only_key.send_message(msg=msg)
                 print(only_key.read_string())
-                print
+                print ()
                 input('Press the Enter key once you are done')
                 only_key.send_message(msg=msg)
                 print(only_key.read_string())
-                print
+                print ()
 
             for msg in [Message.OKSETPDPIN]:
                 only_key.send_message(msg=msg)
                 print(only_key.read_string() + ' for second profile')
-                print
+                print ()
                 input('Press the Enter key once you are done')
                 only_key.send_message(msg=msg)
                 print(only_key.read_string() + ' for second profile')
                 only_key.send_message(msg=msg)
                 print(only_key.read_string())
-                print
+                print ()
                 input('Press the Enter key once you are done')
                 only_key.send_message(msg=msg)
                 print(only_key.read_string())
-                print
+                print ()
 
             for msg in [Message.OKSETSDPIN]:
                 only_key.send_message(msg=msg)
                 print(only_key.read_string())
-                print
+                print ()
                 input('Press the Enter key once you are done')
                 only_key.send_message(msg=msg)
                 print(only_key.read_string())
                 only_key.send_message(msg=msg)
                 print(only_key.read_string())
-                print
+                print ()
                 input('Press the Enter key once you are done')
                 only_key.send_message(msg=msg)
                 print(only_key.read_string())
-                print
+                print ()
 
         elif sys.argv[1] == 'getlabels':
             tmp = {}
@@ -298,7 +302,7 @@ def cli():
 
         elif sys.argv[1]:
             print('Command not found')
-            print
+            print()
 
     else:
 
@@ -328,22 +332,22 @@ def cli():
                 for msg in [Message.OKSETPIN]:
                     only_key.send_message(msg=msg)
                     print(only_key.read_string())
-                    print
+                    print()
                     input('Press the Enter key once you are done')
                     only_key.send_message(msg=msg)
                     print(only_key.read_string())
                     only_key.send_message(msg=msg)
                     print(only_key.read_string())
-                    print
+                    print()
                     input('Press the Enter key once you are done')
                     only_key.send_message(msg=msg)
                     print(only_key.read_string())
-                    print
+                    print()
 
                 for msg in [Message.OKSETPDPIN]:
                     only_key.send_message(msg=msg)
                     print(only_key.read_string() + ' for second profile')
-                    print
+                    print()
                     input('Press the Enter key once you are done')
                     only_key.send_message(msg=msg)
                     print(only_key.read_string() + ' for second profile')
@@ -353,22 +357,22 @@ def cli():
                     input('Press the Enter key once you are done')
                     only_key.send_message(msg=msg)
                     print(only_key.read_string())
-                    print
+                    print()
 
                 for msg in [Message.OKSETSDPIN]:
                     only_key.send_message(msg=msg)
                     print(only_key.read_string())
-                    print
+                    print()
                     input('Press the Enter key once you are done')
                     only_key.send_message(msg=msg)
                     print(only_key.read_string())
                     only_key.send_message(msg=msg)
                     print(only_key.read_string())
-                    print
+                    print()
                     input('Press the Enter key once you are done')
                     only_key.send_message(msg=msg)
                     print(only_key.read_string())
-                    print
+                    print()
             elif data[0] == 'getlabels':
                 tmp = {}
                 for slot in only_key.getlabels():

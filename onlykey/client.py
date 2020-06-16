@@ -1,4 +1,9 @@
 # coding: utf-8
+from __future__ import print_function
+from builtins import input
+from builtins import chr
+from builtins import range
+from builtins import object
 import logging
 import time
 import binascii
@@ -158,7 +163,8 @@ class OnlyKey(object):
                     self._connect()
                     log.debug('connected')
                     return
-                except Exception as e:
+                except Exception as E:
+                    e = E
                     log.debug('connect failed, trying again in 1 second...')
                     time.sleep(1.5)
                     tries -= 1
@@ -173,17 +179,19 @@ class OnlyKey(object):
                 serial_number = d['serial_number']
                 interface_number = d['interface_number']
                 usage_page = d['usage_page']
-                path = d['path']
+                self.path = d['path']
 
                 if (vendor_id, product_id) in DEVICE_IDS:
                     if serial_number == '1000000000':
                         if usage_page == 0xffab or interface_number == 2:
-                            self._hid = hid.Device(vendor_id, product_id, path=path)
-                            self._hid.nonblocking = True
+                            self._hid = hid.device()
+                            self._hid.open_path(self.path)
+                            self._hid.set_nonblocking(True)
                     else:
                         if usage_page == 0xf1d0 or interface_number == 1:
-                            self._hid = hid.Device(vendor_id, product_id, path=path)
-                            self._hid.nonblocking = True
+                            self._hid = hid.device()
+                            self._hid.open_path(self.path)
+                            self._hid.set_nonblocking(True)
 
         except:
             log.exception('failed to connect')
@@ -203,7 +211,7 @@ class OnlyKey(object):
         log.debug('Setting current epoch time =', current_epoch_time)
         payload = [int(current_epoch_time[i: i+2], 16) for i in range(0, len(current_epoch_time), 2)]
 
-        log.debug('SENDING OKSETTIME:', [x for x in enumerate(payload)]);
+        log.debug('SENDING OKSETTIME:', [x for x in enumerate(payload)])
         self.send_message(msg=Message.OKSETTIME, payload=payload)
 
     def set_ecc_key(self, key_type, slot, key):
@@ -329,7 +337,7 @@ class OnlyKey(object):
 
     def read_bytes(self, n=64, to_str=False, timeout_ms=100):
         """Read n bytes and return an array of uint8 (int)."""
-        out = self._hid.read(n, timeout=timeout_ms)
+        out = self._hid.read(n)
         if to_str:
             # Returns the bytes a string if requested
             return out.hex()
@@ -339,7 +347,8 @@ class OnlyKey(object):
 
     def read_string(self, timeout_ms=100):
         """Read an ASCII string."""
-        return self.read_chunk(timeout_ms=timeout_ms).decode("ascii")
+        return ''.join([chr(item) for item in self.read_bytes(MAX_INPUT_REPORT_SIZE, timeout_ms=timeout_ms) if item != 0])
+
 
     def read_chunk(self, timeout_ms=100):
         return self.read_bytes(MAX_INPUT_REPORT_SIZE, timeout_ms=timeout_ms)
@@ -388,6 +397,7 @@ class OnlyKey(object):
 
         time.sleep(1)
         print('You should see your OnlyKey blink 3 times\n')
+        print()
 
         tmp = {}
         for slot in self.getkeylabels():
