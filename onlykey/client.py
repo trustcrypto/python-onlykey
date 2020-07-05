@@ -9,6 +9,7 @@ import time
 import binascii
 import hashlib
 import os
+import codecs
 
 import hid
 from aenum import Enum
@@ -99,7 +100,7 @@ class Message(Enum):
     OKSETU2FCERT = 234  # 0xEA
     OKWIPEU2FCERT = 235  # 0xEB
     OKGETPUBKEY = 236
-    OKSIGNCHALLENGE = 237
+    OKSIGN = 237
     OKWIPEPRIV = 238
     OKSETPRIV = 239
     OKDECRYPT = 240
@@ -156,12 +157,13 @@ class Slot(object):
 
 class OnlyKey(object):
     def __init__(self, connect=True):
+
         if connect:
             tries = 5
             while tries > 0:
                 try:
                     self._connect()
-                    log.debug('connected')
+                    logging.debug('connected')
                     return
                 except Exception as E:
                     e = E
@@ -208,14 +210,14 @@ class OnlyKey(object):
         current_epoch_time = format(int(timestamp), 'x')
         # pad with zeros for even digits
         current_epoch_time = current_epoch_time.zfill(len(current_epoch_time) + len(current_epoch_time) % 2)
-        log.debug('Setting current epoch time =', current_epoch_time)
+        logging.debug('Setting current epoch time =', current_epoch_time)
         payload = [int(current_epoch_time[i: i+2], 16) for i in range(0, len(current_epoch_time), 2)]
 
-        log.debug('SENDING OKSETTIME:', [x for x in enumerate(payload)])
+        logging.debug('SENDING OKSETTIME:', [x for x in enumerate(payload)])
         self.send_message(msg=Message.OKSETTIME, payload=payload)
 
     def set_ecc_key(self, key_type, slot, key):
-        payload = bytes([key_type, slot]) + key
+        payload = [key_type, slot] + [ord(c) for c in key]
         self.send_message(msg=Message.OKSETPRIV, payload=payload)
 
     def set_rsa_key(self, key_type, slot, key):
@@ -224,47 +226,45 @@ class OnlyKey(object):
 
     def send_message(self, payload=None, msg=None, slot_id=None, message_field=None):
         """Send a message."""
-        log.debug('preparing payload for writing')
+        logging.debug('preparing payload for writing')
         # Initialize an empty message with the header
-        raw_bytes = bytes(MESSAGE_HEADER)
+        raw_bytes = list(MESSAGE_HEADER)
 
         # Append the message type (must be `Message` enum value)
         if msg:
-            log.debug('msg=%s', msg.name)
-            raw_bytes += bytes([msg.value])
+            logging.debug('msg=%s', msg.name)
+            raw_bytes.append(msg.value)
 
         # Append the slot ID if needed
         if slot_id:
-            log.debug('slot_id=%s', slot_id)
-            raw_bytes += bytes([slot_id])
+            logging.debug('slot_id=%s', slot_id)
+            raw_bytes.append(slot_id)
 
         # Append the message field (must be a `MessageField` enum value)
         if message_field:
-            log.debug('slot_field=%s', message_field.name)
-            raw_bytes += bytes([message_field.value])
+            logging.debug('slot_field=%s', message_field.name)
+            raw_bytes.append(message_field.value)
 
-        # Append the raw payload, expect a string or a list of int
+         # Append the raw payload, expect a string or a list of int
         if payload:
-            if isinstance(payload, bytes):
-                log.debug("payload=%s", payload)
-                raw_bytes += payload
-            elif isinstance(payload, str):
-                log.debug('payload="%s"', payload)
-                raw_bytes += payload.encode("utf-8")
+            if isinstance(payload, (str, str)):
+                logging.debug('payload="%s"', payload)
+                raw_bytes.extend(bytearray.fromhex(payload))
             elif isinstance(payload, list):
-                log.debug('payload=%s', ''.join([chr(c) for c in payload]))
-                raw_bytes += bytes(payload)
+                logging.debug('payload=%s', ''.join([chr(c) for c in payload]))
+                raw_bytes.extend(payload)
             elif isinstance(payload, int):
-                log.debug('payload=%d', payload)
-                raw_bytes += bytes([payload])
+                logging.debug('payload=%d', payload)
+                raw_bytes.append(payload)
             else:
-                raise Exception('`payload` must be either `str` or `list`, got `{}`'.format(type(payload)))
+                raise Exception('`payload` must be either `str` or `list`')
+
         # Pad the ouput with 0s
         while len(raw_bytes) < MAX_INPUT_REPORT_SIZE:
-            raw_bytes += bytes([0])
+            raw_bytes.append(0)
 
         # Send the message
-        log.debug('sending message ')
+        logging.debug('sending message ')
         self._hid.write(raw_bytes)
 
     def send_large_message(self, payload=None, msg=None, slot_id=chr(101)):
@@ -277,18 +277,20 @@ class OnlyKey(object):
         for chunk in chunks:
             # print chunk
             # print [ord(c) for c in chunk]
-            current_payload = bytes([255])  # 255 means that it's not the last payload
+            current_payload = [255]  # 255 means that it's not the last payload
             # If it's less than the max size, set explicitely the size
             if len(chunk) < 58:
-                current_payload = bytes([len(chunk)])
-
+                current_payload = [len(chunk)]
             # Append the actual payload
             if isinstance(chunk, list):
-                current_payload += bytes(chunk)
+                current_payload.extend(chunk)
             else:
-                current_payload += chunk
+                for c in chunk:
+                    current_payload.append(ord(c))
 
             self.send_message(payload=current_payload, msg=msg)
+
+        return
 
 
     def send_large_message2(self, payload=None, msg=None, slot_id=101):
@@ -306,15 +308,15 @@ class OnlyKey(object):
             if len(chunk) < 57:
                 current_payload = [slot_id, len(chunk)]
 
-            current_payload = bytes(current_payload)
-
             # Append the actual payload
             if isinstance(chunk, list):
-                current_payload += bytes(chunk)
+	               current_payload.extend(chunk)
             else:
-                current_payload += chunk
+                for c in chunk:
+                    current_payload.append(c)
 
             self.send_message(payload=current_payload, msg=msg)
+        return
 
 
     def send_large_message3(self, payload=None, msg=None, slot_id=101, key_type=1):
@@ -325,22 +327,35 @@ class OnlyKey(object):
         # Split the payload in multiple chunks
         chunks = [payload[x:x+MAX_LARGE_PAYLOAD_SIZE-1] for x in range(0, len(payload), 57)]
         for chunk in chunks:
-            current_payload = bytes([slot_id, key_type])
+            current_payload = [slot_id, key_type]
 
             # Append the actual payload
             if isinstance(chunk, list):
-                current_payload += bytes(chunk)
+                current_payload.extend(chunk)
             else:
-                current_payload += chunk
-
-        self.send_message(payload=current_payload, msg=msg)
+                for c in chunk:
+                    current_payload.append(ord(c))
+            self.send_message(payload=current_payload, msg=msg)
+        return
 
     def read_bytes(self, n=64, to_str=False, timeout_ms=100):
         """Read n bytes and return an array of uint8 (int)."""
-        out = self._hid.read(n)
+        out = self._hid.read(n, timeout_ms=timeout_ms)
+        logging.debug('read="%s"', ''.join([chr(c) for c in out]))
+        outstr = bytearray(out)
+        logging.debug('outstring="%s"', outstr)
+        if outstr.decode(errors="ignore").find("INITIALIZED") != -1:
+            raise RuntimeError('OnlyKey is locked, enter PIN to unlock')
+        elif outstr.decode(errors="ignore").find("Error incorrect challenge was entered") != -1:
+            raise RuntimeError('Error incorrect challenge was entered')
+        elif outstr.decode(errors="ignore").find("No PIN set, You must set a PIN first") != -1:
+            raise RuntimeError('Error OnlyKey must be configured first')
+        elif outstr.decode(errors="ignore").find("Timeout occured while waiting for confirmation on OnlyKey") != -1:
+            raise RuntimeError('Timeout occured while waiting for confirmation on OnlyKey')
+
         if to_str:
             # Returns the bytes a string if requested
-            return out.hex()
+            return ''.join([bytes(c) for c in out])
 
         # Returns the raw list
         return out
@@ -376,11 +391,11 @@ class OnlyKey(object):
         No need to read messages.
         """
         self.send_message(msg=Message.OKGETLABELS, slot_id=107)
+        time.sleep(0)
         slots = []
         for _ in range(33):
-            data = self.read_chunk()
-            bef, _, aft = data.partition(b"|")
-            slot_number = bef[0]
+            data = self.read_string().split('|')
+            slot_number = ord(data[0])
             if 25 <= slot_number <= 57:
                 slots.append(Slot(slot_number, label=data[1]))
 
@@ -396,7 +411,7 @@ class OnlyKey(object):
             empty = self.read_string(timeout_ms=100)
 
         time.sleep(1)
-        print('You should see your OnlyKey blink 3 times\n')
+        print('You should see your OnlyKey blink 3 times')
         print()
 
         tmp = {}
@@ -432,7 +447,8 @@ class OnlyKey(object):
             empty = self.read_string(timeout_ms=100)
 
         time.sleep(1)
-        print('You should see your OnlyKey blink 3 times\n')
+        print('You should see your OnlyKey blink 3 times')
+        print()
 
         # Compute the challenge pin
         h = hashlib.sha256()
@@ -460,10 +476,11 @@ class OnlyKey(object):
         ok_sign1 = ''
         while ok_sign1 == '':
             time.sleep(0.5)
-            ok_sign1= self.read_bytes(64, to_str=True)
+            ok_sign1 = self.read_bytes(64, to_str=True)
             print(type(ok_sign1))
 
         print()
+
         print('received=', repr(ok_sign1))
 
         print('Trying to read the signature part 2...')
@@ -473,6 +490,7 @@ class OnlyKey(object):
                 break
 
         print()
+
         print('received=', repr(ok_sign2))
 
         print('Trying to read the signature part 3...')
@@ -483,6 +501,7 @@ class OnlyKey(object):
 
 
         print()
+
         print('received=', repr(ok_sign3))
 
         print('Trying to read the signature part 4...')
@@ -493,6 +512,7 @@ class OnlyKey(object):
 
 
         print()
+
         print('received=', repr(ok_sign4))
 
         print('Trying to read the signature part 5...')
@@ -503,6 +523,7 @@ class OnlyKey(object):
 
 
         print()
+
         print('received=', repr(ok_sign5))
 
         print('Trying to read the signature part 6...')
@@ -513,6 +534,7 @@ class OnlyKey(object):
 
 
         print()
+
         print('received=', repr(ok_sign6))
 
         print('Trying to read the signature part 7...')
@@ -523,6 +545,7 @@ class OnlyKey(object):
 
 
         print()
+
         print('received=', repr(ok_sign7))
 
         print('Trying to read the signature part 8...')
@@ -532,6 +555,7 @@ class OnlyKey(object):
                 break
 
         print()
+
         print('received=', repr(ok_sign8))
 
         if not ok_sign2:
@@ -569,53 +593,58 @@ class OnlyKey(object):
         ok_pubkey1 = ''
         while ok_pubkey1 == '':
             time.sleep(0.5)
-            ok_pubkey1= self.read_bytes(64)
+            ok_pubkey1 = self.read_bytes(64, to_str=True)
 
         print()
+
         print('received=', repr(ok_pubkey1))
 
         print('Trying to read the public RSA N part 2...')
         for _ in range(10):
-            ok_pubkey2 = self.read_bytes(64)
+            ok_pubkey2 = self.read_bytes(64, to_str=True)
             if len(ok_pubkey2) == 64:
                 break
 
         print()
+
         print('received=', repr(ok_pubkey2))
 
         print('Trying to read the public RSA N part 3...')
         for _ in range(10):
-            ok_pubkey3 = self.read_bytes(64)
+            ok_pubkey3 = self.read_bytes(64, to_str=True)
             if len(ok_pubkey3) == 64:
                 break
 
 
         print()
+
         print('received=', repr(ok_pubkey3))
 
         print('Trying to read the public RSA N part 4...')
         for _ in range(10):
-            ok_pubkey4 = self.read_bytes(64)
+            ok_pubkey4 = self.read_bytes(64, to_str=True)
             if len(ok_pubkey4) == 64:
                 break
 
 
         print()
+
         print('received=', repr(ok_pubkey4))
 
         print('Trying to read the public RSA N part 5...')
         for _ in range(10):
-            ok_pubkey5 = self.read_bytes(64)
+            ok_pubkey5 = self.read_bytes(64, to_str=True)
             if len(ok_pubkey5) == 64:
                 break
 
 
         print()
+
         print('received=', repr(ok_pubkey5))
 
         print('Trying to read the public RSA N part 6...')
         for _ in range(10):
-            ok_pubkey6 = self.read_bytes(64)
+            ok_pubkey6 = self.read_bytes(64, to_str=True)
             if len(ok_pubkey6) == 64:
                 break
 
@@ -625,7 +654,7 @@ class OnlyKey(object):
 
         print('Trying to read the public RSA N part 7...')
         for _ in range(10):
-            ok_pubkey7 = self.read_bytes(64)
+            ok_pubkey7 = self.read_bytes(64, to_str=True)
             if len(ok_pubkey7) == 64:
                 break
 
@@ -635,7 +664,7 @@ class OnlyKey(object):
         print('Trying to read the public RSA N part 8...')
 
         for _ in range(10):
-            ok_pubkey8 = self.read_bytes(64)
+            ok_pubkey8 = self.read_bytes(64, to_str=True)
             if len(ok_pubkey8) == 64:
                 break
 
@@ -719,4 +748,4 @@ class OnlyKey(object):
         ok_priv = ok_priv[0:32]
         print('Store backup key in a secure location (i.e. USB drive in a safe)=', repr(ok_priv))
         print()
-        ok_priv = 0;
+        ok_priv = 0

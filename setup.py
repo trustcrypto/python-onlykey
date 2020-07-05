@@ -10,7 +10,7 @@ with open(path.join(here, 'README.md'), encoding='utf-8') as f:
 
 setup(
     name='onlykey',
-    version='1.1.0',
+    version='1.2.0',
     description='OnlyKey client and command-line tool',
     # long_description=long_description,
     url='https://github.com/trustcrypto/python-onlykey',
@@ -23,5 +23,5 @@ setup(
             'onlykey-cli=onlykey.cli:main'
         ],
     },
-    install_requires=['hidapi', 'aenum', 'six', 'prompt_toolkit>=2', 'ed25519>=1.4', 'ecdsa>=0.13', 'Cython>=0.23.4'],
+    install_requires=['hidapi', 'aenum', 'six', 'prompt_toolkit>=2', 'pynacl>=1.4.0', 'ecdsa>=0.13', 'Cython>=0.23.4'],
 )

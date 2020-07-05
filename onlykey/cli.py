@@ -17,7 +17,7 @@ from prompt_toolkit import Application
 from prompt_toolkit.key_binding import KeyBindings
 from prompt_toolkit.keys import Keys
 from prompt_toolkit.filters import Condition
-import ed25519
+import nacl.signing
 
 from .client import OnlyKey, Message, MessageField
 
@@ -56,10 +56,10 @@ def cli():
 
             # Create a new private key
             if sys.argv[2] == 'new':
-                signing_key, _ = ed25519.create_keypair()
+                signing_key, _ = nacl.signing.SigningKey.generate()
 
                 with open('ecc_private.key', 'wb+') as f:
-                    f.write(signing_key.to_seed())
+                    f.write(signing_key.encode(encoder=nacl.encoding.HexEncoder))
 
                 print('ECC private key written to ecc_private.key')
 
@@ -307,7 +307,7 @@ def cli():
     else:
 
         # Print help.
-        print('OnlyKey CLI v1.1.0')
+        print('OnlyKey CLI v1.2.0')
         print('Control-D to exit.')
         print()
 
@@ -353,7 +353,7 @@ def cli():
                     print(only_key.read_string() + ' for second profile')
                     only_key.send_message(msg=msg)
                     print(only_key.read_string())
-                    print
+                    print ()
                     input('Press the Enter key once you are done')
                     only_key.send_message(msg=msg)
                     print(only_key.read_string())
@@ -567,6 +567,3 @@ def main():
         print()
         print('Bye!')
         pass
-
-if __name__ == "__main__":
-    main()
