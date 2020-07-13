@@ -352,6 +352,20 @@ class OnlyKey(object):
             raise RuntimeError('Error OnlyKey must be configured first')
         elif outstr.decode(errors="ignore").find("Timeout occured while waiting for confirmation on OnlyKey") != -1:
             raise RuntimeError('Timeout occured while waiting for confirmation on OnlyKey')
+        elif outstr.decode(errors="ignore").find("Error key not set as signature key") != -1:
+            raise RuntimeError('Error key not set as signature key')
+        elif outstr.decode(errors="ignore").find("Error key not set as decryption key") != -1:
+            raise RuntimeError('Error key not set as decryption key')
+        elif outstr.decode(errors="ignore").find("Error with RSA data to sign invalid size") != -1:
+            raise RuntimeError('Error with RSA data to sign invalid size')
+        elif outstr.decode(errors="ignore").find("Error with RSA signing") != -1:
+            raise RuntimeError('Error with RSA signing')
+        elif outstr.decode(errors="ignore").find("Error with RSA data to decrypt invalid size") != -1:
+            raise RuntimeError('Error with RSA data to decrypt invalid size')
+        elif outstr.decode(errors="ignore").find("Error with RSA decryption") != -1:
+            raise RuntimeError('Error with RSA decryption')
+        elif outstr.decode(errors="ignore").find("Error no key set in this slot") != -1:
+            raise RuntimeError('Error no key set in this slot')
 
         if to_str:
             # Returns the bytes a string if requested
@@ -393,10 +407,10 @@ class OnlyKey(object):
         self.send_message(msg=Message.OKGETLABELS, slot_id=107)
         time.sleep(0)
         slots = []
-        for _ in range(33):
+        for _ in range(20):
             data = self.read_string().split('|')
             slot_number = ord(data[0])
-            if 25 <= slot_number <= 57:
+            if 25 <= slot_number <= 44:
                 slots.append(Slot(slot_number, label=data[1]))
 
         return slots
