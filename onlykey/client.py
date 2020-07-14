@@ -338,7 +338,7 @@ class OnlyKey(object):
             self.send_message(payload=current_payload, msg=msg)
         return
 
-    def read_bytes(self, n=64, to_str=False, timeout_ms=100):
+    def read_bytes(self, n=64, to_bytes=False, timeout_ms=100):
         """Read n bytes and return an array of uint8 (int)."""
         out = self._hid.read(n, timeout_ms=timeout_ms)
         logging.debug('read="%s"', ''.join([chr(c) for c in out]))
@@ -353,9 +353,9 @@ class OnlyKey(object):
         elif outstr.decode(errors="ignore").find("Timeout occured while waiting for confirmation on OnlyKey") != -1:
             raise RuntimeError('Timeout occured while waiting for confirmation on OnlyKey')
 
-        if to_str:
+        if to_bytes:
             # Returns the bytes a string if requested
-            return ''.join([bytes(c) for c in out])
+            return bytes(out)
 
         # Returns the raw list
         return out
@@ -476,7 +476,7 @@ class OnlyKey(object):
         ok_sign1 = ''
         while ok_sign1 == '':
             time.sleep(0.5)
-            ok_sign1 = self.read_bytes(64, to_str=True)
+            ok_sign1 = self.read_bytes(64, to_bytes=True)
             print(type(ok_sign1))
 
         print()
@@ -485,7 +485,7 @@ class OnlyKey(object):
 
         print('Trying to read the signature part 2...')
         for _ in range(10):
-            ok_sign2 = self.read_bytes(64, to_str=True)
+            ok_sign2 = self.read_bytes(64, to_bytes=True)
             if len(ok_sign2) == 64:
                 break
 
@@ -495,7 +495,7 @@ class OnlyKey(object):
 
         print('Trying to read the signature part 3...')
         for _ in range(10):
-            ok_sign3 = self.read_bytes(64, to_str=True)
+            ok_sign3 = self.read_bytes(64, to_bytes=True)
             if len(ok_sign3) == 64:
                 break
 
@@ -506,7 +506,7 @@ class OnlyKey(object):
 
         print('Trying to read the signature part 4...')
         for _ in range(10):
-            ok_sign4 = self.read_bytes(64, to_str=True)
+            ok_sign4 = self.read_bytes(64, to_bytes=True)
             if len(ok_sign4) == 64:
                 break
 
@@ -517,7 +517,7 @@ class OnlyKey(object):
 
         print('Trying to read the signature part 5...')
         for _ in range(10):
-            ok_sign5 = self.read_bytes(64, to_str=True)
+            ok_sign5 = self.read_bytes(64, to_bytes=True)
             if len(ok_sign5) == 64:
                 break
 
@@ -528,7 +528,7 @@ class OnlyKey(object):
 
         print('Trying to read the signature part 6...')
         for _ in range(10):
-            ok_sign6 = self.read_bytes(64, to_str=True)
+            ok_sign6 = self.read_bytes(64, to_bytes=True)
             if len(ok_sign6) == 64:
                 break
 
@@ -539,7 +539,7 @@ class OnlyKey(object):
 
         print('Trying to read the signature part 7...')
         for _ in range(10):
-            ok_sign7 = self.read_bytes(64, to_str=True)
+            ok_sign7 = self.read_bytes(64, to_bytes=True)
             if len(ok_sign7) == 64:
                 break
 
@@ -550,7 +550,7 @@ class OnlyKey(object):
 
         print('Trying to read the signature part 8...')
         for _ in range(10):
-            ok_sign8 = self.read_bytes(64, to_str=True)
+            ok_sign8 = self.read_bytes(64, to_bytes=True)
             if len(ok_sign8) == 64:
                 break
 
@@ -593,7 +593,7 @@ class OnlyKey(object):
         ok_pubkey1 = ''
         while ok_pubkey1 == '':
             time.sleep(0.5)
-            ok_pubkey1 = self.read_bytes(64, to_str=True)
+            ok_pubkey1 = self.read_bytes(64, to_bytes=True)
 
         print()
 
@@ -601,7 +601,7 @@ class OnlyKey(object):
 
         print('Trying to read the public RSA N part 2...')
         for _ in range(10):
-            ok_pubkey2 = self.read_bytes(64, to_str=True)
+            ok_pubkey2 = self.read_bytes(64, to_bytes=True)
             if len(ok_pubkey2) == 64:
                 break
 
@@ -611,7 +611,7 @@ class OnlyKey(object):
 
         print('Trying to read the public RSA N part 3...')
         for _ in range(10):
-            ok_pubkey3 = self.read_bytes(64, to_str=True)
+            ok_pubkey3 = self.read_bytes(64, to_bytes=True)
             if len(ok_pubkey3) == 64:
                 break
 
@@ -622,7 +622,7 @@ class OnlyKey(object):
 
         print('Trying to read the public RSA N part 4...')
         for _ in range(10):
-            ok_pubkey4 = self.read_bytes(64, to_str=True)
+            ok_pubkey4 = self.read_bytes(64, to_bytes=True)
             if len(ok_pubkey4) == 64:
                 break
 
@@ -633,7 +633,7 @@ class OnlyKey(object):
 
         print('Trying to read the public RSA N part 5...')
         for _ in range(10):
-            ok_pubkey5 = self.read_bytes(64, to_str=True)
+            ok_pubkey5 = self.read_bytes(64, to_bytes=True)
             if len(ok_pubkey5) == 64:
                 break
 
@@ -644,7 +644,7 @@ class OnlyKey(object):
 
         print('Trying to read the public RSA N part 6...')
         for _ in range(10):
-            ok_pubkey6 = self.read_bytes(64, to_str=True)
+            ok_pubkey6 = self.read_bytes(64, to_bytes=True)
             if len(ok_pubkey6) == 64:
                 break
 
@@ -654,7 +654,7 @@ class OnlyKey(object):
 
         print('Trying to read the public RSA N part 7...')
         for _ in range(10):
-            ok_pubkey7 = self.read_bytes(64, to_str=True)
+            ok_pubkey7 = self.read_bytes(64, to_bytes=True)
             if len(ok_pubkey7) == 64:
                 break
 
@@ -664,7 +664,7 @@ class OnlyKey(object):
         print('Trying to read the public RSA N part 8...')
 
         for _ in range(10):
-            ok_pubkey8 = self.read_bytes(64, to_str=True)
+            ok_pubkey8 = self.read_bytes(64, to_bytes=True)
             if len(ok_pubkey8) == 64:
                 break
 
@@ -724,7 +724,7 @@ class OnlyKey(object):
         ok_decrypted = ''
         while ok_decrypted == '':
             time.sleep(0.5)
-            ok_decrypted = self.read_bytes(64, to_str=True)
+            ok_decrypted = self.read_bytes(64, to_bytes=True)
 
         print('Decrypted by OnlyKey, data=', repr(ok_decrypted))
 
@@ -741,7 +741,7 @@ class OnlyKey(object):
 
         log.info('Trying to read the private key...')
         for _ in range(2):
-            ok_priv = self.read_bytes(64, to_str=True, timeout_ms=10)
+            ok_priv = self.read_bytes(64, to_bytes=True, timeout_ms=10)
             if len(ok_priv) == 64:
                 break
 
