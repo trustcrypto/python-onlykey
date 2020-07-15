@@ -158,7 +158,7 @@ print('Trying to read the decrypted data from OnlyKey...')
 ok_decrypted = ''
 while ok_decrypted == '':
     time.sleep(0.5)
-    ok_decrypted = ok.read_bytes(len(message), to_str=True)
+    ok_decrypted = ok.read_bytes(len(message), to_bytes=True)
 
 dsize = len(message)
 sentinel = Random.new().read(15+dsize)

@@ -95,7 +95,7 @@ print('Trying to read the public RSA N part 1...')
 ok.send_message(msg=Message.OKGETPUBKEY, payload=chr(1))  #, payload=[1, 1])
 time.sleep(1.5)
 for _ in xrange(10):
-    ok_pubkey1 = ok.read_bytes(64, to_str=True)
+    ok_pubkey1 = ok.read_bytes(64, to_bytes=True)
     if len(ok_pubkey1) == 64:
         break
     time.sleep(1)
@@ -106,7 +106,7 @@ print('received=', repr(ok_pubkey1))
 
 print('Trying to read the public RSA N part 2...')
 for _ in xrange(10):
-    ok_pubkey2 = ok.read_bytes(64, to_str=True)
+    ok_pubkey2 = ok.read_bytes(64, to_bytes=True)
     if len(ok_pubkey2) == 64:
         break
     time.sleep(1)
@@ -157,7 +157,7 @@ print('Trying to read the signature part 1...')
 signature1 = ''
 while signature1 == '':
     time.sleep(0.5)
-    signature1 = ok.read_bytes(64, to_str=True)
+    signature1 = ok.read_bytes(64, to_bytes=True)
 
 print('received=', repr(signature1))
 
@@ -165,7 +165,7 @@ print('Trying to read the signature part 2...')
 signature2 = ''
 while signature2 == '':
     time.sleep(0.5)
-    signature2 = ok.read_bytes(64, to_str=True)
+    signature2 = ok.read_bytes(64, to_bytes=True)
 
 print('received=', repr(signature2))
 
