@@ -93,7 +93,7 @@ print('Trying to read the public RSA N part 1...')
 ok.send_message(msg=Message.OKGETPUBKEY, payload=chr(1))  #, payload=[1, 1])
 time.sleep(1.5)
 for _ in xrange(10):
-    ok_pubkey1 = ok.read_bytes(64, to_str=True, timeout_ms=1000)
+    ok_pubkey1 = ok.read_bytes(64, to_bytes=True, timeout_ms=1000)
     if len(ok_pubkey1) == 64:
         break
     time.sleep(1)
@@ -104,7 +104,7 @@ print('received=', repr(ok_pubkey1))
 
 print('Trying to read the public RSA N part 2...')
 for _ in xrange(10):
-    ok_pubkey2 = ok.read_bytes(64, to_str=True, timeout_ms=1000)
+    ok_pubkey2 = ok.read_bytes(64, to_bytes=True, timeout_ms=1000)
     if len(ok_pubkey2) == 64:
         break
     time.sleep(1)
@@ -115,7 +115,7 @@ print('received=', repr(ok_pubkey2))
 
 print('Trying to read the public RSA N part 3...')
 for _ in xrange(10):
-    ok_pubkey3 = ok.read_bytes(64, to_str=True, timeout_ms=1000)
+    ok_pubkey3 = ok.read_bytes(64, to_bytes=True, timeout_ms=1000)
     if len(ok_pubkey3) == 64:
         break
     time.sleep(1)
@@ -126,7 +126,7 @@ print('received=', repr(ok_pubkey3))
 
 print('Trying to read the public RSA N part 4...')
 for _ in xrange(10):
-    ok_pubkey4 = ok.read_bytes(64, to_str=True, timeout_ms=1000)
+    ok_pubkey4 = ok.read_bytes(64, to_bytes=True, timeout_ms=1000)
     if len(ok_pubkey4) == 64:
         break
     time.sleep(1)
@@ -137,7 +137,7 @@ print('received=', repr(ok_pubkey4))
 
 print('Trying to read the public RSA N part 5...')
 for _ in xrange(10):
-    ok_pubkey5 = ok.read_bytes(64, to_str=True, timeout_ms=1000)
+    ok_pubkey5 = ok.read_bytes(64, to_bytes=True, timeout_ms=1000)
     if len(ok_pubkey5) == 64:
         break
     time.sleep(1)
@@ -148,7 +148,7 @@ print('received=', repr(ok_pubkey5))
 
 print('Trying to read the public RSA N part 6...')
 for _ in xrange(10):
-    ok_pubkey6 = ok.read_bytes(64, to_str=True, timeout_ms=1000)
+    ok_pubkey6 = ok.read_bytes(64, to_bytes=True, timeout_ms=1000)
     if len(ok_pubkey6) == 64:
         break
     time.sleep(1)
@@ -159,7 +159,7 @@ print('received=', repr(ok_pubkey6))
 
 print('Trying to read the public RSA N part 7...')
 for _ in xrange(10):
-    ok_pubkey7 = ok.read_bytes(64, to_str=True, timeout_ms=1000)
+    ok_pubkey7 = ok.read_bytes(64, to_bytes=True, timeout_ms=1000)
     if len(ok_pubkey7) == 64:
         break
     time.sleep(1)
@@ -170,7 +170,7 @@ print('received=', repr(ok_pubkey7))
 
 print('Trying to read the public RSA N part 8...')
 for _ in xrange(10):
-    ok_pubkey8 = ok.read_bytes(64, to_str=True, timeout_ms=1000)
+    ok_pubkey8 = ok.read_bytes(64, to_bytes=True, timeout_ms=1000)
     if len(ok_pubkey8) == 64:
         break
     time.sleep(1)
@@ -224,7 +224,7 @@ print('Trying to read the decrypted data from OnlyKey...')
 ok_decrypted = ''
 while ok_decrypted == '':
     time.sleep(0.5)
-    ok_decrypted = ok.read_bytes(len(message), to_str=True)
+    ok_decrypted = ok.read_bytes(len(message), to_bytes=True)
 
 dsize = len(message)
 sentinel = Random.new().read(15+dsize)

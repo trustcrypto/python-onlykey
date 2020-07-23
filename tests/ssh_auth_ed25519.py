@@ -49,7 +49,7 @@ ok.send_message(msg=Message.OKGETPUBKEY, payload=101, slot_id=65)  #, payload=[1
 time.sleep(1.5)
 for i in range(10):
     print(i)
-    ok_pubkey = ok.read_bytes(32, to_str=True)
+    ok_pubkey = ok.read_bytes(32, to_bytes=True)
     print(ok_pubkey)
     if len(ok_pubkey) == 32:
         break
@@ -122,7 +122,7 @@ input()
 signature = ''
 while signature == '':
     time.sleep(0.5)
-    signature = ok.read_bytes(64, to_str=True)
+    signature = ok.read_bytes(64, to_bytes=True)
 
 print('Signed by OnlyKey, signature=', repr(signature))
 

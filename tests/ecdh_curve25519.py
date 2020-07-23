@@ -159,7 +159,7 @@ print('Trying to read the shared secret from OnlyKey...')
 ok_shared_secret = ''
 while ok_shared_secret == '':
     time.sleep(0.5)
-    ok_shared_secret = ok.read_bytes(64, to_str=True)
+    ok_shared_secret = ok.read_bytes(64, to_bytes=True)
 
 print('OnlyKey Shared Secret =', repr(ok_shared_secret))
 
@@ -174,7 +174,7 @@ print()
 #ok_KEK = ''
 #while ok_KEK == '':
 #    time.sleep(0.5)
-#    ok_KEK = ok.read_bytes(len(KEK), to_str=True)
+#    ok_KEK = ok.read_bytes(len(KEK), to_bytes=True)
 
 #print 'OnlyKey KEK =', repr(ok_KEK)
 
