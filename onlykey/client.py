@@ -216,19 +216,11 @@ class OnlyKey(object):
         logging.debug('SENDING OKSETTIME:', [x for x in enumerate(payload)])
         self.send_message(msg=Message.OKSETTIME, payload=payload)
 
-    def set_ecc_key(self, key_type, slot, key):
-        payload = [key_type, slot] + [ord(c) for c in key]
-        self.send_message(msg=Message.OKSETPRIV, payload=payload)
-
-    def set_rsa_key(self, key_type, slot, key):
-        payload = [key_type, slot] + [ord(c) for c in key]
-        self.send_message(msg=Message.OKSETPRIV, payload=payload)
-
-    def send_message(self, payload=None, msg=None, slot_id=None, message_field=None):
+    def send_message(self, payload=None, msg=None, slot_id=None, message_field=None, from_ascii=False):
         """Send a message."""
         logging.debug('preparing payload for writing')
         # Initialize an empty message with the header
-        raw_bytes = list(MESSAGE_HEADER)
+        raw_bytes = bytearray(MESSAGE_HEADER)
 
         # Append the message type (must be `Message` enum value)
         if msg:
@@ -249,9 +241,12 @@ class OnlyKey(object):
         if payload:
             if isinstance(payload, (str, str)):
                 logging.debug('payload="%s"', payload)
-                raw_bytes.extend(bytearray.fromhex(payload))
-            elif isinstance(payload, list):
-                logging.debug('payload=%s', ''.join([chr(c) for c in payload]))
+                if from_ascii==True:
+                    raw_bytes.extend(str.encode(payload))
+                else:
+                    raw_bytes.extend(bytearray.fromhex(payload))
+            elif isinstance(payload, list) or isinstance(payload, bytearray):
+                logging.debug('payload=%s', payload)
                 raw_bytes.extend(payload)
             elif isinstance(payload, int):
                 logging.debug('payload=%d', payload)
@@ -319,22 +314,17 @@ class OnlyKey(object):
         return
 
 
-    def send_large_message3(self, payload=None, msg=None, slot_id=101, key_type=1):
+    def send_large_message3(self, payload=None, msg=None, key_type=None, slot_id=None):
         """Wrapper for sending large message (larger than 58 bytes) in batch in a transparent way."""
         if not msg:
             raise Exception("Missing msg")
 
         # Split the payload in multiple chunks
+        payload = bytearray.fromhex(payload)
         chunks = [payload[x:x+MAX_LARGE_PAYLOAD_SIZE-1] for x in range(0, len(payload), 57)]
         for chunk in chunks:
-            current_payload = [slot_id, key_type]
-
-            # Append the actual payload
-            if isinstance(chunk, list):
-                current_payload.extend(chunk)
-            else:
-                for c in chunk:
-                    current_payload.append(ord(c))
+            current_payload = [int(slot_id), int(key_type)]
+            current_payload = bytearray(bytes(current_payload)) + payload
             self.send_message(payload=current_payload, msg=msg)
         return
 
@@ -436,9 +426,8 @@ class OnlyKey(object):
             print(tmp[slot_name].to_str())
 
     def setslot(self, slot_number, message_field, value):
-        """Set a slot field to the given value.
-        """
-        self.send_message(msg=Message.OKSETSLOT, slot_id=slot_number, message_field=message_field, payload=value)
+        """Set a slot field to the given value."""
+        self.send_message(msg=Message.OKSETSLOT, slot_id=slot_number, message_field=message_field, payload=value, from_ascii=True)
         # Set U2F
         # [255, 255, 255, 255, 230, 12, 8, 117, 50, 102, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
         print(self.read_string())
@@ -448,6 +437,22 @@ class OnlyKey(object):
         self.send_message(msg=Message.OKWIPESLOT, slot_id=slot_number)
         for _ in range(8):
             print(self.read_string())
+
+    def setkey(self, slot_number, ecc_type, value):
+        # slot 131-132 Reserved
+        # slot 129-130 HMAC Keys
+        # slot 101-116 ECC Keys
+        # slot 1-4 RSA Keys
+        logging.debug('SETTING KEY IN SLOT:', slot_number)
+        logging.debug('TO TYPE:', ecc_type)
+        logging.debug('KEY:', value)
+        self.send_large_message3(msg=Message.OKSETPRIV, slot_id=slot_number, key_type=ecc_type, payload=value)
+        print(self.read_string())
+
+    def wipekey(self, slot_number):
+        logging.debug('WIPING KEY IN SLOT:', slot_number)
+        self.send_large_message3(msg=Message.OKWIPEPRIV, slot_id=slot_number, key_type='00', payload='00')
+        print(self.read_string())
 
     def sign(self, SignatureHash):
         global slotnum

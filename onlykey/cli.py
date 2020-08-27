@@ -51,48 +51,8 @@ def cli():
         return
 
     if len(sys.argv) > 1:
-        if sys.argv[1] == 'ecc':
-            # ECC subcommands
 
-            # Create a new private key
-            if sys.argv[2] == 'new':
-                signing_key, _ = nacl.signing.SigningKey.generate()
-
-                with open('ecc_private.key', 'wb+') as f:
-                    f.write(signing_key.encode(encoder=nacl.encoding.HexEncoder))
-
-                print('ECC private key written to ecc_private.key')
-
-            # Load a private key to the OnlyKey
-            elif sys.argv[2] == 'load':
-
-                privkey = 'ecc_private.key'
-                if len(privkey) == 4:
-                    privkey = sys.argv[3]
-
-                if not os.path.exists(privkey):
-                    print('{} does not exists'.format(privkey))
-
-                with open(privkey, 'rb') as f:
-                    raw_privkey = f.read()
-                    print ()
-                    print ('Enter ECC key slot number to use (1 - 32) or enter 0 to list key labels')
-                    print ()
-                    slot = int(input())
-
-                while slot == 0:
-                    ok.displaykeylabels()
-                    print ()
-                    print ('Enter ECC key slot number to use (1 - 32) or enter 0 to list key labels')
-                    print ()
-                    slot = int(input())
-
-                slot = slot + 100 # ECC keys in slot 101 - 132
-                only_key.set_ecc_key(slot, (1+16+32+64+128), raw_privkey) #set ECC key with all features
-                time.sleep(1.5)
-                print(only_key.read_string())
-
-        elif sys.argv[1] == 'settime':
+        if sys.argv[1] == 'settime':
             only_key.set_time(time.time())
 
         elif sys.argv[1] == 'init':
@@ -281,6 +241,12 @@ def cli():
         elif sys.argv[1] == 'backupkey':
             only_key.generate_backup_key()
 
+        elif sys.argv[1] == 'setkey':
+            only_key.setkey(sys.argv[2], sys.argv[3], sys.argv[4])
+
+        elif sys.argv[1] == 'wipekey':
+            only_key.wipekey(sys.argv[2])
+
         elif sys.argv[1] == 'idletimeout':
              only_key.setslot(1, MessageField.IDLETIMEOUT, int(sys.argv[2]))
         elif sys.argv[1] == 'wipemode':
@@ -307,7 +273,7 @@ def cli():
     else:
 
         # Print help.
-        print('OnlyKey CLI v1.2.0')
+        print('OnlyKey CLI v1.2.1')
         print('Control-D to exit.')
         print()
 
@@ -508,6 +474,18 @@ def cli():
             elif data[0] == 'backupkey':
                 try:
                     only_key.generate_backup_key()
+                except:
+                    continue
+
+            elif data[0] == 'setkey':
+                try:
+                    only_key.setkey(data[1], data[2], data[3])
+                except:
+                    continue
+
+            elif data[0] == 'wipekey':
+                try:
+                    only_key.wipekey(data[1])
                 except:
                     continue
 
