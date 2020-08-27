@@ -273,7 +273,7 @@ def cli():
     else:
 
         # Print help.
-        print('OnlyKey CLI v1.2.1')
+        print('OnlyKey CLI v1.2.2')
         print('Control-D to exit.')
         print()
 
@@ -479,7 +479,8 @@ def cli():
 
             elif data[0] == 'setkey':
                 try:
-                    only_key.setkey(data[1], data[2], data[3])
+                    key = prompt_pass()
+                    only_key.setkey(data[1], data[2], key)
                 except:
                     continue
 
