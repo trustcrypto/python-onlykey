@@ -185,7 +185,7 @@ def cli():
                  only_key.setslot(slot_id, MessageField.TFATYPE, sys.argv[4])
             elif sys.argv[3] == 'gkey':
                 totpkey = prompt_key()
-                totpkey = base64.b32decode(totpkey)
+                totpkey = base64.b32decode("".join(totpkey.split()).upper())
                 totpkey = binascii.hexlify(totpkey)
                 # pad with zeros for even digits
                 totpkey = totpkey.zfill(len(totpkey) + len(totpkey) % 2)
@@ -419,7 +419,7 @@ def cli():
                      only_key.setslot(slot_id, MessageField.TFATYPE, data[3])
                 elif data[2] == 'gkey':
                     totpkey = prompt_key()
-                    totpkey = base64.b32decode(totpkey)
+                    totpkey = base64.b32decode("".join(totpkey.split()).upper())
                     totpkey = binascii.hexlify(totpkey)
                     # pad with zeros for even digits
                     totpkey = totpkey.zfill(len(totpkey) + len(totpkey) % 2)
