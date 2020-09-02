@@ -27,23 +27,27 @@ def cli():
 
     logging.basicConfig(level=logging.DEBUG)
 
-    # ContrlT handling
+    # Control-T handling
     hidden = [True]  # Nonlocal
     key_bindings = KeyBindings()
 
     @key_bindings.add('c-t')
     def _(event):
-        ' When ControlT has been pressed, toggle visibility. '
+        ' When Control-T has been pressed, toggle visibility. '
         hidden[0] = not hidden[0]
 
     def prompt_pass():
         print('Type Control-T to toggle password visible.')
-        password = prompt('Password/Key: ', is_password=True)
+        password = prompt('Password/Key: ',
+                          is_password=Condition(lambda: hidden[0]),
+                          key_bindings=key_bindings)
         return password
 
     def prompt_key():
         print('Type Control-T to toggle key visible.')
-        key = prompt('Key: ', is_password=True)
+        key = prompt('Key: ',
+                     is_password=Condition(lambda: hidden[0]),
+                     key_bindings=key_bindings)
         return key
 
     def prompt_pin():
