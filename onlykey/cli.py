@@ -27,23 +27,27 @@ def cli():
 
     logging.basicConfig(level=logging.DEBUG)
 
-    # ContrlT handling
+    # Control-T handling
     hidden = [True]  # Nonlocal
     key_bindings = KeyBindings()
 
     @key_bindings.add('c-t')
     def _(event):
-        ' When ControlT has been pressed, toggle visibility. '
+        ' When Control-T has been pressed, toggle visibility. '
         hidden[0] = not hidden[0]
 
     def prompt_pass():
         print('Type Control-T to toggle password visible.')
-        password = prompt('Password/Key: ', is_password=True)
+        password = prompt('Password/Key: ',
+                          is_password=Condition(lambda: hidden[0]),
+                          key_bindings=key_bindings)
         return password
 
     def prompt_key():
         print('Type Control-T to toggle key visible.')
-        key = prompt('Key: ', is_password=True)
+        key = prompt('Key: ',
+                     is_password=Condition(lambda: hidden[0]),
+                     key_bindings=key_bindings)
         return key
 
     def prompt_pin():
@@ -185,7 +189,7 @@ def cli():
                  only_key.setslot(slot_id, MessageField.TFATYPE, sys.argv[4])
             elif sys.argv[3] == 'gkey':
                 totpkey = prompt_key()
-                totpkey = base64.b32decode(totpkey)
+                totpkey = base64.b32decode("".join(totpkey.split()).upper())
                 totpkey = binascii.hexlify(totpkey)
                 # pad with zeros for even digits
                 totpkey = totpkey.zfill(len(totpkey) + len(totpkey) % 2)
@@ -419,7 +423,7 @@ def cli():
                      only_key.setslot(slot_id, MessageField.TFATYPE, data[3])
                 elif data[2] == 'gkey':
                     totpkey = prompt_key()
-                    totpkey = base64.b32decode(totpkey)
+                    totpkey = base64.b32decode("".join(totpkey.split()).upper())
                     totpkey = binascii.hexlify(totpkey)
                     # pad with zeros for even digits
                     totpkey = totpkey.zfill(len(totpkey) + len(totpkey) % 2)
