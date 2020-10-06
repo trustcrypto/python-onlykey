@@ -89,6 +89,33 @@ $ sudo cp 49-onlykey.rules /etc/udev/rules.d/
 $ sudo bash -c 'udevadm control --reload-rules && udevadm trigger'
 ```
 
+### NixOS Install with dependencies
+
+#### First time
+
+NB: shell prompts are approximative
+
+```
+$ git clone --depth 1 https://github.com/trustcrypto/python-onlykey.git
+$ cd python-onlykey
+$ git submodule init
+$ git submodule update
+$ nix-shell -p python2.pkgs.{pip,virtualenv,ed25519,cython,six,hidapi,ecdsa,aenum,wcwidth}
+# Not prompt_toolkit, on my NixOS 18.09.2390.40e716b92a7 (Jellyfish), prompt_toolkit=1.0.15
+# but onlykey wants prompt_toolkit > 2
+[nix-shell]$ virtualenv --system-site-packages build
+[nix-shell]$ source build/bin/activate
+(build) [nix-shell]$ pip install 'prompt_toolkit>2'
+```
+
+#### After that
+
+You can run the tool with
+
+```
+$ nix-shell -p python2.pkgs.{pip,virtualenv,ed25519,cython,six,hidapi,ecdsa,aenum,wcwidth} --command 'cd python-onlykey && source build/bin/activate ; cd onlykey && python -c "import cli; cli.main()"'
+```
+
 ### FreeBSD Install with dependencies
 
 See forum thread - https://groups.google.com/forum/#!category-topic/onlykey/new-features-and-feature-requests/CEYwdXjB508
