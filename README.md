@@ -1,9 +1,6 @@
-# python-onlykey
+# onlykey-cli
 
-Python client for interacting with the OnlyKey.
-
-OnlyKey-cli - A command line interface to the OnlyKey that can be used for configuration (Similar functionality to [OnlyKey App](https://docs.crp.to/app.html))
-
+OnlyKey-cli - A command line interface to the OnlyKey (Similar functionality to [OnlyKey App](https://docs.crp.to/app.html)) that can be used for configuration, scripting, and testing.
 
 ## Installation
 
@@ -37,7 +34,7 @@ $ sudo apt install python3-pip python3-tk libusb-1.0-0-dev libudev-dev
 $ pip3 install onlykey
 $ wget https://raw.githubusercontent.com/trustcrypto/trustcrypto.github.io/master/49-onlykey.rules
 $ sudo cp 49-onlykey.rules /etc/udev/rules.d/
-$ sudo bash -c 'udevadm control --reload-rules && udevadm trigger'
+$ sudo udevadm control --reload-rules && udevadm trigger
 ```
 
 ### Debian Install with dependencies
@@ -47,7 +44,7 @@ $ sudo apt install python3-pip python3-tk libusb-1.0-0-dev libudev-dev
 $ pip3 install onlykey
 $ wget https://raw.githubusercontent.com/trustcrypto/trustcrypto.github.io/master/49-onlykey.rules
 $ sudo cp 49-onlykey.rules /etc/udev/rules.d/
-$ sudo bash -c 'udevadm control --reload-rules && udevadm trigger'
+$ sudo udevadm control --reload-rules && udevadm trigger
 ```
 
 ### RedHat Install with dependencies
@@ -58,7 +55,7 @@ $ yum install python3-pip python3-devel python3-tk libusb-devel libudev-devel \
 $ pip3 install onlykey
 $ wget https://raw.githubusercontent.com/trustcrypto/trustcrypto.github.io/master/49-onlykey.rules
 $ sudo cp 49-onlykey.rules /etc/udev/rules.d/
-$ sudo bash -c 'udevadm control --reload-rules && udevadm trigger'
+$ sudo udevadm control --reload-rules && udevadm trigger
 ```
 
 ### Fedora Install with dependencies
@@ -68,7 +65,7 @@ $ dnf install python3-pip python3-devel python3-tkinter libusb-devel libudev-dev
 $ pip3 install onlykey
 $ wget https://raw.githubusercontent.com/trustcrypto/trustcrypto.github.io/master/49-onlykey.rules
 $ sudo cp 49-onlykey.rules /etc/udev/rules.d/
-$ sudo bash -c 'udevadm control --reload-rules && udevadm trigger'
+$ sudo udevadm control --reload-rules && udevadm trigger
 ```
 
 ### OpenSUSE Install with dependencies
@@ -77,7 +74,7 @@ $ zypper install python3-pip python3-devel python3-tk libusb-1_0-devel libudev-d
 $ pip3 install onlykey
 $ wget https://raw.githubusercontent.com/trustcrypto/trustcrypto.github.io/master/49-onlykey.rules
 $ sudo cp 49-onlykey.rules /etc/udev/rules.d/
-$ sudo bash -c 'udevadm control --reload-rules && udevadm trigger'
+$ sudo udevadm control --reload-rules && udevadm trigger
 ```
 
 ### Arch Linux Install with dependencies
@@ -86,7 +83,7 @@ $ sudo pacman -Sy git python3-setuptools python3 libusb python3-pip
 $ pip3 install onlykey
 $ wget https://raw.githubusercontent.com/trustcrypto/trustcrypto.github.io/master/49-onlykey.rules
 $ sudo cp 49-onlykey.rules /etc/udev/rules.d/
-$ sudo bash -c 'udevadm control --reload-rules && udevadm trigger'
+$ sudo udevadm control --reload-rules && udevadm trigger
 ```
 
 ### FreeBSD Install with dependencies
@@ -101,15 +98,19 @@ In order for non-root users in Linux to be able to communicate with OnlyKey a ud
 
 ### Command Options
 
-- init - A command line tool for setting PIN on OnlyKey (Initial Configuration)
+#### init
+A command line tool for setting PIN on OnlyKey (Initial Configuration)
 
-- settime - A command for setting time on OnlyKey, time is needed for TOTP (Google Authenticator)
+#### settime
+A command for setting time on OnlyKey, time is needed for TOTP (Google Authenticator)
 
-- getlabels - Returns slot labels
+#### getlabels
+Returns slot labels
 
-- getkeylabels - Returns key labels for RSA keys 1-4 and ECC keys 1 -32
+#### getkeylabels
+Returns key labels for RSA keys 1-4 and ECC keys 1 -32
 
-- setslot [id] [type] [value]
+#### setslot [id] [type] [value]
   - [id] must be slot number 1a - 6b
   - [type] must be one of the following:
     - label - Slot label i.e. My Google Acct
@@ -130,23 +131,26 @@ In order for non-root users in Linux to be able to communicate with OnlyKey a ud
     - totpkey - Google Authenticator key
     - add_char5 - Additional character after OTP 2 for RETURN
 
-- wipeslot [id]
+#### wipeslot [id]
   - <id> must be slot number 1a - 6b
 
-- setkey [key slot] [key type]
+#### setkey [key slot] [key type]
   - See examples [here](https://docs.crp.to/command-line.html#writing-private-keys-and-passwords)  
 
-- wipekey [key slot]
+#### wipekey [key slot]
 
-- idletimeout - OnlyKey locks after ideletimeout is reached (1 – 255 minutes; default = 30; 0 to disable)
+#### idletimeout
+OnlyKey locks after ideletimeout is reached (1 – 255 minutes; default = 30; 0 to disable)
 
-- wipemode - Configure how the OnlyKey responds to
+#### wipemode
+Configure how the OnlyKey responds to
 a factory reset. WARNING - Setting to Full Wipe mode cannot be changed.
   - 1 - Sensitive Data Only (default)
 All sensitive data is wiped.
   - 2 - Full Wipe (recommended for plausible deniability users) Entire device is wiped. Firmware must be reloaded.
 
-- keylayout - Set keyboard layout
+#### keylayout
+Set keyboard layout
   - 1 - USA_ENGLISH	(Default)
   - 2 - CANADIAN_FRENCH
   - 3 - CANADIAN_MULTILINGUAL
@@ -173,7 +177,8 @@ All sensitive data is wiped.
   - 24 - SERBIAN_LATIN_ONLY
   - 25 - HUNGARIAN
 
-- keytypespeed - 1 = slowest; 10 = fastest [4 = default]
+#### keytypespeed
+1 = slowest; 10 = fastest [4 = default]
 
 ### Running Commands
 
@@ -401,4 +406,4 @@ This can be added to scripts such as the UDEV rule to automatically set time whe
 
 ## Source
 
-[Python OnlyKey on Github](https://github.com/trustcrypto/python-onlykey)
+[OnlyKey CLI on Github](https://github.com/trustcrypto/python-onlykey)
