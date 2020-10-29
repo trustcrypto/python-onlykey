@@ -173,9 +173,12 @@ Set keyboard layout
   - 20 - SWEDISH
   - 21 - TURKISH
   - 22 - UNITED_KINGDOM
-  - 23 - CZECH
-  - 24 - SERBIAN_LATIN_ONLY
-  - 25 - HUNGARIAN
+  - 23 - US_INTERNATIONAL
+  - 24 - CZECH
+  - 25 - SERBIAN_LATIN_ONLY
+  - 26 - HUNGARIAN
+  - 27 - DANISH MAC
+  - 28 - US_DVORAK
 
 #### keytypespeed
 1 = slowest; 10 = fastest [4 = default]
