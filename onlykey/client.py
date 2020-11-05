@@ -128,6 +128,9 @@ class MessageField(Enum):
     KEYTYPESPEED = 13
     KEYLAYOUT = 14
     LEDBRIGHTNESS = 24
+    LOCKBUTTON = 25
+    HMACMODE = 26
+    SYSADMINMODE = 27
     SECPROFILEMODE = 23
     PGPCHALENGEMODE = 22
     SSHCHALENGEMODE = 21
@@ -334,7 +337,9 @@ class OnlyKey(object):
         logging.debug('read="%s"', ''.join([chr(c) for c in out]))
         outstr = bytearray(out)
         logging.debug('outstring="%s"', outstr)
-        if outstr.decode(errors="ignore").find("INITIALIZED") != -1:
+        if outstr.decode(errors="ignore").find("UNINITIALIZED") != -1:
+            raise RuntimeError('No PIN set, You must set a PIN first')
+        elif outstr.decode(errors="ignore").find("INITIALIZED") != -1:
             raise RuntimeError('OnlyKey is locked, enter PIN to unlock')
         elif outstr.decode(errors="ignore").find("Error incorrect challenge was entered") != -1:
             raise RuntimeError('Error incorrect challenge was entered')
