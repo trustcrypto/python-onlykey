@@ -10,7 +10,7 @@ No install is required. Download and run the EXE to open OnlyKey CLI interactive
 C:\ onlykey-cli.exe getlabels
 ```
 
-[Download here](https://github.com/trustcrypto/python-onlykey/releases/download/v1.2.2/onlykey-cli.exe)
+[Download here](https://github.com/trustcrypto/python-onlykey/releases/download/v1.2.3/onlykey-cli.exe)
 
 ### Windows Install with dependencies
 1) Python 3.8 and pip3 are required. To setup a Python environment on Windows we recommend Anaconda [https://www.anaconda.com/download/#windows](https://www.anaconda.com/download/#windows)
