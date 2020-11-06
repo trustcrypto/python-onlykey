@@ -2,3 +2,6 @@
 	path = PGPy
 	url = https://github.com/trustcrypto/PGPy.git
 	branch = master
+[submodule "onlykey-solo-python"]
+	path = onlykey-solo-python
+	url = https://github.com/trustcrypto/onlykey-solo-python
