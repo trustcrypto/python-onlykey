@@ -85,6 +85,8 @@ SLOTS_NAME= {
     59: 'ECC Key 31',
     60: 'ECC Key 32',
 }
+EDITABLE_SLOT_RANGE = (0,12)
+KEYS_SLOT_RANGE = (12,60)
 
 
 class Message(Enum):
