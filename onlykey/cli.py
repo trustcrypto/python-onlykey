@@ -271,7 +271,7 @@ def cli():
         elif sys.argv[1] == 'hmackeymode':
              only_key.setslot(1, MessageField.HMACMODE, int(sys.argv[2]))
         elif sys.argv[1] == 'version':
-            print('OnlyKey CLI v1.2.3')
+            print('OnlyKey CLI v1.2.4')
         elif sys.argv[1] == 'fwversion':
             only_key.set_time(time.time())
             okversion = only_key.read_string()
@@ -299,7 +299,7 @@ def cli():
             if len(sys.argv) > 2:
                 print('Extra option not available. See available command options here https://docs.crp.to/command-line.html')
                 return
-            solo.cli.key()  
+            solo.cli.key()
         elif sys.argv[1] == 'reset':
             if len(sys.argv) > 2:
                 print('Extra option not available. See available command options here https://docs.crp.to/command-line.html')
@@ -344,11 +344,11 @@ def cli():
             print('Command not found. See available commands here https://docs.crp.to/command-line.html')
             print()
 
-            
+
     else:
 
         # Print help.
-        print('OnlyKey CLI v1.2.3')
+        print('OnlyKey CLI v1.2.4')
         print('Control-D to exit.')
         print()
 
@@ -623,7 +623,7 @@ def cli():
                     continue
             elif data[0] == 'version':
                 try:
-                    print('OnlyKey CLI v1.2.3')
+                    print('OnlyKey CLI v1.2.4')
                 except:
                     continue
             elif data[0] == 'fwversion':
