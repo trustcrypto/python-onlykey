@@ -135,6 +135,7 @@ class MessageField(Enum):
     PGPCHALENGEMODE = 22
     SSHCHALENGEMODE = 21
     BACKUPMODE = 20
+    TOUCHSENSE = 28
 
 class KeyTypeEnum(Enum):
     ED22519 = 1

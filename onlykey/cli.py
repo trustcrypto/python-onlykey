@@ -254,6 +254,8 @@ def cli():
              only_key.setslot(1, MessageField.KEYTYPESPEED, int(sys.argv[2]))
         elif sys.argv[1] == 'ledbrightness':
              only_key.setslot(1, MessageField.LEDBRIGHTNESS, int(sys.argv[2]))
+        elif sys.argv[1] == 'touchsense':
+            only_key.setslot(1, MessageField.TOUCHSENSE, int(sys.argv[2]))
         elif sys.argv[1] == '2ndprofilemode':
              only_key.setslot(1, MessageField.SECPROFILEMODE, int(sys.argv[2]))
         elif sys.argv[1] == 'storedkeymode':
@@ -271,7 +273,7 @@ def cli():
         elif sys.argv[1] == 'hmackeymode':
              only_key.setslot(1, MessageField.HMACMODE, int(sys.argv[2]))
         elif sys.argv[1] == 'version':
-            print('OnlyKey CLI v1.2.4')
+            print('OnlyKey CLI v1.2.5')
         elif sys.argv[1] == 'fwversion':
             only_key.set_time(time.time())
             okversion = only_key.read_string()
@@ -348,7 +350,7 @@ def cli():
     else:
 
         # Print help.
-        print('OnlyKey CLI v1.2.4')
+        print('OnlyKey CLI v1.2.5')
         print('Control-D to exit.')
         print()
 
@@ -581,6 +583,11 @@ def cli():
                     only_key.setslot(1, MessageField.LEDBRIGHTNESS, int(data[1]))
                 except:
                     continue
+            elif data[0] == 'touchsense':
+                try:
+                    only_key.setslot(1, MessageField.TOUCHSENSE, int(data[1]))
+                except:
+                    continue
             elif data[0] == 'storedkeymode':
                 try:
                     only_key.setslot(1, MessageField.PGPCHALENGEMODE, int(data[1]))
@@ -623,7 +630,7 @@ def cli():
                     continue
             elif data[0] == 'version':
                 try:
-                    print('OnlyKey CLI v1.2.4')
+                    print('OnlyKey CLI v1.2.5')
                 except:
                     continue
             elif data[0] == 'fwversion':
