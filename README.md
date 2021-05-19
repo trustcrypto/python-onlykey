@@ -242,7 +242,7 @@ Enable or disable challenge for stored keys (SSH/PGP)
       - y - Yubico OTP
       - u - U2F
     - totpkey - Google Authenticator key
-    - addchar5 - Additional character after OTP 2 for RETURN
+    - addchar5 - Additional character after OTP 1 for TAB, 2 for RETURN, 3 for TAB+RETURN
 
 #### wipeslot [id]
   - [id] must be slot number 1a - 6b
