@@ -449,6 +449,16 @@ class OnlyKey(object):
         # slot 129-130 HMAC Keys
         # slot 101-116 ECC Keys
         # slot 1-4 RSA Keys
+        if ecc_type == 'x':
+            ecc_type = '1'
+        elif ecc_type == 'n':
+            ecc_type = '2'
+        elif ecc_type == 's':
+            ecc_type = '3'
+        #elif sys.argv[2] == 'r':
+        #    ecc_type = '1'
+        elif ecc_type == 'h':
+            ecc_type = '9'
         logging.debug('SETTING KEY IN SLOT:', slot_number)
         logging.debug('TO TYPE:', ecc_type)
         logging.debug('KEY:', value)

@@ -154,11 +154,9 @@ def cli():
                     slot_id = 11
                 elif sys.argv[2] == '6b':
                     slot_id = 12
-                elif sys.argv[2] >= int('25'):
-                    slot_id = int(sys.argv[2])
             except:
-                print("setslot <id> <type> [value]")
-                print("<id> must be slot number 1a - 6b")
+                print("setslot [id] [type] [value]")
+                print("[id] must be slot number 1a - 6b")
                 return
 
             if sys.argv[3] == 'label':
@@ -204,8 +202,8 @@ def cli():
             elif sys.argv[3] == 'addchar4':
                 only_key.setslot(slot_id, MessageField.NEXTKEY5, sys.argv[4])
             else:
-                print("setslot <id> <type> [value]")
-                print("<type> must be ['label', 'ecckeylabel', 'rsakeylabel', 'url', 'addchar1', 'delay1', 'username', 'addchar2', 'delay2', 'password', 'addchar3', 'delay3', '2fa', 'totpkey', 'addchar4', 'addchar5']")
+                print("setslot [id] [type] [value]")
+                print("[type] must be ['label', 'ecckeylabel', 'rsakeylabel', 'url', 'addchar1', 'delay1', 'username', 'addchar2', 'delay2', 'password', 'addchar3', 'delay3', '2fa', 'totpkey', 'addchar4', 'addchar5']")
             return
         elif sys.argv[1] == 'wipeslot':
             try:
@@ -233,19 +231,118 @@ def cli():
                     slot_id = 11
                 elif sys.argv[2] == '6b':
                     slot_id = 12
-                elif sys.argv[2] >= int('25'):
-                    slot_id = int(sys.argv[2])
             except:
-                print("wipeslot <id>")
-                print("<id> must be slot number 1a - 6b")
+                print("wipeslot [id]")
+                print("[id] must be slot number 1a - 6b")
                 return
             only_key.wipeslot(slot_id)
         elif sys.argv[1] == 'backupkey':
             only_key.generate_backup_key()
         elif sys.argv[1] == 'setkey':
-            only_key.setkey(sys.argv[2], sys.argv[3], sys.argv[4])
+            try:
+                if sys.argv[2] == 'RSA1':
+                    slot_id = 25
+                elif sys.argv[2] == 'RSA2':
+                    slot_id = 26
+                elif sys.argv[2] == 'RSA3':
+                    slot_id = 27
+                elif sys.argv[2] == 'RSA4':
+                    slot_id = 28
+                elif sys.argv[2] == 'ECC1':
+                    slot_id = 29
+                elif sys.argv[2] == 'ECC2':
+                    slot_id = 30
+                elif sys.argv[2] == 'ECC3':
+                    slot_id = 31
+                elif sys.argv[2] == 'ECC4':
+                    slot_id = 32
+                elif sys.argv[2] == 'ECC5':
+                    slot_id = 33
+                elif sys.argv[2] == 'ECC6':
+                    slot_id = 34
+                elif sys.argv[2] == 'ECC7':
+                    slot_id = 35
+                elif sys.argv[2] == 'ECC8':
+                    slot_id = 36
+                elif sys.argv[2] == 'ECC9':
+                    slot_id = 37
+                elif sys.argv[2] == 'ECC10':
+                    slot_id = 38
+                elif sys.argv[2] == 'ECC11':
+                    slot_id = 39
+                elif sys.argv[2] == 'ECC12':
+                    slot_id = 40
+                elif sys.argv[2] == 'ECC13':
+                    slot_id = 41
+                elif sys.argv[2] == 'ECC14':
+                    slot_id = 42
+                elif sys.argv[2] == 'ECC15':
+                    slot_id = 43
+                elif sys.argv[2] == 'ECC16':
+                    slot_id = 44
+                elif sys.argv[2] == 'HMAC1':
+                    slot_id = 58
+                elif sys.argv[2] == 'HMAC2':
+                    slot_id = 57
+            except:
+                print("setkey [key id] [type]")
+                print("[key id] must be a key number")
+                return
+            if (sys.argv[3]=='label'):
+                only_key.setslot(slot_id, MessageField.LABEL, sys.argv[4])
+            else:
+                only_key.setkey(str(slot_id), sys.argv[3], sys.argv[4])
         elif sys.argv[1] == 'wipekey':
-            only_key.wipekey(sys.argv[2])
+            try:
+                if sys.argv[2] == 'RSA1':
+                    slot_id = 25
+                elif sys.argv[2] == 'RSA2':
+                    slot_id = 26
+                elif sys.argv[2] == 'RSA3':
+                    slot_id = 27
+                elif sys.argv[2] == 'RSA4':
+                    slot_id = 28
+                elif sys.argv[2] == 'ECC1':
+                    slot_id = 29
+                elif sys.argv[2] == 'ECC2':
+                    slot_id = 30
+                elif sys.argv[2] == 'ECC3':
+                    slot_id = 31
+                elif sys.argv[2] == 'ECC4':
+                    slot_id = 32
+                elif sys.argv[2] == 'ECC5':
+                    slot_id = 33
+                elif sys.argv[2] == 'ECC6':
+                    slot_id = 34
+                elif sys.argv[2] == 'ECC7':
+                    slot_id = 35
+                elif sys.argv[2] == 'ECC8':
+                    slot_id = 36
+                elif sys.argv[2] == 'ECC9':
+                    slot_id = 37
+                elif sys.argv[2] == 'ECC10':
+                    slot_id = 38
+                elif sys.argv[2] == 'ECC11':
+                    slot_id = 39
+                elif sys.argv[2] == 'ECC12':
+                    slot_id = 40
+                elif sys.argv[2] == 'ECC13':
+                    slot_id = 41
+                elif sys.argv[2] == 'ECC14':
+                    slot_id = 42
+                elif sys.argv[2] == 'ECC15':
+                    slot_id = 43
+                elif sys.argv[2] == 'ECC16':
+                    slot_id = 44
+                elif sys.argv[2] == 'HMAC1':
+                    slot_id = 58
+                elif sys.argv[2] == 'HMAC2':
+                    slot_id = 57
+            except:
+                print("wipekey [key id] [type]")
+                print("[key id] must be a key number")
+                return
+            only_key.wipekey(str(slot_id))
         elif sys.argv[1] == 'idletimeout':
              only_key.setslot(1, MessageField.IDLETIMEOUT, int(sys.argv[2]))
         elif sys.argv[1] == 'wipemode':
@@ -462,11 +559,9 @@ def cli():
                         slot_id = 11
                     elif data[1] == '6b':
                         slot_id = 12
-                    elif data[1] >= int('25'):
-                        slot_id = int(data[1])
                 except:
-                    print("setslot <id> <type> [value]")
-                    print("<id> must be slot number 1a - 6b")
+                    print("setslot [id] [type] [value]")
+                    print("[id] must be slot number 1a - 6b")
                     continue
                 if data[2] == 'label':
                     only_key.setslot(slot_id, MessageField.LABEL, data[3])
@@ -511,8 +606,8 @@ def cli():
                 elif data[2] == 'addchar4':
                     only_key.setslot(slot_id, MessageField.NEXTKEY3, data[3])
                 else:
-                    print("setslot <id> <type> [value]")
-                    print("<type> must be ['label', 'ecckeylabel', 'rsakeylabel', 'url', 'addchar1', 'delay1', 'username', 'addchar2', 'delay2', 'password', 'addchar3', 'delay3', '2fa', 'totpkey', 'addchar4', 'addchar5']")
+                    print("setslot [id] [type] [value]")
+                    print("[type] must be ['label', 'ecckeylabel', 'rsakeylabel', 'url', 'addchar1', 'delay1', 'username', 'addchar2', 'delay2', 'password', 'addchar3', 'delay3', '2fa', 'totpkey', 'addchar4', 'addchar5']")
                 continue
             elif data[0] == 'wipeslot':
                 try:
@@ -540,11 +635,9 @@ def cli():
                         slot_id = 11
                     elif data[1] == '6b':
                         slot_id = 12
-                    elif data[1] >= int('25'):
-                        slot_id = int(data[1])
                 except:
-                    print("wipeslot <id>")
-                    print("<id> must be slot number 1a - 6b")
+                    print("wipeslot [id]")
+                    print("[id] must be slot number 1a - 6b")
                     continue
                 only_key.wipeslot(slot_id)
             elif data[0] == 'backupkey':
@@ -554,13 +647,114 @@ def cli():
                     continue
             elif data[0] == 'setkey':
                 try:
-                    key = prompt_pass()
-                    only_key.setkey(data[1], data[2], key)
+                    if data[1] == 'RSA1':
+                        slot_id = 25
+                    elif data[1] == 'RSA2':
+                        slot_id = 26
+                    elif data[1] == 'RSA3':
+                        slot_id = 27
+                    elif data[1] == 'RSA4':
+                        slot_id = 28
+                    elif data[1] == 'ECC1':
+                        slot_id = 29
+                    elif data[1] == 'ECC2':
+                        slot_id = 30
+                    elif data[1] == 'ECC3':
+                        slot_id = 31
+                    elif data[1] == 'ECC4':
+                        slot_id = 32
+                    elif data[1] == 'ECC5':
+                        slot_id = 33
+                    elif data[1] == 'ECC6':
+                        slot_id = 34
+                    elif data[1] == 'ECC7':
+                        slot_id = 35
+                    elif data[1] == 'ECC8':
+                        slot_id = 36
+                    elif data[1] == 'ECC9':
+                        slot_id = 37
+                    elif data[1] == 'ECC10':
+                        slot_id = 38
+                    elif data[1] == 'ECC11':
+                        slot_id = 39
+                    elif data[1] == 'ECC12':
+                        slot_id = 40
+                    elif data[1] == 'ECC13':
+                        slot_id = 41
+                    elif data[1] == 'ECC14':
+                        slot_id = 42
+                    elif data[1] == 'ECC15':
+                        slot_id = 43
+                    elif data[1] == 'ECC16':
+                        slot_id = 44
+                    elif data[1] == 'HMAC1':
+                        slot_id = 58
+                    elif data[1] == 'HMAC2':
+                        slot_id = 57
+                except:
+                    print("setkey [key id] [type]")
+                    print("[key id] must be a key number")
+                    continue
+                try:
+                    if (data[2]=='label'):
+                        only_key.setslot(slot_id, MessageField.LABEL, data[3])
+                    else:
+                        key = prompt_pass()
+                        only_key.setkey(str(slot_id), data[2], key)
                 except:
                     continue
             elif data[0] == 'wipekey':
                 try:
-                    only_key.wipekey(data[1])
+                    if data[1] == 'RSA1':
+                        slot_id = 25
+                    elif data[1] == 'RSA2':
+                        slot_id = 26
+                    elif data[1] == 'RSA3':
+                        slot_id = 27
+                    elif data[1] == 'RSA4':
+                        slot_id = 28
+                    elif data[1] == 'ECC1':
+                        slot_id = 29
+                    elif data[1] == 'ECC2':
+                        slot_id = 30
+                    elif data[1] == 'ECC3':
+                        slot_id = 31
+                    elif data[1] == 'ECC4':
+                        slot_id = 32
+                    elif data[1] == 'ECC5':
+                        slot_id = 33
+                    elif data[1] == 'ECC6':
+                        slot_id = 34
+                    elif data[1] == 'ECC7':
+                        slot_id = 35
+                    elif data[1] == 'ECC8':
+                        slot_id = 36
+                    elif data[1] == 'ECC9':
+                        slot_id = 37
+                    elif data[1] == 'ECC10':
+                        slot_id = 38
+                    elif data[1] == 'ECC11':
+                        slot_id = 39
+                    elif data[1] == 'ECC12':
+                        slot_id = 40
+                    elif data[1] == 'ECC13':
+                        slot_id = 41
+                    elif data[1] == 'ECC14':
+                        slot_id = 42
+                    elif data[1] == 'ECC15':
+                        slot_id = 43
+                    elif data[1] == 'ECC16':
+                        slot_id = 44
+                    elif data[1] == 'HMAC1':
+                        slot_id = 58
+                    elif data[1] == 'HMAC2':
+                        slot_id = 57
+                except:
+                    print("wipekey [key id] [type]")
+                    print("[key id] must be a key number")
+                    continue
+                try:
+                    only_key.wipekey(str(slot_id))
                 except:
                     continue
             elif data[0] == 'idletimeout':
