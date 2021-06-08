@@ -405,18 +405,18 @@ def cli():
                 return
             solo.cli.key()
         elif sys.argv[1] == 'rng':
-            if len(sys.argv) > 5 or len(sys.argv) < 3:
+            if len(sys.argv) > 5 or len(sys.argv) < 3 or len(sys.argv) == 4:
                 print('Option not found. See available command options here https://docs.crp.to/command-line.html')
                 return
             if len(sys.argv) > 2:
                 if sys.argv[2] != 'hexbytes' and sys.argv[2] != 'feedkernel':
                     print('Option not found. See available command options here https://docs.crp.to/command-line.html')
                     return
-            if len(sys.argv) > 3:
-                if sys.argv[3] != '--count' or len(sys.argv) != 4:
+            if len(sys.argv) > 4:
+                if sys.argv[3] != '--count' or len(sys.argv) != 5:
                     print('Option not found. See available command options here https://docs.crp.to/command-line.html')
                     return
-                if len(sys.argv) == 4 and sys.argv[4] == '--help':
+                if len(sys.argv) == 5 and sys.argv[4] == '--help':
                     print('Option not found. See available command options here https://docs.crp.to/command-line.html')
                     return
             solo.cli.key()
