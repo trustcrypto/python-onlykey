@@ -352,7 +352,7 @@ Or you can run commands in an interactive shell like this:
 
 ```
 $ onlykey-cli
-OnlyKey CLI v1.2.5
+OnlyKey CLI v1.2.6
 Press the right arrow to insert the suggestion.
 Press Control-C to retry. Control-D to exit.
 
@@ -497,7 +497,7 @@ Successfully set ECC Key
 *HMAC key must be 20 bytes, h is HMAC type*
 
 
-**Set ECC key in slot 101 to a custom value (Slots ECC1-ECC16 are available for ECC keys. Supported ECC curves X25519(x), NIST256P1(n), SECP256K1(s))**
+**Set ECC key in slot ECC1 to a custom value (Slots ECC1-ECC16 are available for ECC keys. Supported ECC curves X25519(x), NIST256P1(n), SECP256K1(s))**
 
 $ onlykey-cli
 
