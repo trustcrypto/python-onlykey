@@ -236,10 +236,9 @@ def cli():
                 print("[id] must be slot number 1a - 6b")
                 return
             only_key.wipeslot(slot_id)
-        elif sys.argv[1] == 'backupkey':
-            only_key.generate_backup_key()
-        elif sys.argv[1] == 'setkey':
+        elif sys.argv[1] == 'setkey' or sys.argv[1] == 'genkey':
             try:
+                slot_id = 0
                 if sys.argv[2] == 'RSA1':
                     slot_id = 1
                 elif sys.argv[2] == 'RSA2':
@@ -284,14 +283,23 @@ def cli():
                     slot_id = 130
                 elif sys.argv[2] == 'HMAC2':
                     slot_id = 129
+                if (sys.argv[1]=='genkey'):
+                    if (slot_id > 100 and (sys.argv[3] == 'x' or sys.argv[3] == 'n' or sys.argv[3] == 's')):
+                        only_key.setkey(slot_id, sys.argv[3], 'ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff')
+                    else:
+                        print('Input error. See available commands with examples here https://docs.crp.to/command-line.html')
+                elif (sys.argv[3]=='label'):
+                    if slot_id > 100:
+                        slot_id = slot_id - 72
+                    elif slot_id >= 1:
+                        slot_id = slot_id + 24
+                    only_key.setslot(slot_id, MessageField.LABEL, sys.argv[4])
+                else:
+                    only_key.setkey(slot_id, sys.argv[3], sys.argv[4])
             except:
                 print("setkey [key id] [type]")
-                print("[key id] must be a key number")
+                print('Input error. See available commands with examples here https://docs.crp.to/command-line.html')
                 return
-            if (sys.argv[3]=='label'):
-                only_key.setslot(slot_id, MessageField.LABEL, sys.argv[4])
-            else:
-                only_key.setkey(str(slot_id), sys.argv[3], sys.argv[4])
         elif sys.argv[1] == 'wipekey':
             try:
                 if sys.argv[2] == 'RSA1':
@@ -340,9 +348,9 @@ def cli():
                     slot_id = 129
             except:
                 print("wipekey [key id] [type]")
-                print("[key id] must be a key number")
+                print("[key id] must be a supported key number")
                 return
-            only_key.wipekey(str(slot_id))
+            only_key.wipekey(slot_id)
         elif sys.argv[1] == 'idletimeout':
              only_key.setslot(1, MessageField.IDLETIMEOUT, int(sys.argv[2]))
         elif sys.argv[1] == 'wipemode':
@@ -640,12 +648,7 @@ def cli():
                     print("[id] must be slot number 1a - 6b")
                     continue
                 only_key.wipeslot(slot_id)
-            elif data[0] == 'backupkey':
-                try:
-                    only_key.generate_backup_key()
-                except:
-                    continue
-            elif data[0] == 'setkey':
+            elif data[0] == 'setkey' or data[0] == 'genkey':
                 try:
                     if data[1] == 'RSA1':
                         slot_id = 1
@@ -693,15 +696,26 @@ def cli():
                         slot_id = 129
                 except:
                     print("setkey [key id] [type]")
-                    print("[key id] must be a key number")
+                    print("[key id] must be a supported key number")
                     continue
                 try:
-                    if (data[2]=='label'):
+                    if (data[0]=='genkey'):
+                        if (slot_id > 100 and (data[2] == 'x' or data[2] == 'n' or data[2] == 's')):
+                            only_key.setkey(slot_id, data[2], 'ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff')
+                        else:
+                            print('Input error. See available commands with examples here https://docs.crp.to/command-line.html')
+                    elif (data[2]=='label'):
+                        if slot_id > 100:
+                            slot_id = slot_id - 72
+                        elif slot_id >= 1:
+                            slot_id = slot_id + 24
                         only_key.setslot(slot_id, MessageField.LABEL, data[3])
                     else:
                         key = prompt_pass()
-                        only_key.setkey(str(slot_id), data[2], key)
+                        only_key.setkey(slot_id, data[2], key)
                 except:
+                    print("setkey [key id] [type]")
+                    print('Input error. See available commands with examples here https://docs.crp.to/command-line.html')
                     continue
             elif data[0] == 'wipekey':
                 try:
@@ -751,10 +765,10 @@ def cli():
                         slot_id = 129
                 except:
                     print("wipekey [key id] [type]")
-                    print("[key id] must be a key number")
+                    print("[key id] must be a supported key number")
                     continue
                 try:
-                    only_key.wipekey(str(slot_id))
+                    only_key.wipekey(slot_id)
                 except:
                     continue
             elif data[0] == 'idletimeout':

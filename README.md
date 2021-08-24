@@ -10,7 +10,7 @@ No install is required. Download and run the EXE to open OnlyKey CLI interactive
 C:\ onlykey-cli.exe getlabels
 ```
 
-[Download here](https://github.com/trustcrypto/python-onlykey/releases/download/v1.2.3/onlykey-cli.exe)
+[Download here](https://github.com/trustcrypto/python-onlykey/releases/download/v1.2.5/onlykey-cli.exe)
 
 ### Windows Install with dependencies
 1) Python 3.8 and pip3 are required. To setup a Python environment on Windows we recommend Anaconda [https://www.anaconda.com/download/#windows](https://www.anaconda.com/download/#windows)
@@ -123,13 +123,12 @@ Returns slot labels
 A command for setting time on OnlyKey, time is needed for TOTP (Google Authenticator)
 
 #### getkeylabels
-Returns key labels for RSA keys 1-4 and ECC keys 1 -32
+Returns key labels for RSA keys 1-4 and ECC keys 1-16
 
 #### rng [type]
 Access OnlyKey TRNG to generate random numbers:
 - [type] must be one of the following:
-  - hexbytes - Output hex encoded random bytes. Default 8 bytes; Maximum 255 bytes. Specify number of bytes to return with --count <number of bytes>.
-  - raw - Output raw entropy endlessly.
+  - hexbytes - Output hex encoded random bytes. Default 8 bytes; Maximum 255 bytes. Specify number of bytes to return with --count <number of bytes> i.e. 'onlykey-cli rng hexbytes --count 32'
   - feedkernel - Feed random bytes to /dev/random.
 
 ### OnlyKey Preferences Options
@@ -226,7 +225,7 @@ Enable or disable challenge for stored keys (SSH/PGP)
 #### setslot [id] [type] [value]
   - [id] must be slot number 1a - 6b
   - [type] must be one of the following:
-    - label - Slot label i.e. My Google Acct
+    - label - set slots (1a - 6b) to have a descriptive label i.e. My Google Acct
     - url - URL to login page
     - delay1 - set a 0 - 9 second delay
     - addchar1 - Additional character before username 1 for TAB, 0 to clear
@@ -242,17 +241,37 @@ Enable or disable challenge for stored keys (SSH/PGP)
       - y - Yubico OTP
       - u - U2F
     - totpkey - Google Authenticator key
-    - addchar5 - Additional character after OTP 1 for TAB, 2 for RETURN, 3 for TAB+RETURN
+    - addchar5 - Additional character after OTP 2 for RETURN
 
 #### wipeslot [id]
   - [id] must be slot number 1a - 6b
 
 ### Key Config Options
 
-#### setkey [key slot] [key type]
-  - See examples [here](https://docs.crp.to/command-line.html#writing-private-keys-and-passwords).
+#### setkey [key slot] [type]
+Sets raw private keys and key labels, to set PEM format keys use the OnlyKey App
+  - [key slot] must be key number RSA1 - RSA4, ECC1 - ECC16, HMAC1 - HMAC2
+  - [type] must be one of the following:
+    - label - set to have a descriptive key label i.e. My GPG signing key
+    - x - X25519 Key Type (32 bytes)
+    - n - NIST256P1 Key Type (32 bytes)
+    - s - SECP256K1 Key Type (32 bytes)
+    - r - RSA Key Type
+    - h - HMAC Key Type (20 bytes)
+  - For setting keys see examples [here](https://docs.crp.to/command-line.html#writing-private-keys-and-passwords).
 
-#### wipekey [key slot]
+#### genkey [key slot] [type]
+Generates random private key on device
+  - [key slot] must be key number ECC1 - ECC16 (only ECC keys supported)
+  - [type] must be one of the following:
+    - x - X25519 Key Type (32 bytes)
+    - n - NIST256P1 Key Type (32 bytes)
+    - s - SECP256K1 Key Type (32 bytes)
+  - For setting keys see examples [here](https://docs.crp.to/command-line.html#writing-private-keys-and-passwords).
+
+#### wipekey [key id]
+Erases key stored at [key id]
+  - [key id] must be key number RSA1 - RSA4, ECC1 - ECC16, HMAC1 - HMAC2
 
 ### FIDO2 Config Options
 
@@ -454,39 +473,55 @@ To set key a device must first be put into config mode.
 
 $ onlykey-cli
 
-OnlyKey> setkey 130 9                                                                                                     
+OnlyKey> setkey HMAC1 h                                                                                                  
 
 Type Control-T to toggle password visible.
 Password/Key: ****************************************  
 
+Successfully set ECC Key
 
-*HMAC key must be 20 bytes, 130 is mapped to HMAC slot 1, 9 is HMAC type*
+*HMAC key must be 20 bytes, h is HMAC type*
 
 
 **Set HMAC key 2 to a custom value**
 
 $ onlykey-cli
 
-OnlyKey> setkey 129 9                                                                                                     
+OnlyKey> setkey HMAC2 h                                                                                                     
 
 Type Control-T to toggle password visible.
 Password/Key: ****************************************  
 
+Successfully set ECC Key
 
-*HMAC key must be 20 bytes, 129 is mapped to HMAC slot 2, 9 is HMAC type*
+*HMAC key must be 20 bytes, h is HMAC type*
 
 
-**Set ECC key in slot 101 to a custom value (Slots 101-116 are available for ECC keys. Supported ECC curves X25519(1), NIST256P1(2), SECP256K1(3))**
+**Set ECC key in slot 101 to a custom value (Slots ECC1-ECC16 are available for ECC keys. Supported ECC curves X25519(x), NIST256P1(n), SECP256K1(s))**
 
 $ onlykey-cli
 
-OnlyKey> setkey 101 1                                                                                                     
+OnlyKey> setkey ECC1 x                                                                                                    
 
 Type Control-T to toggle password visible.
 Password/Key: *************************************************************  
 
+Successfully set ECC Key
 
-*ECC key must be 32 bytes, 1 is X25519 type*
+*ECC key must be 32 bytes, x is X25519 type*
+
+**Genkey Examples**
+
+To set key a device must first be put into config mode.
+
+**Generate ECC key in slot ECC1 to a custom value (Slots ECC1-ECC16 are available for ECC keys. Supported ECC curves X25519(x), NIST256P1(n), SECP256K1(s))**
+
+$ onlykey-cli
+
+OnlyKey> genkey ECC1 x                                                                                                    
+
+Successfully set ECC Key
+
 
 ### Scripting Example
 
