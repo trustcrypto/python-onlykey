@@ -248,7 +248,7 @@ Enable or disable challenge for stored keys (SSH/PGP)
 
 ### Key Config Options
 
-#### setkey [key slot] [type]
+#### setkey [key slot] [type] [features] [hex key]
 Sets raw private keys and key labels, to set PEM format keys use the OnlyKey App
   - [key slot] must be key number RSA1 - RSA4, ECC1 - ECC16, HMAC1 - HMAC2
   - [type] must be one of the following:
@@ -256,18 +256,27 @@ Sets raw private keys and key labels, to set PEM format keys use the OnlyKey App
     - x - X25519 Key Type (32 bytes)
     - n - NIST256P1 Key Type (32 bytes)
     - s - SECP256K1 Key Type (32 bytes)
-    - r - RSA Key Type
+    - 2 - RSA Key Type 2048bits (256 bytes)
+    - 4 - RSA Key Type 4096bits (512 bytes)
     - h - HMAC Key Type (20 bytes)
+  - [features] must be one of the following:
+    - s - Use for signing
+    - d - Use for decryption
+    - b - Use for encryption/decryption of backups
   - For setting keys see examples [here](https://docs.crp.to/command-line.html#writing-private-keys-and-passwords).
 
-#### genkey [key slot] [type]
+#### genkey [key slot] [type] [features]
 Generates random private key on device
   - [key slot] must be key number ECC1 - ECC16 (only ECC keys supported)
   - [type] must be one of the following:
     - x - X25519 Key Type (32 bytes)
     - n - NIST256P1 Key Type (32 bytes)
     - s - SECP256K1 Key Type (32 bytes)
-  - For setting keys see examples [here](https://docs.crp.to/command-line.html#writing-private-keys-and-passwords).
+  - [features] must be one of the following:
+    - s - Use for signing
+    - d - Use for decryption
+    - b - Use for encryption/decryption of backups
+  - For generating key see example [here](https://docs.crp.to/command-line.html#writing-private-keys-and-passwords).
 
 #### wipekey [key id]
 Erases key stored at [key id]

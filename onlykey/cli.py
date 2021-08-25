@@ -295,9 +295,9 @@ def cli():
                         slot_id = slot_id + 24
                     only_key.setslot(slot_id, MessageField.LABEL, sys.argv[4])
                 else:
-                    only_key.setkey(slot_id, sys.argv[3], sys.argv[4])
+                    only_key.setkey(slot_id, sys.argv[3], sys.argv[4], sys.argv[5])
             except:
-                print("setkey [key id] [type]")
+                print(sys.exc_info()[0])
                 print('Input error. See available commands with examples here https://docs.crp.to/command-line.html')
                 return
         elif sys.argv[1] == 'wipekey':
@@ -695,7 +695,7 @@ def cli():
                     elif data[1] == 'HMAC2':
                         slot_id = 129
                 except:
-                    print("setkey [key id] [type]")
+                    print("setkey [key id] [type] [features]")
                     print("[key id] must be a supported key number")
                     continue
                 try:
@@ -712,9 +712,9 @@ def cli():
                         only_key.setslot(slot_id, MessageField.LABEL, data[3])
                     else:
                         key = prompt_pass()
-                        only_key.setkey(slot_id, data[2], key)
+                        only_key.setkey(slot_id, data[2], data[3], key)
                 except:
-                    print("setkey [key id] [type]")
+                    print(sys.exc_info()[0])
                     print('Input error. See available commands with examples here https://docs.crp.to/command-line.html')
                     continue
             elif data[0] == 'wipekey':

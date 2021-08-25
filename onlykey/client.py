@@ -429,43 +429,52 @@ class OnlyKey(object):
         for _ in range(8):
             print(self.read_string())
 
-    def setkey(self, slot_number, key_type, value):
+    def setkey(self, slot_number, key_type, key_features, value):
         # slot 131-132 Reserved
         # slot 129-130 HMAC Keys
         # slot 101-116 ECC Keys
         # slot 1-4 RSA Keys
+        # set key type
         if key_type == 'x':
             key_type = '1'
         elif key_type == 'n':
             key_type = '2'
         elif key_type == 's':
             key_type = '3'
-        #elif sys.argv[2] == 'r':
-        #    key_type = '1'
         elif key_type == 'h':
             key_type = '9'
+        # set key features
+        if key_features == 'd':
+            key_type = int(key_type) + 32 # Decrypt flag
+        elif key_features == 's':
+            key_type = int(key_type) + 64 # Sign flag
+        elif key_features == 'b':
+            key_type = int(key_type) + 32 # Decrypt flag
+            key_type = int(key_type) + 128 # Backup flag
+        else:
+            key_type = int(key_type)
         logging.debug('SETTING KEY IN SLOT:', slot_number)
         logging.debug('TO TYPE:', key_type)
         logging.debug('KEY:', value)
         if slot_number >= 1 and slot_number <= 4:
-            if key_type == '2': # RSA 2048
-                self.send_message(msg=Message.OKSETPRIV, slot_id=slot_number, payload='0'+key_type+value[:114])
-                self.send_message(msg=Message.OKSETPRIV, slot_id=slot_number, payload='0'+key_type+value[114:228])
-                self.send_message(msg=Message.OKSETPRIV, slot_id=slot_number, payload='0'+key_type+value[228:342])
-                self.send_message(msg=Message.OKSETPRIV, slot_id=slot_number, payload='0'+key_type+value[342:456])
-                self.send_message(msg=Message.OKSETPRIV, slot_id=slot_number, payload='0'+key_type+value[456:512])
-            elif key_type == '4': # RSA 4096
-                self.send_message(msg=Message.OKSETPRIV, slot_id=slot_number, payload='0'+key_type+value[:114])
-                self.send_message(msg=Message.OKSETPRIV, slot_id=slot_number, payload='0'+key_type+value[114:228])
-                self.send_message(msg=Message.OKSETPRIV, slot_id=slot_number, payload='0'+key_type+value[228:342])
-                self.send_message(msg=Message.OKSETPRIV, slot_id=slot_number, payload='0'+key_type+value[342:456])
-                self.send_message(msg=Message.OKSETPRIV, slot_id=slot_number, payload='0'+key_type+value[456:570])
-                self.send_message(msg=Message.OKSETPRIV, slot_id=slot_number, payload='0'+key_type+value[570:684])
-                self.send_message(msg=Message.OKSETPRIV, slot_id=slot_number, payload='0'+key_type+value[684:798])
-                self.send_message(msg=Message.OKSETPRIV, slot_id=slot_number, payload='0'+key_type+value[798:912])
-                self.send_message(msg=Message.OKSETPRIV, slot_id=slot_number, payload='0'+key_type+value[912:1024])
+            if key_type & 0xf == 2: # RSA 2048
+                self.send_message(msg=Message.OKSETPRIV, slot_id=slot_number, payload=format(key_type, 'x')+value[:114])
+                self.send_message(msg=Message.OKSETPRIV, slot_id=slot_number, payload=format(key_type, 'x')+value[114:228])
+                self.send_message(msg=Message.OKSETPRIV, slot_id=slot_number, payload=format(key_type, 'x')+value[228:342])
+                self.send_message(msg=Message.OKSETPRIV, slot_id=slot_number, payload=format(key_type, 'x')+value[342:456])
+                self.send_message(msg=Message.OKSETPRIV, slot_id=slot_number, payload=format(key_type, 'x')+value[456:512])
+            elif key_type & 0xf == 4: # RSA 4096
+                self.send_message(msg=Message.OKSETPRIV, slot_id=slot_number, payload=format(key_type, 'x')+value[:114])
+                self.send_message(msg=Message.OKSETPRIV, slot_id=slot_number, payload=format(key_type, 'x')+value[114:228])
+                self.send_message(msg=Message.OKSETPRIV, slot_id=slot_number, payload=format(key_type, 'x')+value[228:342])
+                self.send_message(msg=Message.OKSETPRIV, slot_id=slot_number, payload=format(key_type, 'x')+value[342:456])
+                self.send_message(msg=Message.OKSETPRIV, slot_id=slot_number, payload=format(key_type, 'x')+value[456:570])
+                self.send_message(msg=Message.OKSETPRIV, slot_id=slot_number, payload=format(key_type, 'x')+value[570:684])
+                self.send_message(msg=Message.OKSETPRIV, slot_id=slot_number, payload=format(key_type, 'x')+value[684:798])
+                self.send_message(msg=Message.OKSETPRIV, slot_id=slot_number, payload=format(key_type, 'x')+value[798:912])
+                self.send_message(msg=Message.OKSETPRIV, slot_id=slot_number, payload=format(key_type, 'x')+value[912:1024])
         else:
-            self.send_message(msg=Message.OKSETPRIV, slot_id=slot_number, payload='0'+key_type+value)
+            self.send_message(msg=Message.OKSETPRIV, slot_id=slot_number, payload=format(key_type, 'x')+value)
         time.sleep(1)
         print(self.read_string())
 
