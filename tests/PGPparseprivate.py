@@ -142,6 +142,7 @@ assert rootkey.is_protected
 assert rootkey.is_unlocked is False
 
 try:
+    print('Load these raw key values to OnlyKey by using the OnlyKey App --> Advanced -> Add Private Key')
     with rootkey.unlock(rootkey_passphrase):
         # rootkey is now unlocked
         assert rootkey.is_unlocked
