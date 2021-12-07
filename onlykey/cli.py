@@ -204,7 +204,7 @@ def cli():
                 only_key.setslot(slot_id, MessageField.NEXTKEY5, sys.argv[4])
             else:
                 print("setslot [id] [type] [value]")
-                print("[type] must be ['label', 'ecckeylabel', 'rsakeylabel', 'url', 'addchar1', 'delay1', 'username', 'addchar2', 'delay2', 'password', 'addchar3', 'delay3', '2fa', 'totpkey', 'addchar4', 'addchar5']")
+                print("[type] must be ['label', 'ecckeylabel', 'rsakeylabel', 'url', 'addchar1', 'delay1', 'username', 'addchar2', 'delay2', 'password', 'addchar3', 'delay3', '2fa', 'gkey', 'totpkey', 'addchar4', 'addchar5']")
             return
         elif sys.argv[1] == 'wipeslot':
             try:
@@ -616,7 +616,7 @@ def cli():
                     only_key.setslot(slot_id, MessageField.NEXTKEY3, data[3])
                 else:
                     print("setslot [id] [type] [value]")
-                    print("[type] must be ['label', 'ecckeylabel', 'rsakeylabel', 'url', 'addchar1', 'delay1', 'username', 'addchar2', 'delay2', 'password', 'addchar3', 'delay3', '2fa', 'totpkey', 'addchar4', 'addchar5']")
+                    print("[type] must be ['label', 'ecckeylabel', 'rsakeylabel', 'url', 'addchar1', 'delay1', 'username', 'addchar2', 'delay2', 'password', 'addchar3', 'delay3', '2fa', 'gkey', 'totpkey', 'addchar4', 'addchar5']")
                 continue
             elif data[0] == 'wipeslot':
                 try:
