@@ -85,7 +85,7 @@ $ sudo udevadm control --reload-rules && udevadm trigger
 
 #### Arch Linux Install with dependencies
 ```
-$ sudo pacman -Sy git python3-setuptools python3 libusb python3-pip
+$ sudo pacman -Syu git python3-setuptools python3 libusb python3-pip
 $ pip3 install onlykey
 $ wget https://raw.githubusercontent.com/trustcrypto/trustcrypto.github.io/master/49-onlykey.rules
 $ sudo cp 49-onlykey.rules /etc/udev/rules.d/
