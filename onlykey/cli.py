@@ -114,14 +114,29 @@ def cli():
                 print(only_key.read_string())
                 print ()
         elif sys.argv[1] == 'getlabels':
-            tmp = {}
-            for slot in only_key.getlabels():
-                tmp[slot.name] = slot
-            slots = iter(['1a', '1b', '2a', '2b', '3a', '3b', '4a', '4b', '5a', '5b', '6a', '6b'])
-            for slot_name in slots:
-                print(tmp[slot_name].to_str().replace('ÿ'," "))
-                print(tmp[next(slots)].to_str().replace('ÿ'," "))
-                print()
+            tmp = {}      
+            only_key.set_time(time.time())
+            okversion = only_key.read_string()
+            if okversion[19] == 'c':
+                for slot in only_key.getlabels():
+                    tmp[slot.name] = slot
+                    slots = iter(['1a', '1b', '2a', '2b', '3a', '3b', '4a', '4b', '5a', '5b', '6a', '6b'])
+                for slot_name in slots:
+                    print(tmp[slot_name].to_str().replace('ÿ'," "))
+                    print(tmp[next(slots)].to_str().replace('ÿ'," "))
+                    print()
+            else:
+                for slot in only_key.getduolabels():
+                    tmp[slot.name] = slot
+                    slots = iter(['Green 1a', 'Green 2a', 'Green 3a', 'Green 1b', 'Green 2b', 'Green 3b', 'Blue 1a', 'Blue 2a', 'Blue 3a', 'Blue 1b', 'Blue 2b', 'Blue 3b', 'Yellow 1a', 'Yellow 2a', 'Yellow 3a', 'Yellow 1b', 'Yellow 2b', 'Yellow 3b', 'Purple 1a', 'Purple 2a', 'Purple 3a', 'Purple 1b', 'Purple 2b', 'Purple 3b'])
+                for slot_name in slots:
+                    print(tmp[slot_name].to_str().replace('ÿ'," "))
+                    print(tmp[next(slots)].to_str().replace('ÿ'," "))
+                    print(tmp[next(slots)].to_str().replace('ÿ'," "))
+                    print(tmp[next(slots)].to_str().replace('ÿ'," "))
+                    print(tmp[next(slots)].to_str().replace('ÿ'," "))
+                    print(tmp[next(slots)].to_str().replace('ÿ'," "))
+                    print()
         elif sys.argv[1] == 'getkeylabels':
             tmp = {}
             for slot in only_key.getkeylabels():
@@ -155,6 +170,8 @@ def cli():
                     slot_id = 11
                 elif sys.argv[2] == '6b':
                     slot_id = 12
+                else:
+                    slot_id = int(sys.argv[2])
             except:
                 print("setslot [id] [type] [value]")
                 print("[id] must be slot number 1a - 6b")
@@ -357,7 +374,7 @@ def cli():
         elif sys.argv[1] == 'wipemode':
              only_key.setslot(1, MessageField.WIPEMODE, int(sys.argv[2]))
         elif sys.argv[1] == 'keytypespeed':
-             only_key.setslot(1, MessageField.KEYTYPESPEED, int(sys.argv[2]))
+             only_key.setslot(int(sys.argv[2]), MessageField.KEYTYPESPEED, int(sys.argv[3]))
         elif sys.argv[1] == 'ledbrightness':
              only_key.setslot(1, MessageField.LEDBRIGHTNESS, int(sys.argv[2]))
         elif sys.argv[1] == 'touchsense':
@@ -379,7 +396,7 @@ def cli():
         elif sys.argv[1] == 'hmackeymode':
              only_key.setslot(1, MessageField.HMACMODE, int(sys.argv[2]))
         elif sys.argv[1] == 'version':
-            print('OnlyKey CLI v1.2.7')
+            print('OnlyKey CLI v1.2.8')
         elif sys.argv[1] == 'fwversion':
             only_key.set_time(time.time())
             okversion = only_key.read_string()
@@ -456,7 +473,7 @@ def cli():
     else:
 
         # Print help.
-        print('OnlyKey CLI v1.2.7')
+        print('OnlyKey CLI v1.2.8')
         print('Control-D to exit.')
         print()
 
@@ -527,14 +544,29 @@ def cli():
                     print(only_key.read_string())
                     print()
             elif data[0] == 'getlabels':
-                tmp = {}
-                for slot in only_key.getlabels():
-                    tmp[slot.name] = slot
-                slots = iter(['1a', '1b', '2a', '2b', '3a', '3b', '4a', '4b', '5a', '5b', '6a', '6b'])
-                for slot_name in slots:
-                    print(tmp[slot_name].to_str().replace('ÿ'," "))
-                    print(tmp[next(slots)].to_str().replace('ÿ'," "))
-                    print()
+                tmp = {}      
+                only_key.set_time(time.time())
+                okversion = only_key.read_string()
+                if okversion[19] == 'c':
+                    for slot in only_key.getlabels():
+                        tmp[slot.name] = slot
+                        slots = iter(['1a', '1b', '2a', '2b', '3a', '3b', '4a', '4b', '5a', '5b', '6a', '6b'])
+                    for slot_name in slots:
+                        print(tmp[slot_name].to_str().replace('ÿ'," "))
+                        print(tmp[next(slots)].to_str().replace('ÿ'," "))
+                        print()
+                else:
+                    for slot in only_key.getduolabels():
+                        tmp[slot.name] = slot
+                        slots = iter(['Green 1a', 'Green 2a', 'Green 3a', 'Green 1b', 'Green 2b', 'Green 3b', 'Blue 1a', 'Blue 2a', 'Blue 3a', 'Blue 1b', 'Blue 2b', 'Blue 3b', 'Yellow 1a', 'Yellow 2a', 'Yellow 3a', 'Yellow 1b', 'Yellow 2b', 'Yellow 3b', 'Purple 1a', 'Purple 2a', 'Purple 3a', 'Purple 1b', 'Purple 2b', 'Purple 3b'])
+                    for slot_name in slots:
+                        print(tmp[slot_name].to_str().replace('ÿ'," "))
+                        print(tmp[next(slots)].to_str().replace('ÿ'," "))
+                        print(tmp[next(slots)].to_str().replace('ÿ'," "))
+                        print(tmp[next(slots)].to_str().replace('ÿ'," "))
+                        print(tmp[next(slots)].to_str().replace('ÿ'," "))
+                        print(tmp[next(slots)].to_str().replace('ÿ'," "))
+                        print()
             elif data[0] == 'getkeylabels':
                 tmp = {}
                 for slot in only_key.getkeylabels():
@@ -568,6 +600,8 @@ def cli():
                         slot_id = 11
                     elif data[1] == '6b':
                         slot_id = 12
+                    else:
+                        slot_id = int(data[1])
                 except:
                     print("setslot [id] [type] [value]")
                     print("[id] must be slot number 1a - 6b")
@@ -839,7 +873,7 @@ def cli():
                     continue
             elif data[0] == 'version':
                 try:
-                    print('OnlyKey CLI v1.2.7')
+                    print('OnlyKey CLI v1.2.8')
                 except:
                     continue
             elif data[0] == 'fwversion':

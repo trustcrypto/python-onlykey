@@ -86,6 +86,69 @@ SLOTS_NAME= {
     60: 'ECC Key 32',
 }
 
+SLOTS_NAME_DUO= {
+    1: 'Green 1a',
+    2: 'Green 2a',
+    3: 'Green 3a',
+    4: 'Green 1b',
+    5: 'Green 2b',
+    6: 'Green 3b',
+    7: 'Blue 1a',
+    8: 'Blue 2a',
+    9: 'Blue 3a',
+    10: 'Blue 1b',
+    11: 'Blue 2b',
+    12: 'Blue 3b',
+    13: 'Yellow 1a',
+    14: 'Yellow 2a',
+    15: 'Yellow 3a',
+    16: 'Yellow 1b',
+    17: 'Yellow 2b',
+    18: 'Yellow 3b',
+    19: 'Purple 1a',
+    20: 'Purple 2a',
+    21: 'Purple 3a',
+    22: 'Purple 1b',
+    23: 'Purple 2b',
+    24: 'Purple 3b',
+    25: 'RSA Key 1',
+    26: 'RSA Key 2',
+    27: 'RSA Key 3',
+    28: 'RSA Key 4',
+    29: 'ECC Key 1',
+    30: 'ECC Key 2',
+    31: 'ECC Key 3',
+    32: 'ECC Key 4',
+    33: 'ECC Key 5',
+    34: 'ECC Key 6',
+    35: 'ECC Key 7',
+    36: 'ECC Key 8',
+    37: 'ECC Key 9',
+    38: 'ECC Key 10',
+    39: 'ECC Key 11',
+    40: 'ECC Key 12',
+    41: 'ECC Key 13',
+    42: 'ECC Key 14',
+    43: 'ECC Key 15',
+    44: 'ECC Key 16',
+    45: 'ECC Key 17',
+    46: 'ECC Key 18',
+    47: 'ECC Key 19',
+    48: 'ECC Key 20',
+    49: 'ECC Key 21',
+    50: 'ECC Key 22',
+    51: 'ECC Key 23',
+    52: 'ECC Key 24',
+    53: 'ECC Key 25',
+    54: 'ECC Key 26',
+    55: 'ECC Key 27',
+    56: 'ECC Key 28',
+    57: 'ECC Key 29',
+    58: 'ECC Key 30',
+    59: 'ECC Key 31',
+    60: 'ECC Key 32',
+}
+
 
 class Message(Enum):
     OKSETPIN = 225  # 0xE1
@@ -152,6 +215,18 @@ class Slot(object):
         self.number = num
         self.label = label
         self.name = SLOTS_NAME[num]
+
+    def __repr__(self):
+        return '<Slot \'{}|{}\'>'.format(self.name, self.label)
+
+    def to_str(self):
+        return 'Slot {}: {}'.format(self.name, self.label or '<empty>')
+
+class Slotduo(object):
+    def __init__(self, num, label=''):
+        self.number = num
+        self.label = label
+        self.name = SLOTS_NAME_DUO[num]
 
     def __repr__(self):
         return '<Slot \'{}|{}\'>'.format(self.name, self.label)
@@ -380,6 +455,23 @@ class OnlyKey(object):
                 slots.append(Slot(slot_number, label=data[1]))
         return slots
 
+    def getduolabels(self):
+        """Fetch the list of `Slot` from the OnlyKey.
+
+        No need to read messages.
+        """
+        self.send_message(msg=Message.OKGETLABELS)
+        time.sleep(0.5)
+        slots = []
+        for _ in range(24):
+            data = self.read_string().split('|')
+            slot_number = ord(data[0])
+            if slot_number >= 16:
+                slot_number = slot_number - 6
+            if 1 <= slot_number <= 24:
+                slots.append(Slotduo(slot_number, label=data[1]))
+        return slots
+
     def getkeylabels(self):
         """Fetch the list of `Keys` from the OnlyKey.
 
@@ -488,160 +580,63 @@ class OnlyKey(object):
         global slotnum
         slotnum = slot
 
-    def getpub(self):
-        global slotnum
-        time.sleep(2)
+    def loadprivate(self, rootkey_ascii_armor, rootkey_passphrase):
+        # This python script can parse the private keys out of OpenPGP keys (ed25519 or RSA). 
+        # Replace the passphrase with your OpenPGP passphrase.
+        (rootkey, _) = pgpy.PGPKey.from_blob(rootkey_ascii_armor)
 
-        self.read_string(timeout_ms=100)
-        empty = 'a'
-        while not empty:
-            empty = self.read_string(timeout_ms=100)
+        # Todo load keys onto OnlyKey after parsed
+        
+        assert rootkey.is_protected
+        assert rootkey.is_unlocked is False
 
-        time.sleep(1)
-        print('You should see your OnlyKey blink 3 times')
-        print()
+        try:
+            with rootkey.unlock(rootkey_passphrase):
+                # rootkey is now unlocked
+                assert rootkey.is_unlocked
+                print('rootkey is now unlocked')
+                print('rootkey type %s', rootkey._key._pkalg)
+                if 'RSA' in rootkey._key._pkalg._name_:
+                    print('rootkey value:')
+                    #Parse rsa pgp key
+                    primary_keyp = long_to_bytes(rootkey._key.keymaterial.p)
+                    primary_keyq = long_to_bytes(rootkey._key.keymaterial.q)
+                    print(("".join(["%02x" % c for c in primary_keyp])) + ("".join(["%02x" % c for c in primary_keyq])))
+                    print('rootkey size =', (len(primary_keyp)+len(primary_keyq))*8, 'bits')
+                    print('subkey values:')
+                    for subkey, value in rootkey._children.items():
+                        print('subkey id', subkey)
+                        sub_keyp = long_to_bytes(value._key.keymaterial.p)
+                        sub_keyq = long_to_bytes(value._key.keymaterial.q)
+                        print('subkey value')
+                        print(("".join(["%02x" % c for c in sub_keyp])) + ("".join(["%02x" % c for c in sub_keyq])))
+                        print('subkey size =', (len(primary_keyp)+len(primary_keyq))*8, 'bits')
+                else:
+                    print('rootkey value:')
+                    #Parse ed25519 pgp key
+                    primary_key = long_to_bytes(rootkey._key.keymaterial.s)
+                    print("".join(["%02x" % c for c in primary_key]))
+                    print('subkey values:')
+                    for subkey, value in rootkey._children.items():
+                        print('subkey id', subkey)
+                        sub_key = long_to_bytes(value._key.keymaterial.s)
+                        print('subkey value')
+                        print("".join(["%02x" % c for c in sub_key]))
+                    
+        except:
+            print('Unlocking failed')
 
+        # rootkey is no longer unlocked
+        assert rootkey.is_unlocked is False
 
-        print('Trying to read the public RSA N part 1...')
-        self.send_message(msg=Message.OKGETPUBKEY, payload=chr(slotnum))  #, payload=[1, 1])
-        time.sleep(1)
-        ok_pubkey1 = ''
-        while ok_pubkey1 == '':
-            time.sleep(0.5)
-            ok_pubkey1 = self.read_bytes(64, to_bytes=True)
+    def encrypt(self, slot):
+        print('Unavailable command')
 
-        print()
+    def decrypt(self, slot):
+        print('Unavailable command')
 
-        print('received=', repr(ok_pubkey1))
+    def sign(self, slot):
+        print('Unavailable command')
 
-        print('Trying to read the public RSA N part 2...')
-        for _ in range(10):
-            ok_pubkey2 = self.read_bytes(64, to_bytes=True)
-            if len(ok_pubkey2) == 64:
-                break
-
-        print()
-
-        print('received=', repr(ok_pubkey2))
-
-        print('Trying to read the public RSA N part 3...')
-        for _ in range(10):
-            ok_pubkey3 = self.read_bytes(64, to_bytes=True)
-            if len(ok_pubkey3) == 64:
-                break
-
-
-        print()
-
-        print('received=', repr(ok_pubkey3))
-
-        print('Trying to read the public RSA N part 4...')
-        for _ in range(10):
-            ok_pubkey4 = self.read_bytes(64, to_bytes=True)
-            if len(ok_pubkey4) == 64:
-                break
-
-
-        print()
-
-        print('received=', repr(ok_pubkey4))
-
-        print('Trying to read the public RSA N part 5...')
-        for _ in range(10):
-            ok_pubkey5 = self.read_bytes(64, to_bytes=True)
-            if len(ok_pubkey5) == 64:
-                break
-
-
-        print()
-
-        print('received=', repr(ok_pubkey5))
-
-        print('Trying to read the public RSA N part 6...')
-        for _ in range(10):
-            ok_pubkey6 = self.read_bytes(64, to_bytes=True)
-            if len(ok_pubkey6) == 64:
-                break
-
-
-        print()
-        print('received=', repr(ok_pubkey6))
-
-        print('Trying to read the public RSA N part 7...')
-        for _ in range(10):
-            ok_pubkey7 = self.read_bytes(64, to_bytes=True)
-            if len(ok_pubkey7) == 64:
-                break
-
-
-        print()
-        print('received=', repr(ok_pubkey7))
-        print('Trying to read the public RSA N part 8...')
-
-        for _ in range(10):
-            ok_pubkey8 = self.read_bytes(64, to_bytes=True)
-            if len(ok_pubkey8) == 64:
-                break
-
-        print()
-        print('received=', repr(ok_pubkey8))
-
-        if not ok_pubkey2:
-            raise Exception('failed to read public RSA N from OnlyKey')
-
-
-        print('Received Public Key generated by OnlyKey')
-        ok_pubkey = ok_pubkey1 + ok_pubkey2 + ok_pubkey3 + ok_pubkey4 + ok_pubkey5 + ok_pubkey6 + ok_pubkey7 + ok_pubkey8
-        print('Public N=', repr(ok_pubkey))
-        print()
-
-        print('Key Size =', len(ok_pubkey))
-        print()
-
-        return ok_pubkey
-
-    def decrypt(self, ct):
-        global slotnum
-        time.sleep(2)
-
-        self.read_string(timeout_ms=100)
-        empty = 'a'
-        while not empty:
-            empty = self.read_string(timeout_ms=100)
-
-        time.sleep(1)
-        print('You should see your OnlyKey blink 3 times')
-        print()
-
-        # Compute the challenge pin
-        h = hashlib.sha256()
-        h.update(ct)
-        d = h.digest()
-
-        assert len(d) == 32
-
-        def get_button(byte):
-            ibyte = ord(byte)
-            if ibyte < 6:
-                return 1
-            return ibyte % 5 + 1
-
-        b1, b2, b3 = get_button(d[0]), get_button(d[15]), get_button(d[31])
-
-        print('Sending the payload to the OnlyKey...')
-        self.send_large_message2(msg=Message.OKDECRYPT, payload=ct, slot_id=slotnum)
-
-        print('Please enter the 3 digit challenge code on OnlyKey (and press ENTER if necessary)')
-        print('{} {} {}'.format(b1, b2, b3))
-        input()
-        print('Trying to read the decrypted data from OnlyKey')
-        print('For RSA with 4096 keysize this may take up to 9 seconds...')
-        ok_decrypted = ''
-        while ok_decrypted == '':
-            time.sleep(0.5)
-            ok_decrypted = self.read_bytes(64, to_bytes=True)
-
-        print('Decrypted by OnlyKey, data=', repr(ok_decrypted))
-
-        return ok_decrypted
-
+    def verify(self, slot):
+        print('Unavailable command')
