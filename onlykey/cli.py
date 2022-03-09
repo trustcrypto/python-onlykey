@@ -170,11 +170,59 @@ def cli():
                     slot_id = 11
                 elif sys.argv[2] == '6b':
                     slot_id = 12
+                elif sys.argv[2] == 'green1a':
+                    slot_id = 1
+                elif sys.argv[2] == 'green2a':
+                    slot_id = 2
+                elif sys.argv[2] == 'green3a':
+                    slot_id = 3
+                elif sys.argv[2] == 'green1b':
+                    slot_id = 4
+                elif sys.argv[2] == 'green2b':
+                    slot_id = 5
+                elif sys.argv[2] == 'green3b':
+                    slot_id = 6
+                elif sys.argv[2] == 'blue1a':
+                    slot_id = 7
+                elif sys.argv[2] == 'blue2a':
+                    slot_id = 8
+                elif sys.argv[2] == 'blue3a':
+                    slot_id = 9
+                elif sys.argv[2] == 'blue1b':
+                    slot_id = 10
+                elif sys.argv[2] == 'blue2b':
+                    slot_id = 11
+                elif sys.argv[2] == 'blue3b':
+                    slot_id = 12
+                elif sys.argv[2] == 'yellow1a':
+                    slot_id = 13
+                elif sys.argv[2] == 'yellow2a':
+                    slot_id = 14
+                elif sys.argv[2] == 'yellow3a':
+                    slot_id = 15
+                elif sys.argv[2] == 'yellow1b':
+                    slot_id = 16
+                elif sys.argv[2] == 'yellow2b':
+                    slot_id = 17
+                elif sys.argv[2] == 'yellow3b':
+                    slot_id = 18
+                elif sys.argv[2] == 'purple1a':
+                    slot_id = 19
+                elif sys.argv[2] == 'purple2a':
+                    slot_id = 20
+                elif sys.argv[2] == 'purple3a':
+                    slot_id = 21
+                elif sys.argv[2] == 'purple1b':
+                    slot_id = 22
+                elif sys.argv[2] == 'purple2b':
+                    slot_id = 23
+                elif sys.argv[2] == 'purple3b':
+                    slot_id = 24
                 else:
                     slot_id = int(sys.argv[2])
             except:
                 print("setslot [id] [type] [value]")
-                print("[id] must be slot number 1a - 6b")
+                print("[id] must be a valid slot number")
                 return
 
             if sys.argv[3] == 'label':
@@ -219,9 +267,11 @@ def cli():
                 only_key.setslot(slot_id, MessageField.NEXTKEY4, sys.argv[4])
             elif sys.argv[3] == 'addchar4':
                 only_key.setslot(slot_id, MessageField.NEXTKEY5, sys.argv[4])
+            elif sys.argv[3] == 'typespeed':
+                only_key.setslot(slot_id, MessageField.KEYTYPESPEED, int(sys.argv[4]))
             else:
                 print("setslot [id] [type] [value]")
-                print("[type] must be ['label', 'ecckeylabel', 'rsakeylabel', 'url', 'addchar1', 'delay1', 'username', 'addchar2', 'delay2', 'password', 'addchar3', 'delay3', '2fa', 'totpkey', 'addchar4', 'addchar5']")
+                print("[type] must be ['label', 'ecckeylabel', 'rsakeylabel', 'url', 'addchar1', 'delay1', 'username', 'addchar2', 'delay2', 'password', 'addchar3', 'delay3', '2fa', 'totpkey', 'addchar4', 'addchar5', 'typespeed']")
             return
         elif sys.argv[1] == 'wipeslot':
             try:
@@ -249,9 +299,59 @@ def cli():
                     slot_id = 11
                 elif sys.argv[2] == '6b':
                     slot_id = 12
+                elif sys.argv[2] == 'green1a':
+                    slot_id = 1
+                elif sys.argv[2] == 'green2a':
+                    slot_id = 2
+                elif sys.argv[2] == 'green3a':
+                    slot_id = 3
+                elif sys.argv[2] == 'green1b':
+                    slot_id = 4
+                elif sys.argv[2] == 'green2b':
+                    slot_id = 5
+                elif sys.argv[2] == 'green3b':
+                    slot_id = 6
+                elif sys.argv[2] == 'blue1a':
+                    slot_id = 7
+                elif sys.argv[2] == 'blue2a':
+                    slot_id = 8
+                elif sys.argv[2] == 'blue3a':
+                    slot_id = 9
+                elif sys.argv[2] == 'blue1b':
+                    slot_id = 10
+                elif sys.argv[2] == 'blue2b':
+                    slot_id = 11
+                elif sys.argv[2] == 'blue3b':
+                    slot_id = 12
+                elif sys.argv[2] == 'yellow1a':
+                    slot_id = 13
+                elif sys.argv[2] == 'yellow2a':
+                    slot_id = 14
+                elif sys.argv[2] == 'yellow3a':
+                    slot_id = 15
+                elif sys.argv[2] == 'yellow1b':
+                    slot_id = 16
+                elif sys.argv[2] == 'yellow2b':
+                    slot_id = 17
+                elif sys.argv[2] == 'yellow3b':
+                    slot_id = 18
+                elif sys.argv[2] == 'purple1a':
+                    slot_id = 19
+                elif sys.argv[2] == 'purple2a':
+                    slot_id = 20
+                elif sys.argv[2] == 'purple3a':
+                    slot_id = 21
+                elif sys.argv[2] == 'purple1b':
+                    slot_id = 22
+                elif sys.argv[2] == 'purple2b':
+                    slot_id = 23
+                elif sys.argv[2] == 'purple3b':
+                    slot_id = 24
+                else:
+                    slot_id = int(sys.argv[2])
             except:
                 print("wipeslot [id]")
-                print("[id] must be slot number 1a - 6b")
+                print("[id] must be a valid slot number")
                 return
             only_key.wipeslot(slot_id)
         elif sys.argv[1] == 'setkey' or sys.argv[1] == 'genkey':
@@ -374,7 +474,7 @@ def cli():
         elif sys.argv[1] == 'wipemode':
              only_key.setslot(1, MessageField.WIPEMODE, int(sys.argv[2]))
         elif sys.argv[1] == 'keytypespeed':
-             only_key.setslot(int(sys.argv[2]), MessageField.KEYTYPESPEED, int(sys.argv[3]))
+             only_key.setslot(99, MessageField.KEYTYPESPEED, int(sys.argv[2]))
         elif sys.argv[1] == 'ledbrightness':
              only_key.setslot(1, MessageField.LEDBRIGHTNESS, int(sys.argv[2]))
         elif sys.argv[1] == 'touchsense':
@@ -396,7 +496,7 @@ def cli():
         elif sys.argv[1] == 'hmackeymode':
              only_key.setslot(1, MessageField.HMACMODE, int(sys.argv[2]))
         elif sys.argv[1] == 'version':
-            print('OnlyKey CLI v1.2.8')
+            print('OnlyKey CLI v1.2.9')
         elif sys.argv[1] == 'fwversion':
             only_key.set_time(time.time())
             okversion = only_key.read_string()
@@ -473,7 +573,7 @@ def cli():
     else:
 
         # Print help.
-        print('OnlyKey CLI v1.2.8')
+        print('OnlyKey CLI v1.2.9')
         print('Control-D to exit.')
         print()
 
@@ -600,11 +700,59 @@ def cli():
                         slot_id = 11
                     elif data[1] == '6b':
                         slot_id = 12
+                    elif data[1] == 'green1a':
+                        slot_id = 1
+                    elif data[1] == 'green2a':
+                        slot_id = 2
+                    elif data[1] == 'green3a':
+                        slot_id = 3
+                    elif data[1] == 'green1b':
+                        slot_id = 4
+                    elif data[1] == 'green2b':
+                        slot_id = 5
+                    elif data[1] == 'green3b':
+                        slot_id = 6
+                    elif data[1] == 'blue1a':
+                        slot_id = 7
+                    elif data[1] == 'blue2a':
+                        slot_id = 8
+                    elif data[1] == 'blue3a':
+                        slot_id = 9
+                    elif data[1] == 'blue1b':
+                        slot_id = 10
+                    elif data[1] == 'blue2b':
+                        slot_id = 11
+                    elif data[1] == 'blue3b':
+                        slot_id = 12
+                    elif data[1] == 'yellow1a':
+                        slot_id = 13
+                    elif data[1] == 'yellow2a':
+                        slot_id = 14
+                    elif data[1] == 'yellow3a':
+                        slot_id = 15
+                    elif data[1] == 'yellow1b':
+                        slot_id = 16
+                    elif data[1] == 'yellow2b':
+                        slot_id = 17
+                    elif data[1] == 'yellow3b':
+                        slot_id = 18
+                    elif data[1] == 'purple1a':
+                        slot_id = 19
+                    elif data[1] == 'purple2a':
+                        slot_id = 20
+                    elif data[1] == 'purple3a':
+                        slot_id = 21
+                    elif data[1] == 'purple1b':
+                        slot_id = 22
+                    elif data[1] == 'purple2b':
+                        slot_id = 23
+                    elif data[1] == 'purple3b':
+                        slot_id = 24
                     else:
                         slot_id = int(data[1])
                 except:
                     print("setslot [id] [type] [value]")
-                    print("[id] must be slot number 1a - 6b")
+                    print("[id] must be a valid slot number")
                     continue
                 if data[2] == 'label':
                     only_key.setslot(slot_id, MessageField.LABEL, data[3])
@@ -648,9 +796,11 @@ def cli():
                     only_key.setslot(slot_id, MessageField.NEXTKEY3, data[3])
                 elif data[2] == 'addchar4':
                     only_key.setslot(slot_id, MessageField.NEXTKEY3, data[3])
+                elif data[2] == 'typespeed':
+                    only_key.setslot(slot_id, MessageField.KEYTYPESPEED, int(data[3]))
                 else:
                     print("setslot [id] [type] [value]")
-                    print("[type] must be ['label', 'ecckeylabel', 'rsakeylabel', 'url', 'addchar1', 'delay1', 'username', 'addchar2', 'delay2', 'password', 'addchar3', 'delay3', '2fa', 'totpkey', 'addchar4', 'addchar5']")
+                    print("[type] must be ['label', 'ecckeylabel', 'rsakeylabel', 'url', 'addchar1', 'delay1', 'username', 'addchar2', 'delay2', 'password', 'addchar3', 'delay3', '2fa', 'totpkey', 'addchar4', 'addchar5', 'typespeed']")
                 continue
             elif data[0] == 'wipeslot':
                 try:
@@ -678,9 +828,59 @@ def cli():
                         slot_id = 11
                     elif data[1] == '6b':
                         slot_id = 12
+                    elif data[1] == 'green1a':
+                        slot_id = 1
+                    elif data[1] == 'green2a':
+                        slot_id = 2
+                    elif data[1] == 'green3a':
+                        slot_id = 3
+                    elif data[1] == 'green1b':
+                        slot_id = 4
+                    elif data[1] == 'green2b':
+                        slot_id = 5
+                    elif data[1] == 'green3b':
+                        slot_id = 6
+                    elif data[1] == 'blue1a':
+                        slot_id = 7
+                    elif data[1] == 'blue2a':
+                        slot_id = 8
+                    elif data[1] == 'blue3a':
+                        slot_id = 9
+                    elif data[1] == 'blue1b':
+                        slot_id = 10
+                    elif data[1] == 'blue2b':
+                        slot_id = 11
+                    elif data[1] == 'blue3b':
+                        slot_id = 12
+                    elif data[1] == 'yellow1a':
+                        slot_id = 13
+                    elif data[1] == 'yellow2a':
+                        slot_id = 14
+                    elif data[1] == 'yellow3a':
+                        slot_id = 15
+                    elif data[1] == 'yellow1b':
+                        slot_id = 16
+                    elif data[1] == 'yellow2b':
+                        slot_id = 17
+                    elif data[1] == 'yellow3b':
+                        slot_id = 18
+                    elif data[1] == 'purple1a':
+                        slot_id = 19
+                    elif data[1] == 'purple2a':
+                        slot_id = 20
+                    elif data[1] == 'purple3a':
+                        slot_id = 21
+                    elif data[1] == 'purple1b':
+                        slot_id = 22
+                    elif data[1] == 'purple2b':
+                        slot_id = 23
+                    elif data[1] == 'purple3b':
+                        slot_id = 24
+                    else:
+                        slot_id = int(data[1])
                 except:
                     print("wipeslot [id]")
-                    print("[id] must be slot number 1a - 6b")
+                    print("[id] must be a valid slot number")
                     continue
                 only_key.wipeslot(slot_id)
             elif data[0] == 'setkey' or data[0] == 'genkey':
@@ -818,7 +1018,7 @@ def cli():
                     continue
             elif data[0] == 'keytypespeed':
                 try:
-                    only_key.setslot(1, MessageField.KEYTYPESPEED, int(data[1]))
+                    only_key.setslot(99, MessageField.KEYTYPESPEED, int(data[1]))
                 except:
                     continue
             elif data[0] == 'ledbrightness':
@@ -873,7 +1073,7 @@ def cli():
                     continue
             elif data[0] == 'version':
                 try:
-                    print('OnlyKey CLI v1.2.8')
+                    print('OnlyKey CLI v1.2.9')
                 except:
                     continue
             elif data[0] == 'fwversion':
