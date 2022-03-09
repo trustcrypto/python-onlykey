@@ -36,6 +36,7 @@ MAX_LARGE_PAYLOAD_SIZE = 58  # 64 - <4 bytes header> - <1 byte message> - <1 byt
 
 
 SLOTS_NAME= {
+    0: '0',
     1: '1a',
     2: '2a',
     3: '3a',
@@ -309,6 +310,8 @@ class OnlyKey(object):
         # Append the slot ID if needed
         if slot_id:
             logging.debug('slot_id=%s', slot_id)
+            if slot_id == 99:
+                slot_id = 0
             raw_bytes.append(slot_id)
 
         # Append the message field (must be a `MessageField` enum value)
@@ -511,8 +514,6 @@ class OnlyKey(object):
     def setslot(self, slot_number, message_field, value):
         """Set a slot field to the given value."""
         self.send_message(msg=Message.OKSETSLOT, slot_id=slot_number, message_field=message_field, payload=value, from_ascii=True)
-        # Set U2F
-        # [255, 255, 255, 255, 230, 12, 8, 117, 50, 102, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
         print(self.read_string())
 
     def wipeslot(self, slot_number):
