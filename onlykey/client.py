@@ -290,10 +290,7 @@ class OnlyKey(object):
         current_epoch_time = format(int(timestamp), 'x')
         # pad with zeros for even digits
         current_epoch_time = current_epoch_time.zfill(len(current_epoch_time) + len(current_epoch_time) % 2)
-        logging.debug('Setting current epoch time =', current_epoch_time)
         payload = [int(current_epoch_time[i: i+2], 16) for i in range(0, len(current_epoch_time), 2)]
-
-        logging.debug('SENDING OKSETTIME:', [x for x in enumerate(payload)])
         self.send_message(msg=Message.OKSETTIME, payload=payload)
 
     def send_message(self, payload=None, msg=None, slot_id=None, message_field=None, from_ascii=False):
