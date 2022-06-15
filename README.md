@@ -361,7 +361,7 @@ Or you can run commands in an interactive shell like this:
 
 ```
 $ onlykey-cli
-OnlyKey CLI v1.2.9
+OnlyKey CLI v1.2.10
 Press the right arrow to insert the suggestion.
 Press Control-C to retry. Control-D to exit.
 

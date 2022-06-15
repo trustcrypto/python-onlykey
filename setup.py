@@ -10,7 +10,7 @@ with open(path.join(here, 'README.md'), encoding='utf-8') as f:
 
 setup(
     name='onlykey',
-    version='1.2.9',
+    version='1.2.10',
     description='OnlyKey client and command-line tool',
     # long_description=long_description,
     url='https://github.com/trustcrypto/python-onlykey',

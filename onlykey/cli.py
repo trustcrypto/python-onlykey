@@ -496,7 +496,7 @@ def cli():
         elif sys.argv[1] == 'hmackeymode':
              only_key.setslot(1, MessageField.HMACMODE, int(sys.argv[2]))
         elif sys.argv[1] == 'version':
-            print('OnlyKey CLI v1.2.9')
+            print('OnlyKey CLI v1.2.10')
         elif sys.argv[1] == 'fwversion':
             only_key.set_time(time.time())
             okversion = only_key.read_string()
@@ -573,7 +573,7 @@ def cli():
     else:
 
         # Print help.
-        print('OnlyKey CLI v1.2.9')
+        print('OnlyKey CLI v1.2.10')
         print('Control-D to exit.')
         print()
 
@@ -1073,7 +1073,7 @@ def cli():
                     continue
             elif data[0] == 'version':
                 try:
-                    print('OnlyKey CLI v1.2.9')
+                    print('OnlyKey CLI v1.2.10')
                 except:
                     continue
             elif data[0] == 'fwversion':
