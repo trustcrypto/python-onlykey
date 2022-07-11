@@ -403,7 +403,7 @@ def cli():
                     slot_id = 129
                 if (sys.argv[1]=='genkey'):
                     if (slot_id > 100 and (sys.argv[3] == 'x' or sys.argv[3] == 'n' or sys.argv[3] == 's')):
-                        only_key.setkey(slot_id, sys.argv[3], 'ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff')
+                        only_key.setkey(slot_id, sys.argv[3], sys.argv[4], 'ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff')
                     else:
                         print('Input error. See available commands with examples here https://docs.crp.to/command-line.html')
                 elif (sys.argv[3]=='label'):
@@ -936,7 +936,7 @@ def cli():
                 try:
                     if (data[0]=='genkey'):
                         if (slot_id > 100 and (data[2] == 'x' or data[2] == 'n' or data[2] == 's')):
-                            only_key.setkey(slot_id, data[2], 'ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff')
+                            only_key.setkey(slot_id, data[2], data[3], 'ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff')
                         else:
                             print('Input error. See available commands with examples here https://docs.crp.to/command-line.html')
                     elif (data[2]=='label'):
