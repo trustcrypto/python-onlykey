@@ -216,9 +216,9 @@ Enable or disable challenge for stored keys (SSH/PGP)
 [More info](https://docs.crp.to/usersguide.html#derived-challenge-mode)
 
 #### lockbutton
-Enable or disable challenge for stored keys (SSH/PGP)
-0 = Challenge Code Required (default); 1 = Button Press Required
-[More info](https://docs.crp.to/usersguide.html#derived-challenge-mode)
+One of the buttons on OnlyKey can be configured as a lock button.
+0 = Disable lockbutton; 1-6 = The selected button
+[More info](https://docs.crp.to/usersguide.html#configurable-lock-button)
 
 ### Slot Config Options
 
