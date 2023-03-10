@@ -187,7 +187,7 @@ except:
                 assert value.is_unlocked
                 print('subkey is now unlocked')
                 print('subkey id', subkey)
-                if 'RSA' in subkey._key._pkalg._name_:
+                if 'RSA' in value._key._pkalg._name_:
                     sub_keyp = long_to_bytes(value._key.keymaterial.p)
                     sub_keyq = long_to_bytes(value._key.keymaterial.q)
                     print('subkey value')
