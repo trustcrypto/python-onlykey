@@ -573,6 +573,12 @@ class OnlyKey(object):
         self.send_message(msg=Message.OKWIPEPRIV, slot_id=slot_number, payload='00')
         time.sleep(1)
         print(self.read_string())
+        if slot_number > 100:
+            self.send_message(msg=Message.OKSETSLOT, slot_id=slot_number-100+28, message_field=MessageField.LABEL, payload="", from_ascii=True)
+        elif slot_number > 0:
+            self.send_message(msg=Message.OKSETSLOT, slot_id=slot_number+24, message_field=MessageField.LABEL, payload="", from_ascii=True)
+        time.sleep(1)
+        print(self.read_string())
 
     def slot(self, slot):
         global slotnum
