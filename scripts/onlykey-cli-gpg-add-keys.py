@@ -251,7 +251,7 @@ def Run():
 
     parser = argparse.ArgumentParser(
         description='Extract secret subkeys from a OpenPGP key.\n\n'
-                    'This script will display and set the raw private keys and subkeys on your only key.\n'
+                    'This script will display and set the raw private keys and subkeys on your OnlyKey.\n'
                     'Only run this on a secure trusted system.',
         epilog='''Extract and load keys onto OnlyKey example:
         gpg --export-secret-keys -a keyid | ./onlykey-cli-gpg-add-keys -
