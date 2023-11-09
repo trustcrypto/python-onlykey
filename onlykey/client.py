@@ -269,11 +269,15 @@ class OnlyKey(object):
                             self._hid = hid.device()
                             self._hid.open_path(self.path)
                             self._hid.set_nonblocking(True)
+                            return
                     else:
+                        # FIDO Alliance Page
                         if usage_page == 0xf1d0 or interface_number == 1:
                             self._hid = hid.device()
                             self._hid.open_path(self.path)
                             self._hid.set_nonblocking(True)
+                            return
+            raise OnlyKeyUnavailableException('device not found')
 
         except:
             log.exception('failed to connect')
