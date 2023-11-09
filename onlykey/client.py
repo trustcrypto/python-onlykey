@@ -519,7 +519,7 @@ class OnlyKey(object):
         for _ in range(8):
             print(self.read_string())
 
-    def setkey(self, slot_number, key_type, key_features, value):
+    def setkey(self, slot_number, key_type, value, key_features=None):
         # slot 131-132 Reserved
         # slot 129-130 HMAC Keys
         # slot 101-116 ECC Keys
@@ -564,7 +564,11 @@ class OnlyKey(object):
                 self.send_message(msg=Message.OKSETPRIV, slot_id=slot_number, payload=format(key_type, 'x')+value[798:912])
                 self.send_message(msg=Message.OKSETPRIV, slot_id=slot_number, payload=format(key_type, 'x')+value[912:1024])
         else:
-            self.send_message(msg=Message.OKSETPRIV, slot_id=slot_number, payload=format(key_type, 'x')+value)
+            # the key_type format must be 2 char output, the byte check later will fail
+            if key_type == 9:
+                self.send_message(msg=Message.OKSETPRIV, slot_id=slot_number, payload=format(key_type, '02x')+value)
+            else:
+                self.send_message(msg=Message.OKSETPRIV, slot_id=slot_number, payload=format(key_type, 'x')+value)
         time.sleep(1)
         print(self.read_string())
 
