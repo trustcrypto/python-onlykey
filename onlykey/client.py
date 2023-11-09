@@ -16,6 +16,7 @@ from aenum import Enum
 from sys import platform
 
 log = logging.getLogger(__name__)
+log.setLevel(logging.WARNING)
 
 DEVICE_IDS = [
     (0x16C0, 0x0486),  # OnlyKey
@@ -240,15 +241,16 @@ class OnlyKey(object):
 
         if connect:
             tries = 5
+            sleep_in_seconds = 1.5
             while tries > 0:
                 try:
                     self._connect()
-                    logging.debug('connected')
+                    log.debug('connected')
                     return
                 except Exception as E:
                     e = E
-                    log.debug('connect failed, trying again in 1 second...')
-                    time.sleep(1.5)
+                    log.debug('connect failed, trying again in %d second(s)...', sleep_in_seconds)
+                    time.sleep(sleep_in_seconds)
                     tries -= 1
 
             raise e
@@ -295,40 +297,40 @@ class OnlyKey(object):
 
     def send_message(self, payload=None, msg=None, slot_id=None, message_field=None, from_ascii=False):
         """Send a message."""
-        logging.debug('preparing payload for writing')
+        log.debug('preparing payload for writing')
         # Initialize an empty message with the header
         raw_bytes = bytearray(MESSAGE_HEADER)
 
         # Append the message type (must be `Message` enum value)
         if msg:
-            logging.debug('msg=%s', msg.name)
+            log.debug('msg=%s', msg.name)
             raw_bytes.append(msg.value)
 
         # Append the slot ID if needed
         if slot_id:
-            logging.debug('slot_id=%s', slot_id)
+            log.debug('slot_id=%s', slot_id)
             if slot_id == 99:
                 slot_id = 0
             raw_bytes.append(slot_id)
 
         # Append the message field (must be a `MessageField` enum value)
         if message_field:
-            logging.debug('slot_field=%s', message_field.name)
+            log.debug('slot_field=%s', message_field.name)
             raw_bytes.append(message_field.value)
 
          # Append the raw payload, expect a string or a list of int
         if payload:
             if isinstance(payload, (str, str)):
-                logging.debug('payload="%s"', payload)
+                log.debug('payload="%s"', payload)
                 if from_ascii==True:
                     raw_bytes.extend(str.encode(payload))
                 else:
                     raw_bytes.extend(bytearray.fromhex(payload))
             elif isinstance(payload, list) or isinstance(payload, bytearray):
-                logging.debug('payload=%s', payload)
+                log.debug('payload=%s', payload)
                 raw_bytes.extend(payload)
             elif isinstance(payload, int):
-                logging.debug('payload=%d', payload)
+                log.debug('payload=%d', payload)
                 raw_bytes.append(payload)
             else:
                 raise Exception('`payload` must be either `str` or `list`')
@@ -338,7 +340,7 @@ class OnlyKey(object):
             raw_bytes.append(0)
 
         # Send the message
-        logging.debug('sending message ')
+        log.debug('sending message ')
         self._hid.write(raw_bytes)
 
     def send_large_message(self, payload=None, msg=None, slot_id=chr(101)):
@@ -395,9 +397,9 @@ class OnlyKey(object):
     def read_bytes(self, n=64, to_bytes=False, timeout_ms=100):
         """Read n bytes and return an array of uint8 (int)."""
         out = self._hid.read(n, timeout_ms=timeout_ms)
-        logging.debug('read="%s"', ''.join([chr(c) for c in out]))
+        log.debug('read="%s"', ''.join([chr(c) for c in out]))
         outstr = bytearray(out)
-        logging.debug('outstring="%s"', outstr)
+        log.debug('outstring="%s"', outstr)
         if outstr.decode(errors="ignore").find("UNINITIALIZED") != -1:
             raise RuntimeError('No PIN set, You must set a PIN first')
         elif outstr.decode(errors="ignore").find("INITIALIZED") != -1:
@@ -543,9 +545,9 @@ class OnlyKey(object):
             key_type = int(key_type) + 128 # Backup flag
         else:
             key_type = int(key_type)
-        logging.debug('SETTING KEY IN SLOT:', slot_number)
-        logging.debug('TO TYPE:', key_type)
-        logging.debug('KEY:', value)
+        log.debug('SETTING KEY IN SLOT="%d"', slot_number)
+        log.debug('TO TYPE="%d"', key_type)
+        log.debug('KEY="%s"', value)
         if slot_number >= 1 and slot_number <= 4:
             if key_type & 0xf == 2: # RSA 2048
                 self.send_message(msg=Message.OKSETPRIV, slot_id=slot_number, payload=format(key_type, 'x')+value[:114])
@@ -569,7 +571,7 @@ class OnlyKey(object):
         print(self.read_string())
 
     def wipekey(self, slot_number):
-        logging.debug('WIPING KEY IN SLOT:', slot_number)
+        log.debug('WIPING KEY IN SLOT="%d"', slot_number)
         self.send_message(msg=Message.OKWIPEPRIV, slot_id=slot_number, payload='00')
         time.sleep(1)
         print(self.read_string())
