@@ -28,7 +28,7 @@ from prompt_toolkit.key_binding import KeyBindings
 from prompt_toolkit.keys import Keys
 from prompt_toolkit.filters import Condition
 import nacl.signing
-
+from getpass import getpass
 import click
 
 from .client import OnlyKey, Message, MessageField
@@ -152,15 +152,6 @@ def cli(ctx):
     def _(event):
         "When Control-T has been pressed, toggle visibility."
         hidden[0] = not hidden[0]
-
-    def prompt_pass():
-        print("Type Control-T to toggle password visible.")
-        password = prompt(
-            "Password/Key: ",
-            is_password=Condition(lambda: hidden[0]),
-            key_bindings=key_bindings,
-        )
-        return password
 
     def prompt_key():
         print("Type Control-T to toggle key visible.")
@@ -404,7 +395,7 @@ def setslot(id_, type_, value):
     elif type_ == "rsakeylabel":
         slot_id += 24
     elif type_ == "password":
-        value = prompt_pass()
+        value = getpass()
     elif type_ == "gkey":
         totpkey = prompt_key()
         totpkey = base64.b32decode("".join(totpkey.split()).upper())
@@ -477,7 +468,7 @@ def setkey(keyslot, keytype, features, value):
         return
 
     if value is None:
-        value = prompt_pass()
+        value = getpass()
     only_key.setkey(slot_id, keytype, features, value)
 
 
