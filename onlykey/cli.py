@@ -86,11 +86,11 @@ FIELDS = {
     "2fa": MessageField.TFATYPE,
     "gkey": MessageField.TOTPKEY,
     "totpkey": MessageField.TOTPKEY,
-    "addchar1": MessageField.NEXTKEY1,
-    "addchar2": MessageField.NEXTKEY2,
-    "addchar3": MessageField.NEXTKEY3,
-    "addchar4": MessageField.NEXTKEY4,
-    "addchar5": MessageField.NEXTKEY5,
+    "addchar1": MessageField.NEXTKEY4,
+    "addchar2": MessageField.NEXTKEY1,
+    "addchar3": MessageField.NEXTKEY2,
+    "addchar4": MessageField.NEXTKEY5,
+    "addchar5": MessageField.NEXTKEY4,
     "typespeed": MessageField.KEYTYPESPEED,
 }
 
