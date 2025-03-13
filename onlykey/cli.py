@@ -403,9 +403,9 @@ def setslot(id_, type_, value):
         # pad with zeros for even digits
         totpkey = totpkey.zfill(len(totpkey) + len(totpkey) % 2)
         value = [int(totpkey[i : i + 2], 16) for i in range(0, len(totpkey), 2)]
-    elif data[2] == "totpkey":
+    elif type_ == "totpkey":
         value = prompt_key()
-    elif data[2] == "typespeed":
+    elif type_ == "typespeed":
         value = int(value)
 
     only_key.setslot(slot_id, field_id, value)
