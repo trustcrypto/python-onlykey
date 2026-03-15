@@ -20,8 +20,12 @@ setup(
     packages=find_packages(exclude=['contrib', 'docs', 'tests']),
     entry_points = {
         'console_scripts': [
-            'onlykey-cli=onlykey.cli:main'
+            'onlykey-cli=onlykey.cli:main',
+            'age-plugin-onlykey=onlykey.age_plugin.cli:main',
         ],
     },
     install_requires=['hidapi', 'aenum', 'six', 'prompt_toolkit>=2', 'pynacl>=1.4.0', 'ecdsa>=0.13', 'Cython>=0.23.4', 'onlykey-solo-python>=0.0.31'],
+    extras_require={
+        'age': ['cryptography>=41.0', 'kyber-py>=1.0'],
+    },
 )
