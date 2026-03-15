@@ -402,7 +402,7 @@ def cli():
                 elif sys.argv[2] == 'HMAC2':
                     slot_id = 129
                 if (sys.argv[1]=='genkey'):
-                    if (slot_id > 100 and (sys.argv[3] == 'x' or sys.argv[3] == 'n' or sys.argv[3] == 's')):
+                    if (slot_id > 100 and (sys.argv[3] in ('x', 'n', 's', 'm', 'w'))):
                         only_key.setkey(slot_id, sys.argv[3], sys.argv[4], 'ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff')
                     else:
                         print('Input error. See available commands with examples here https://docs.crp.to/command-line.html')
@@ -935,7 +935,7 @@ def cli():
                     continue
                 try:
                     if (data[0]=='genkey'):
-                        if (slot_id > 100 and (data[2] == 'x' or data[2] == 'n' or data[2] == 's')):
+                        if (slot_id > 100 and (data[2] in ('x', 'n', 's', 'm', 'w'))):
                             only_key.setkey(slot_id, data[2], data[3], 'ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff')
                         else:
                             print('Input error. See available commands with examples here https://docs.crp.to/command-line.html')

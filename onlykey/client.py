@@ -205,6 +205,9 @@ class KeyTypeEnum(Enum):
     ED22519 = 1
     P256 = 2
     SECP256K1 = 3
+    CURVE25519 = 4
+    MLKEM768 = 5
+    XWING = 6
 
 class OnlyKeyUnavailableException(Exception):
     """Exception raised when the connection to the OnlyKey failed."""
@@ -531,6 +534,10 @@ class OnlyKey(object):
             key_type = '2'
         elif key_type == 's':
             key_type = '3'
+        elif key_type == 'm':
+            key_type = '5'
+        elif key_type == 'w':
+            key_type = '6'
         elif key_type == 'h':
             key_type = '9'
         # set key features
