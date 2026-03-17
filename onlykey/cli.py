@@ -495,6 +495,66 @@ def cli():
              only_key.setslot(1, MessageField.LOCKBUTTON, int(sys.argv[2]))
         elif sys.argv[1] == 'hmackeymode':
              only_key.setslot(1, MessageField.HMACMODE, int(sys.argv[2]))
+        elif sys.argv[1] == 'loadkey':
+            try:
+                # loadkey <keyfile> [slot] [features]
+                # slot: RSA1-RSA4, ECC1-ECC16, or 'auto' (default)
+                # features: d (decryption), s (signing), b (backup)
+                keyfile = sys.argv[2]
+                slot = 99  # auto by default
+                features = ''
+                if len(sys.argv) > 3:
+                    slot_arg = sys.argv[3]
+                    if slot_arg == 'auto':
+                        slot = 99
+                    elif slot_arg.startswith('RSA'):
+                        slot = int(slot_arg[3:])
+                    elif slot_arg.startswith('ECC'):
+                        slot = 100 + int(slot_arg[3:])
+                    else:
+                        slot = int(slot_arg)
+                if len(sys.argv) > 4:
+                    features = sys.argv[4]
+                with open(keyfile, 'r') as f:
+                    key_data = f.read()
+                passphrase = prompt('Passphrase: ',
+                                   is_password=Condition(lambda: hidden[0]),
+                                   key_bindings=key_bindings)
+                only_key.loadkey(key_data, passphrase, slot=slot, key_features=features)
+            except Exception as e:
+                print('Error loading key: {}'.format(str(e)))
+                print('Usage: onlykey-cli loadkey <keyfile> [slot] [features]')
+                print('  slot: RSA1-RSA4, ECC1-ECC16, or auto (default)')
+                print('  features: d (decryption), s (signing), b (backup)')
+                return
+        elif sys.argv[1] == 'restore':
+            try:
+                backupfile = sys.argv[2]
+                with open(backupfile, 'r') as f:
+                    backup_data = f.read()
+                only_key.restore_from_backup(backup_data)
+            except IndexError:
+                print('Usage: onlykey-cli restore <backupfile>')
+                return
+            except Exception as e:
+                print('Error restoring backup: {}'.format(str(e)))
+                return
+        elif sys.argv[1] == 'backuppassphrase':
+            try:
+                print('Type Control-T to toggle passphrase visible.')
+                passphrase1 = prompt('Backup Passphrase: ',
+                                    is_password=Condition(lambda: hidden[0]),
+                                    key_bindings=key_bindings)
+                passphrase2 = prompt('Confirm Passphrase: ',
+                                    is_password=Condition(lambda: hidden[0]),
+                                    key_bindings=key_bindings)
+                if passphrase1 != passphrase2:
+                    print('Error: Passphrases do not match')
+                    return
+                only_key.set_backup_passphrase(passphrase1)
+            except Exception as e:
+                print('Error setting backup passphrase: {}'.format(str(e)))
+                return
         elif sys.argv[1] == 'version':
             print('OnlyKey CLI v1.2.10')
         elif sys.argv[1] == 'fwversion':
@@ -1070,6 +1130,63 @@ def cli():
                 try:
                     only_key.setslot(1, MessageField.HMACMODE, int(data[1]))
                 except:
+                    continue
+            elif data[0] == 'loadkey':
+                try:
+                    keyfile = data[1]
+                    slot = 99
+                    features = ''
+                    if len(data) > 2:
+                        slot_arg = data[2]
+                        if slot_arg == 'auto':
+                            slot = 99
+                        elif slot_arg.startswith('RSA'):
+                            slot = int(slot_arg[3:])
+                        elif slot_arg.startswith('ECC'):
+                            slot = 100 + int(slot_arg[3:])
+                        else:
+                            slot = int(slot_arg)
+                    if len(data) > 3:
+                        features = data[3]
+                    with open(keyfile, 'r') as f:
+                        key_data = f.read()
+                    passphrase = prompt('Passphrase: ',
+                                       is_password=Condition(lambda: hidden[0]),
+                                       key_bindings=key_bindings)
+                    only_key.loadkey(key_data, passphrase, slot=slot, key_features=features)
+                except Exception as e:
+                    print('Error loading key: {}'.format(str(e)))
+                    print('Usage: loadkey <keyfile> [slot] [features]')
+                    print('  slot: RSA1-RSA4, ECC1-ECC16, or auto (default)')
+                    print('  features: d (decryption), s (signing), b (backup)')
+                    continue
+            elif data[0] == 'restore':
+                try:
+                    backupfile = data[1]
+                    with open(backupfile, 'r') as f:
+                        backup_data = f.read()
+                    only_key.restore_from_backup(backup_data)
+                except IndexError:
+                    print('Usage: restore <backupfile>')
+                    continue
+                except Exception as e:
+                    print('Error restoring backup: {}'.format(str(e)))
+                    continue
+            elif data[0] == 'backuppassphrase':
+                try:
+                    print('Type Control-T to toggle passphrase visible.')
+                    passphrase1 = prompt('Backup Passphrase: ',
+                                        is_password=Condition(lambda: hidden[0]),
+                                        key_bindings=key_bindings)
+                    passphrase2 = prompt('Confirm Passphrase: ',
+                                        is_password=Condition(lambda: hidden[0]),
+                                        key_bindings=key_bindings)
+                    if passphrase1 != passphrase2:
+                        print('Error: Passphrases do not match')
+                        continue
+                    only_key.set_backup_passphrase(passphrase1)
+                except Exception as e:
+                    print('Error setting backup passphrase: {}'.format(str(e)))
                     continue
             elif data[0] == 'version':
                 try:
