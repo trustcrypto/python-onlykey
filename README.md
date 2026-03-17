@@ -250,7 +250,7 @@ One of the buttons on OnlyKey can be configured as a lock button.
 
 #### setkey [key slot] [type] [features] [hex key]
 Sets raw private keys and key labels, to set PEM format keys use the OnlyKey App
-  - [key slot] must be key number RSA1 - RSA4, ECC1 - ECC16, HMAC1 - HMAC2
+  - [key slot] must be key number RSA1 - RSA4, ECC1 - ECC16, HMAC1 - HMAC2, BACKUP
   - [type] must be one of the following:
     - label - set to have a descriptive key label i.e. My GPG signing key
     - x - X25519 Key Type (32 bytes)
@@ -280,7 +280,7 @@ Generates random private key on device
 
 #### wipekey [key id]
 Erases key stored at [key id]
-  - [key id] must be key number RSA1 - RSA4, ECC1 - ECC16, HMAC1 - HMAC2
+  - [key id] must be key number RSA1 - RSA4, ECC1 - ECC16, HMAC1 - HMAC2, BACKUP
 
 ### FIDO2 Config Options
 
