@@ -92,6 +92,12 @@ $ sudo cp 49-onlykey.rules /etc/udev/rules.d/
 $ sudo udevadm control --reload-rules && udevadm trigger
 ```
 
+#### Post-Quantum Encryption (age-plugin-onlykey)
+For post-quantum encryption support using age, install with extras:
+```
+$ pip3 install onlykey[age]
+```
+
 #### FreeBSD Install with dependencies
 
 See forum thread [here](https://groups.google.com/d/msg/onlykey/CEYwdXjB508/MCe14p0gAwAJ)
@@ -566,3 +572,37 @@ Once removed, list current resident keys to verify:
 ## Source
 
 [OnlyKey CLI on Github](https://github.com/trustcrypto/python-onlykey)
+
+## age-plugin-onlykey
+
+OnlyKey also supports age-compatible post-quantum encryption via the `age-plugin-onlykey` module. This provides:
+
+- **ML-KEM-768** (FIPS 203) - NIST-standardized post-quantum key encapsulation
+- **X-Wing hybrid KEM** - Combines X25519 with ML-KEM-768 for additional security
+
+### Installation
+
+```bash
+pip install onlykey[age]
+```
+
+### Usage
+
+The plugin integrates with age (https://age-encryption.org):
+
+```bash
+# Encrypt a file using OnlyKey-managed post-quantum keys
+age-plugin-onlykey --recipient <public-key> < file.txt > file.txt.age
+
+# Generate a new recipient (requires OnlyKey connected)
+age-plugin-onlykey --generate > recipient.txt
+
+# Decrypt using OnlyKey (touch button required)
+age-recipient --plugin age-plugin-onlykey < file.txt.age
+```
+
+The plugin uses OnlyKey HID message slots for post-quantum operations:
+- Slot 133: ML-KEM-768
+- Slot 134: X-Wing hybrid
+
+For more details on age-plugin-onlykey, see the module documentation in `onlykey/age_plugin/`.

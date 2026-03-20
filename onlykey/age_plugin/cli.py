@@ -18,6 +18,7 @@ Decryption:
 import sys
 import os
 import base64
+import hashlib
 
 from onlykey.age_plugin import __version__, PLUGIN_NAME, SLOT_XWING
 from onlykey.age_plugin.protocol import (
@@ -111,6 +112,12 @@ def bech32_decode(bech: str):
 RECIPIENT_HRP = "age1onlykey"
 IDENTITY_HRP = "age-plugin-onlykey-"  # uppercase AGE-PLUGIN-ONLYKEY- in file
 
+IDENTITY_VERSION = 1
+IDENTITY_FINGERPRINT_LEN = 8
+XWING_RECIPIENT_LEN = 1216
+XWING_STANZA_ENC_LEN = 1120
+FILE_KEY_LEN = 32
+
 
 def encode_recipient(pubkey: bytes) -> str:
     """Encode X-Wing public key as age recipient string."""
@@ -125,6 +132,11 @@ def decode_recipient(recipient: str) -> bytes:
     return data
 
 
+def recipient_fingerprint(pubkey: bytes) -> bytes:
+    """Return a short fingerprint for identity binding."""
+    return hashlib.sha256(pubkey).digest()[:IDENTITY_FINGERPRINT_LEN]
+
+
 def encode_identity(slot: int = SLOT_XWING) -> str:
     """Encode an identity string. Contains just the slot number."""
     # Identity data: just the slot byte
@@ -135,12 +147,38 @@ def encode_identity(slot: int = SLOT_XWING) -> str:
     )
 
 
-def decode_identity(identity: str) -> int:
-    """Decode identity string, returns slot number."""
+def decode_identity(identity: str) -> dict:
+    """Decode identity string.
+
+    Returns a mapping with ``slot``, ``fingerprint``, and ``legacy`` keys.
+    Legacy one-byte identities are supported so older files continue to work.
+    """
     hrp, data = bech32_decode(identity.lower())
-    if data is None or len(data) < 1:
+    if hrp != IDENTITY_HRP or data is None or len(data) < 1:
         raise ValueError(f"Invalid OnlyKey identity: {identity}")
-    return data[0]
+
+    if len(data) == 1:
+        return {
+            "slot": data[0],
+            "fingerprint": None,
+            "legacy": True,
+        }
+
+    if len(data) != 2 + IDENTITY_FINGERPRINT_LEN:
+        raise ValueError(
+            f"Invalid OnlyKey identity payload length: {len(data)}"
+        )
+
+    version = data[0]
+    if version != IDENTITY_VERSION:
+        raise ValueError(f"Unsupported OnlyKey identity version: {version}")
+
+    return {
+        "slot": data[1],
+        "fingerprint": data[2:],
+        "legacy": False,
+    }
+
 
 
 def cmd_generate():
@@ -154,7 +192,7 @@ def cmd_generate():
     recipient = encode_recipient(pk)
     identity = encode_identity(SLOT_XWING)
 
-    print(f"# X-Wing public key (age v1.3.0 mlkem768x25519 compatible)", file=sys.stderr)
+    print("# X-Wing public key (produces native age mlkem768x25519 stanzas)", file=sys.stderr)
     print(f"# Recipient: {recipient}", file=sys.stderr)
     print(file=sys.stderr)
 
@@ -180,13 +218,49 @@ def cmd_identity():
     print(identity)
 
 
+def _parse_onlykey_identities(identities):
+    parsed = []
+    for identity in identities:
+        try:
+            parsed.append(decode_identity(identity))
+        except ValueError:
+            continue
+    return parsed
+
+
 def unwrap_callback(identities, stanzas_per_file):
     """Plugin identity-v1 callback: unwrap file keys using OnlyKey."""
     from onlykey.age_plugin.onlykey_hid import OnlyKeyPQ
     from onlykey.age_plugin.xwing import open_file_key
 
     results = []
-    dev = None
+    parsed_identities = _parse_onlykey_identities(identities)
+    if not parsed_identities:
+        print("No valid OnlyKey identity supplied.", file=sys.stderr)
+        return results
+
+    dev = OnlyKeyPQ()
+    device_pubkey = dev.xwing_getpubkey()
+    if len(device_pubkey) != XWING_RECIPIENT_LEN:
+        raise ValueError(
+            f"OnlyKey returned an unexpected X-Wing public key length: {len(device_pubkey)}"
+        )
+
+    device_fingerprint = recipient_fingerprint(device_pubkey)
+    matching_identity = None
+    for identity in parsed_identities:
+        if identity["slot"] != SLOT_XWING:
+            continue
+        if identity["fingerprint"] is None or identity["fingerprint"] == device_fingerprint:
+            matching_identity = identity
+            break
+
+    if matching_identity is None:
+        print(
+            "OnlyKey identity does not match the connected device's X-Wing public key.",
+            file=sys.stderr,
+        )
+        return results
 
     for file_idx, stanzas in stanzas_per_file.items():
         for stanza in stanzas:
@@ -195,24 +269,29 @@ def unwrap_callback(identities, stanzas_per_file):
                 continue
 
             if len(stanza.args) != 1:
-                continue
+                raise ValueError(
+                    f"Malformed mlkem768x25519 stanza: expected 1 arg, got {len(stanza.args)}"
+                )
 
             # Parse the ciphertext from the stanza argument
             try:
                 enc = b64decode_no_pad(stanza.args[0])
-            except Exception:
-                continue
+            except Exception as exc:
+                raise ValueError(
+                    "Malformed mlkem768x25519 stanza: invalid base64 ciphertext"
+                ) from exc
 
-            if len(enc) != 1120:
-                continue
+            if len(enc) != XWING_STANZA_ENC_LEN:
+                raise ValueError(
+                    f"Malformed mlkem768x25519 stanza: ciphertext must be {XWING_STANZA_ENC_LEN} bytes, got {len(enc)}"
+                )
 
             # Body must be exactly 32 bytes
-            if len(stanza.body) != 32:
-                continue
+            if len(stanza.body) != FILE_KEY_LEN:
+                raise ValueError(
+                    f"Malformed mlkem768x25519 stanza body: expected {FILE_KEY_LEN} bytes, got {len(stanza.body)}"
+                )
 
-            # Connect to OnlyKey if not already
-            if dev is None:
-                dev = OnlyKeyPQ()
 
             # Send ciphertext to OnlyKey for decapsulation
             ss = dev.xwing_decaps(enc)
