@@ -27,7 +27,13 @@ import nacl.signing
 
 from .client import OnlyKey, Message, MessageField
 
-only_key = OnlyKey()
+# set 0 to disable Traceback output on exceptions
+sys.tracebacklimit = 1
+
+try: 
+    only_key = OnlyKey()
+except:
+    raise SystemExit
 
 def cli():
 
