@@ -413,7 +413,11 @@ def cli():
                         slot_id = slot_id + 24
                     only_key.setslot(slot_id, MessageField.LABEL, sys.argv[4])
                 else:
-                    only_key.setkey(slot_id, sys.argv[3], sys.argv[4], sys.argv[5])
+                    # for HMAC we don't need key_feature
+                    if sys.argv[3] == 'h':
+                        only_key.setkey(slot_id, sys.argv[3], key_features=None, value=sys.argv[4])
+                    else:
+                        only_key.setkey(slot_id, sys.argv[3], key_features=sys.argv[4], value=sys.argv[5])
             except:
                 print(sys.exc_info()[0])
                 print('Input error. See available commands with examples here https://docs.crp.to/command-line.html')
@@ -947,7 +951,11 @@ def cli():
                         only_key.setslot(slot_id, MessageField.LABEL, data[3])
                     else:
                         key = prompt_pass()
-                        only_key.setkey(slot_id, data[2], data[3], key)
+                        # for HMAC we don't need key_feature
+                        if data[2] == 'h':
+                             only_key.setkey(slot_id, data[2], key_features=None, value=key)
+                        else:
+                            only_key.setkey(slot_id, data[2], key_features=data[3], value=key)
                 except:
                     print(sys.exc_info()[0])
                     print('Input error. See available commands with examples here https://docs.crp.to/command-line.html')
