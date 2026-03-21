@@ -169,6 +169,7 @@ class Message(Enum):
     OKSETPRIV = 239
     OKDECRYPT = 240
     OKRESTORE = 241
+    OKFWUPDATE = 244  # 0xF4
 
 
 class MessageField(Enum):
@@ -591,13 +592,542 @@ class OnlyKey(object):
         global slotnum
         slotnum = slot
 
+    def loadkey(self, key_ascii_armor, passphrase, slot=99, key_features=''):
+        """Load an OpenPGP private key (RSA or ECC) onto the OnlyKey.
+
+        Parses the PGP armored key, extracts private key material (p/q for RSA,
+        s for ECC), and sends it to the device. Mirrors the OnlyKey App's RSA/ECC
+        key loading functionality.
+
+        Args:
+            key_ascii_armor: ASCII-armored PGP private key string
+            passphrase: Passphrase to decrypt the PGP key
+            slot: Key slot number (1-4 for RSA, 101-116 for ECC, or 99 for auto)
+            key_features: 'd' for decryption, 's' for signing, 'b' for backup
+        """
+        try:
+            import pgpy
+        except ImportError:
+            raise RuntimeError('pgpy is required for loading PGP keys. Install with: pip install pgpy')
+
+        (rootkey, _) = pgpy.PGPKey.from_blob(key_ascii_armor)
+
+        if rootkey.is_protected:
+            try:
+                with rootkey.unlock(passphrase):
+                    return self._process_pgp_key(rootkey, slot, key_features)
+            except Exception as e:
+                raise RuntimeError('Failed to unlock PGP key: {}'.format(str(e)))
+        else:
+            return self._process_pgp_key(rootkey, slot, key_features)
+
+    def _long_to_bytes(self, n):
+        """Convert a long integer to a byte string."""
+        h = '%x' % n
+        s = binascii.unhexlify(('0' * (len(h) % 2) + h))
+        return s
+
+    def _process_pgp_key(self, rootkey, slot, key_features):
+        """Process an unlocked PGP key and load it onto the OnlyKey."""
+        keys = []
+        is_ecc = False
+        ecc_curve = 0
+
+        algo_name = rootkey._key._pkalg._name_ if hasattr(rootkey._key._pkalg, '_name_') else str(rootkey._key._pkalg)
+
+        if 'RSA' in algo_name:
+            # RSA key - extract p and q
+            primary_p = self._long_to_bytes(rootkey._key.keymaterial.p)
+            primary_q = self._long_to_bytes(rootkey._key.keymaterial.q)
+            keys.append({
+                'name': 'Primary Key',
+                'p': primary_p,
+                'q': primary_q
+            })
+            # Process subkeys
+            for subkey_id, subkey in rootkey._children.items():
+                sub_algo = subkey._key._pkalg._name_ if hasattr(subkey._key._pkalg, '_name_') else str(subkey._key._pkalg)
+                if 'RSA' in sub_algo:
+                    sub_p = self._long_to_bytes(subkey._key.keymaterial.p)
+                    sub_q = self._long_to_bytes(subkey._key.keymaterial.q)
+                    keys.append({
+                        'name': 'Subkey {}'.format(subkey_id),
+                        'p': sub_p,
+                        'q': sub_q
+                    })
+                elif hasattr(subkey._key.keymaterial, 's'):
+                    is_ecc = True
+                    sub_s = self._long_to_bytes(subkey._key.keymaterial.s)
+                    keys.append({
+                        'name': 'Subkey {}'.format(subkey_id),
+                        's': sub_s
+                    })
+        elif 'EdDSA' in algo_name or 'ed25519' in algo_name.lower():
+            is_ecc = True
+            ecc_curve = 1  # Ed25519
+            primary_s = self._long_to_bytes(rootkey._key.keymaterial.s)
+            keys.append({
+                'name': 'Primary Key',
+                's': primary_s
+            })
+            for subkey_id, subkey in rootkey._children.items():
+                sub_s = self._long_to_bytes(subkey._key.keymaterial.s)
+                keys.append({
+                    'name': 'Subkey {}'.format(subkey_id),
+                    's': sub_s
+                })
+        elif 'ECDSA' in algo_name or 'ECDH' in algo_name:
+            is_ecc = True
+            # Determine curve from OID
+            if hasattr(rootkey._key.keymaterial, 'oid'):
+                oid = rootkey._key.keymaterial.oid
+                oid_str = str(oid) if not isinstance(oid, str) else oid
+                if 'nistp256' in oid_str or '1.2.840.10045.3.1.7' in oid_str:
+                    ecc_curve = 2  # NIST P-256
+                elif 'secp256k1' in oid_str or '1.3.132.0.10' in oid_str:
+                    ecc_curve = 3  # secp256k1
+                elif 'curve25519' in oid_str or '1.3.6.1.4.1.3029.1.5.1' in oid_str:
+                    ecc_curve = 4  # Curve25519
+                else:
+                    ecc_curve = 1  # Default to Ed25519
+            else:
+                ecc_curve = 2  # Default to P-256 for ECDSA
+            primary_s = self._long_to_bytes(rootkey._key.keymaterial.s)
+            keys.append({
+                'name': 'Primary Key',
+                's': primary_s
+            })
+            for subkey_id, subkey in rootkey._children.items():
+                sub_s = self._long_to_bytes(subkey._key.keymaterial.s)
+                keys.append({
+                    'name': 'Subkey {}'.format(subkey_id),
+                    's': sub_s
+                })
+        else:
+            raise RuntimeError('Unsupported key algorithm: {}'.format(algo_name))
+
+        if not keys:
+            raise RuntimeError('No keys found in PGP key')
+
+        print('Found {} key(s):'.format(len(keys)))
+        for i, k in enumerate(keys):
+            if 'p' in k:
+                key_size = (len(k['p']) + len(k['q'])) * 8
+                print('  [{}] {} - RSA {} bits'.format(i, k['name'], key_size))
+            else:
+                print('  [{}] {} - ECC {} bytes'.format(i, k['name'], len(k['s'])))
+
+        if slot == 99:
+            # Auto-assign: Slot 99 mode from OnlyKey App
+            # If 2+ subkeys: subkey 1 = decryption (slot 1), subkey 2 = signing (slot 2)
+            # If 1 subkey: subkey 1 = decryption (slot 1), primary = signing (slot 2)
+            # ECC slots start at 101
+            if len(keys) >= 3:
+                signing_key = keys[2]
+            else:
+                signing_key = keys[0]
+
+            decryption_key = keys[1] if len(keys) > 1 else None
+
+            # Load signing key
+            self._load_single_key(signing_key, 2, 's', is_ecc, ecc_curve)
+            # Load decryption key
+            if decryption_key:
+                self._load_single_key(decryption_key, 1, 'd', is_ecc, ecc_curve)
+        else:
+            # Load single key to specified slot
+            if len(keys) == 1:
+                self._load_single_key(keys[0], slot, key_features, is_ecc, ecc_curve)
+            else:
+                print('Multiple keys found. Loading primary key to slot {}.'.format(slot))
+                self._load_single_key(keys[0], slot, key_features, is_ecc, ecc_curve)
+
+    def _load_single_key(self, key_obj, slot, key_features, is_ecc=False, ecc_curve=0):
+        """Load a single key (RSA or ECC) onto the OnlyKey device."""
+        if 's' in key_obj:
+            # ECC key
+            key_data = key_obj['s']
+            if len(key_data) != 32:
+                raise RuntimeError('ECC key must be 32 bytes, got {}'.format(len(key_data)))
+
+            key_type_num = ecc_curve
+            if key_features == 'd':
+                key_type_num += 32
+            elif key_features == 's':
+                key_type_num += 64
+            elif key_features == 'b':
+                key_type_num += 32 + 128
+
+            if slot < 101:
+                slot += 100
+
+            hex_key = binascii.hexlify(key_data).decode('ascii')
+            print('Loading ECC key to slot {}...'.format(slot))
+            self.send_message(msg=Message.OKSETPRIV, slot_id=slot,
+                            payload=format(key_type_num, 'x') + hex_key)
+            time.sleep(1)
+            print(self.read_string())
+        else:
+            # RSA key
+            p_bytes = key_obj['p']
+            q_bytes = key_obj['q']
+            key_data = p_bytes + q_bytes
+            key_size = len(key_data)
+
+            # Determine RSA type from key size: p+q combined
+            # 1024-bit: p+q = 128 bytes, type 1
+            # 2048-bit: p+q = 256 bytes, type 2
+            # 3072-bit: p+q = 384 bytes, type 3
+            # 4096-bit: p+q = 512 bytes, type 4
+            rsa_type = key_size // 128
+            if rsa_type not in [1, 2, 3, 4]:
+                raise RuntimeError('Unsupported RSA key size: {} bytes (p+q). Expected 1024, 2048, 3072, or 4096 bit key.'.format(key_size))
+
+            key_type_num = rsa_type
+            if key_features == 'd':
+                key_type_num += 32
+            elif key_features == 's':
+                key_type_num += 64
+            elif key_features == 'b':
+                key_type_num += 32 + 128
+
+            if slot > 4:
+                slot = 1  # Default RSA slot
+
+            hex_key = binascii.hexlify(key_data).decode('ascii')
+            print('Loading RSA {} key to slot {}...'.format(rsa_type * 1024, slot))
+            self.setkey(slot, str(rsa_type), key_features if key_features else 'd', hex_key)
+
+    def restore_from_backup(self, backup_data):
+        """Restore the OnlyKey from a backup file.
+
+        Parses the OnlyKey backup file format, verifies the SHA256 hash,
+        and sends the restore data to the device in 57-byte chunks.
+
+        Args:
+            backup_data: String contents of the backup file
+        """
+        # Parse backup data - convert base64 lines to hex
+        hex_data = self._parse_backup_data(backup_data)
+        if not hex_data:
+            raise RuntimeError('No valid backup data found')
+
+        print('Sending restore data to OnlyKey ({} bytes)...'.format(len(hex_data) // 2))
+
+        # Send in 57-byte (114 hex char) chunks
+        max_packet_size = 114  # 57 byte pairs
+        offset = 0
+        packet_num = 0
+        while offset < len(hex_data):
+            chunk = hex_data[offset:offset + max_packet_size]
+            remaining = len(hex_data) - offset
+            is_final = remaining <= max_packet_size
+
+            if is_final:
+                # Final packet: header is the number of bytes in this chunk
+                packet_header = format(len(chunk) // 2, '02x')
+            else:
+                # Non-final packet: header is FF
+                packet_header = 'FF'
+
+            # Build payload: [packet_header_byte] + [data_bytes]
+            payload = packet_header + chunk
+            self.send_message(msg=Message.OKRESTORE, payload=payload)
+            offset += max_packet_size
+            packet_num += 1
+
+        print('Restore data sent ({} packets). Please wait for OnlyKey to process...'.format(packet_num))
+        time.sleep(2)
+        # Try to read response
+        try:
+            resp = self.read_string(timeout_ms=10000)
+            if resp:
+                print(resp)
+        except:
+            pass
+
+    def _parse_backup_data(self, contents):
+        """Parse OnlyKey backup file format.
+
+        The backup file format is:
+            -----BEGIN ONLYKEY BACKUP-----
+            <base64 data line 1>
+            <base64 data line 2>
+            ...
+            --<base64 encoded SHA256 hash>
+            -----END ONLYKEY BACKUP-----
+
+        Returns: hex string of all backup data concatenated
+        """
+        import base64 as b64
+
+        hex_parts = []
+        backup_hash = bytearray(32)  # Running SHA256 hash for verification
+        stored_hash = None
+
+        for line in contents.strip().split('\n'):
+            line = line.strip()
+            if not line:
+                continue
+            if line.startswith('-----'):
+                continue
+            if line.startswith('--') and not line.startswith('-----'):
+                # This is the hash line: --<base64 encoded hash>
+                hash_b64 = line[2:]
+                try:
+                    stored_hash = binascii.hexlify(b64.b64decode(hash_b64)).decode('ascii').upper()
+                except:
+                    pass
+                continue
+
+            # Regular data line - decode from base64 to hex
+            try:
+                decoded = b64.b64decode(line)
+                hex_line = binascii.hexlify(decoded).decode('ascii').upper()
+                hex_parts.append(hex_line)
+
+                # Update running hash
+                h = hashlib.sha256()
+                h.update(backup_hash)
+                h.update(decoded)
+                backup_hash = bytearray(h.digest())
+            except Exception as e:
+                logging.warning('Failed to decode backup line: {}'.format(e))
+                continue
+
+        if stored_hash:
+            computed_hash = binascii.hexlify(backup_hash).decode('ascii').upper()
+            if computed_hash == stored_hash:
+                print('Backup file SHA256 hash verified successfully')
+            else:
+                print('WARNING: Backup file hash mismatch!')
+                print('  Expected: {}'.format(stored_hash))
+                print('  Computed: {}'.format(computed_hash))
+                raise RuntimeError('Backup file is corrupt - SHA256 hash mismatch')
+
+        return ''.join(hex_parts)
+
+    def set_backup_passphrase(self, passphrase):
+        """Set the backup passphrase on the OnlyKey.
+
+        The passphrase is hashed with SHA256 and stored as the backup
+        encryption key on slot 131.
+
+        Args:
+            passphrase: Backup passphrase string (must be >= 25 characters)
+        """
+        if len(passphrase) < 25:
+            raise RuntimeError('Backup passphrase must be at least 25 characters')
+
+        # SHA256 hash of passphrase = 32-byte backup key
+        key = hashlib.sha256(passphrase.encode('utf-8')).digest()
+        hex_key = binascii.hexlify(key).decode('ascii')
+
+        # type 161 = 128 (backup) + 32 (decryption) + 1 = Backup Decryption Key
+        key_type = 161
+        slot = 131
+
+        print('Setting backup passphrase...')
+        self.send_message(msg=Message.OKSETPRIV, slot_id=slot,
+                         payload=format(key_type, 'x') + hex_key)
+        time.sleep(1)
+        print(self.read_string())
+
+    def load_firmware(self, firmware_data):
+        """Load firmware onto the OnlyKey device.
+
+        Parses a signed firmware file, transitions the device to bootloader
+        mode if needed, and sends firmware blocks with signature verification.
+        Mirrors the OnlyKey App's firmware update functionality.
+
+        The firmware file format is:
+            -----BEGIN SIGNED FIRMWARE-----
+            <block 1: 64-char signature + 1-char info + 64-char next signature + data>
+            <block 2: ...>
+            ...
+            -----END SIGNED FIRMWARE-----
+
+        Args:
+            firmware_data: String contents of the signed firmware file
+        """
+        # Parse the firmware file
+        blocks = self._parse_firmware_data(firmware_data)
+        if not blocks:
+            raise RuntimeError('No valid firmware data found')
+
+        print('Parsed firmware file: {} blocks'.format(len(blocks)))
+
+        # Check if device is in bootloader mode by reading its state
+        # Send initial dummy packet to kick device from config mode into bootloader
+        print('Requesting bootloader mode...')
+        self._send_firmware_chunk('1234', 'FF')
+
+        # Wait for device response
+        time.sleep(1)
+        resp = ''
+        for _ in range(20):
+            try:
+                resp = self.read_string(timeout_ms=500)
+                if resp:
+                    print('Device: {}'.format(resp))
+                    if 'BOOTLOADER' in resp:
+                        break
+                    elif 'ERROR' in resp:
+                        raise RuntimeError('Device error: {}'.format(resp))
+                    elif 'FW LOAD REQUEST' in resp or 'REBOOTING' in resp:
+                        print('Device is rebooting into bootloader, please wait...')
+                        time.sleep(3)
+                        # Reconnect to device after reboot
+                        self._reconnect_for_firmware()
+                        break
+            except RuntimeError as e:
+                if 'locked' in str(e).lower() or 'PIN' in str(e):
+                    raise
+            except:
+                pass
+            time.sleep(0.5)
+
+        # Now send firmware blocks
+        print('Loading firmware...')
+        for i, block in enumerate(blocks):
+            pct = int((i / len(blocks)) * 100)
+            print('\r  {} percent complete - block {}/{}...'.format(pct, i + 1, len(blocks)), end='', flush=True)
+
+            # Send this block in 57-byte (114 hex char) chunks
+            self._submit_firmware_block(block)
+
+            # Wait for device acknowledgment
+            if i < len(blocks) - 1:
+                # Intermediate block - wait for "NEXT BLOCK"
+                ack = self._wait_for_firmware_ack('NEXT BLOCK', timeout=10)
+                if not ack:
+                    raise RuntimeError('Device did not acknowledge block {}. Firmware update failed.'.format(i + 1))
+            else:
+                # Final block - wait for "SUCCESSFULLY LOADED FW"
+                ack = self._wait_for_firmware_ack('SUCCESSFULLY LOADED FW', timeout=15)
+                if not ack:
+                    raise RuntimeError('Device did not confirm firmware load completion.')
+
+        print('\r  100 percent complete - all {} blocks sent.'.format(len(blocks)))
+        print('Firmware loaded successfully! Device will reboot.')
+
+    def _parse_firmware_data(self, contents):
+        """Parse a signed firmware file into blocks.
+
+        Returns: list of block strings (hex data lines)
+        """
+        lines = contents.strip().split('\n')
+        blocks = []
+        for line in lines:
+            line = line.strip()
+            if line.startswith('-----'):
+                continue
+            if not line:
+                continue
+            blocks.append(line)
+        return blocks
+
+    def _send_firmware_chunk(self, hex_data, packet_header):
+        """Send a single firmware chunk via OKFWUPDATE message.
+
+        Args:
+            hex_data: hex string of data to send
+            packet_header: hex byte header ('FF' for non-final, or byte count for final)
+        """
+        payload = packet_header + hex_data
+        self.send_message(msg=Message.OKFWUPDATE, payload=payload)
+
+    def _submit_firmware_block(self, block_data):
+        """Send a single firmware block in 57-byte chunks, waiting for ack between chunks.
+
+        Args:
+            block_data: hex string of the full block to send
+        """
+        max_packet_size = 114  # 57 byte pairs
+        offset = 0
+
+        while offset < len(block_data):
+            chunk = block_data[offset:offset + max_packet_size]
+            remaining = len(block_data) - offset
+            is_final = remaining <= max_packet_size
+
+            if is_final:
+                packet_header = format(len(chunk) // 2, '02x').upper()
+            else:
+                packet_header = 'FF'
+
+            self._send_firmware_chunk(chunk, packet_header)
+
+            # Wait for device to acknowledge each chunk
+            if not is_final:
+                ack = self._wait_for_firmware_ack('RECEIVED OKFWUPDATE', timeout=5)
+                if not ack:
+                    raise RuntimeError('Device did not acknowledge firmware chunk')
+
+            offset += max_packet_size
+
+    def _wait_for_firmware_ack(self, expected_msg, timeout=5):
+        """Wait for a specific firmware acknowledgment message from the device.
+
+        Args:
+            expected_msg: string to look for in device response
+            timeout: max seconds to wait
+
+        Returns: True if expected message received, False otherwise
+        """
+        start = time.time()
+        while time.time() - start < timeout:
+            try:
+                resp = self.read_string(timeout_ms=500)
+                if resp:
+                    logging.debug('FW ack: %s', resp)
+                    if expected_msg in resp:
+                        return True
+                    elif 'ERROR' in resp:
+                        print('\nDevice error: {}'.format(resp))
+                        return False
+                    elif 'UNLOCKED' in resp or '|' in resp:
+                        # Unexpected message, keep waiting
+                        continue
+            except:
+                pass
+        return False
+
+    def _reconnect_for_firmware(self):
+        """Reconnect to the OnlyKey after it reboots into bootloader mode."""
+        print('Waiting for device to reconnect in bootloader mode...')
+        self._hid.close()
+        time.sleep(5)
+
+        # Try to reconnect
+        for attempt in range(10):
+            try:
+                self._hid.open()
+                resp = self.read_string(timeout_ms=1000)
+                if resp:
+                    print('Device: {}'.format(resp))
+                    if 'BOOTLOADER' in resp:
+                        print('Device is now in bootloader mode')
+                        return
+                time.sleep(1)
+            except:
+                time.sleep(2)
+
+        raise RuntimeError('Could not reconnect to device in bootloader mode. '
+                         'Please manually reconnect and try again.')
+
     def loadprivate(self, rootkey_ascii_armor, rootkey_passphrase):
-        # This python script can parse the private keys out of OpenPGP keys (ed25519 or RSA). 
-        # Replace the passphrase with your OpenPGP passphrase.
+        """Legacy method - parse and display private keys from OpenPGP keys.
+
+        For actually loading keys onto the device, use loadkey() instead.
+        """
+        try:
+            import pgpy
+        except ImportError:
+            raise RuntimeError('pgpy is required. Install with: pip install pgpy')
+
         (rootkey, _) = pgpy.PGPKey.from_blob(rootkey_ascii_armor)
 
-        # Todo load keys onto OnlyKey after parsed
-        
         assert rootkey.is_protected
         assert rootkey.is_unlocked is False
 
@@ -609,31 +1139,29 @@ class OnlyKey(object):
                 print('rootkey type %s', rootkey._key._pkalg)
                 if 'RSA' in rootkey._key._pkalg._name_:
                     print('rootkey value:')
-                    #Parse rsa pgp key
-                    primary_keyp = long_to_bytes(rootkey._key.keymaterial.p)
-                    primary_keyq = long_to_bytes(rootkey._key.keymaterial.q)
+                    primary_keyp = self._long_to_bytes(rootkey._key.keymaterial.p)
+                    primary_keyq = self._long_to_bytes(rootkey._key.keymaterial.q)
                     print(("".join(["%02x" % c for c in primary_keyp])) + ("".join(["%02x" % c for c in primary_keyq])))
                     print('rootkey size =', (len(primary_keyp)+len(primary_keyq))*8, 'bits')
                     print('subkey values:')
                     for subkey, value in rootkey._children.items():
                         print('subkey id', subkey)
-                        sub_keyp = long_to_bytes(value._key.keymaterial.p)
-                        sub_keyq = long_to_bytes(value._key.keymaterial.q)
+                        sub_keyp = self._long_to_bytes(value._key.keymaterial.p)
+                        sub_keyq = self._long_to_bytes(value._key.keymaterial.q)
                         print('subkey value')
                         print(("".join(["%02x" % c for c in sub_keyp])) + ("".join(["%02x" % c for c in sub_keyq])))
                         print('subkey size =', (len(primary_keyp)+len(primary_keyq))*8, 'bits')
                 else:
                     print('rootkey value:')
-                    #Parse ed25519 pgp key
-                    primary_key = long_to_bytes(rootkey._key.keymaterial.s)
+                    primary_key = self._long_to_bytes(rootkey._key.keymaterial.s)
                     print("".join(["%02x" % c for c in primary_key]))
                     print('subkey values:')
                     for subkey, value in rootkey._children.items():
                         print('subkey id', subkey)
-                        sub_key = long_to_bytes(value._key.keymaterial.s)
+                        sub_key = self._long_to_bytes(value._key.keymaterial.s)
                         print('subkey value')
                         print("".join(["%02x" % c for c in sub_key]))
-                    
+
         except:
             print('Unlocking failed')
 
