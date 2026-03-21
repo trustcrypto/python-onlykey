@@ -555,6 +555,24 @@ def cli():
             except Exception as e:
                 print('Error setting backup passphrase: {}'.format(str(e)))
                 return
+        elif sys.argv[1] == 'loadfirmware':
+            try:
+                fwfile = sys.argv[2]
+                with open(fwfile, 'r') as f:
+                    fw_data = f.read()
+                print('WARNING: Loading firmware will update your OnlyKey device.')
+                print('Do NOT disconnect the device during the update!')
+                confirm = input('Type YES to continue: ')
+                if confirm.strip() != 'YES':
+                    print('Firmware update cancelled.')
+                    return
+                only_key.load_firmware(fw_data)
+            except IndexError:
+                print('Usage: onlykey-cli loadfirmware <firmware_file>')
+                return
+            except Exception as e:
+                print('Error loading firmware: {}'.format(str(e)))
+                return
         elif sys.argv[1] == 'version':
             print('OnlyKey CLI v1.2.10')
         elif sys.argv[1] == 'fwversion':
@@ -1187,6 +1205,24 @@ def cli():
                     only_key.set_backup_passphrase(passphrase1)
                 except Exception as e:
                     print('Error setting backup passphrase: {}'.format(str(e)))
+                    continue
+            elif data[0] == 'loadfirmware':
+                try:
+                    fwfile = data[1]
+                    with open(fwfile, 'r') as f:
+                        fw_data = f.read()
+                    print('WARNING: Loading firmware will update your OnlyKey device.')
+                    print('Do NOT disconnect the device during the update!')
+                    confirm = input('Type YES to continue: ')
+                    if confirm.strip() != 'YES':
+                        print('Firmware update cancelled.')
+                        continue
+                    only_key.load_firmware(fw_data)
+                except IndexError:
+                    print('Usage: loadfirmware <firmware_file>')
+                    continue
+                except Exception as e:
+                    print('Error loading firmware: {}'.format(str(e)))
                     continue
             elif data[0] == 'version':
                 try:

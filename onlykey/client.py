@@ -169,6 +169,7 @@ class Message(Enum):
     OKSETPRIV = 239
     OKDECRYPT = 240
     OKRESTORE = 241
+    OKFWUPDATE = 244  # 0xF4
 
 
 class MessageField(Enum):
@@ -931,6 +932,189 @@ class OnlyKey(object):
                          payload=format(key_type, 'x') + hex_key)
         time.sleep(1)
         print(self.read_string())
+
+    def load_firmware(self, firmware_data):
+        """Load firmware onto the OnlyKey device.
+
+        Parses a signed firmware file, transitions the device to bootloader
+        mode if needed, and sends firmware blocks with signature verification.
+        Mirrors the OnlyKey App's firmware update functionality.
+
+        The firmware file format is:
+            -----BEGIN SIGNED FIRMWARE-----
+            <block 1: 64-char signature + 1-char info + 64-char next signature + data>
+            <block 2: ...>
+            ...
+            -----END SIGNED FIRMWARE-----
+
+        Args:
+            firmware_data: String contents of the signed firmware file
+        """
+        # Parse the firmware file
+        blocks = self._parse_firmware_data(firmware_data)
+        if not blocks:
+            raise RuntimeError('No valid firmware data found')
+
+        print('Parsed firmware file: {} blocks'.format(len(blocks)))
+
+        # Check if device is in bootloader mode by reading its state
+        # Send initial dummy packet to kick device from config mode into bootloader
+        print('Requesting bootloader mode...')
+        self._send_firmware_chunk('1234', 'FF')
+
+        # Wait for device response
+        time.sleep(1)
+        resp = ''
+        for _ in range(20):
+            try:
+                resp = self.read_string(timeout_ms=500)
+                if resp:
+                    print('Device: {}'.format(resp))
+                    if 'BOOTLOADER' in resp:
+                        break
+                    elif 'ERROR' in resp:
+                        raise RuntimeError('Device error: {}'.format(resp))
+                    elif 'FW LOAD REQUEST' in resp or 'REBOOTING' in resp:
+                        print('Device is rebooting into bootloader, please wait...')
+                        time.sleep(3)
+                        # Reconnect to device after reboot
+                        self._reconnect_for_firmware()
+                        break
+            except RuntimeError as e:
+                if 'locked' in str(e).lower() or 'PIN' in str(e):
+                    raise
+            except:
+                pass
+            time.sleep(0.5)
+
+        # Now send firmware blocks
+        print('Loading firmware...')
+        for i, block in enumerate(blocks):
+            pct = int((i / len(blocks)) * 100)
+            print('\r  {} percent complete - block {}/{}...'.format(pct, i + 1, len(blocks)), end='', flush=True)
+
+            # Send this block in 57-byte (114 hex char) chunks
+            self._submit_firmware_block(block)
+
+            # Wait for device acknowledgment
+            if i < len(blocks) - 1:
+                # Intermediate block - wait for "NEXT BLOCK"
+                ack = self._wait_for_firmware_ack('NEXT BLOCK', timeout=10)
+                if not ack:
+                    raise RuntimeError('Device did not acknowledge block {}. Firmware update failed.'.format(i + 1))
+            else:
+                # Final block - wait for "SUCCESSFULLY LOADED FW"
+                ack = self._wait_for_firmware_ack('SUCCESSFULLY LOADED FW', timeout=15)
+                if not ack:
+                    raise RuntimeError('Device did not confirm firmware load completion.')
+
+        print('\r  100 percent complete - all {} blocks sent.'.format(len(blocks)))
+        print('Firmware loaded successfully! Device will reboot.')
+
+    def _parse_firmware_data(self, contents):
+        """Parse a signed firmware file into blocks.
+
+        Returns: list of block strings (hex data lines)
+        """
+        lines = contents.strip().split('\n')
+        blocks = []
+        for line in lines:
+            line = line.strip()
+            if line.startswith('-----'):
+                continue
+            if not line:
+                continue
+            blocks.append(line)
+        return blocks
+
+    def _send_firmware_chunk(self, hex_data, packet_header):
+        """Send a single firmware chunk via OKFWUPDATE message.
+
+        Args:
+            hex_data: hex string of data to send
+            packet_header: hex byte header ('FF' for non-final, or byte count for final)
+        """
+        payload = packet_header + hex_data
+        self.send_message(msg=Message.OKFWUPDATE, payload=payload)
+
+    def _submit_firmware_block(self, block_data):
+        """Send a single firmware block in 57-byte chunks, waiting for ack between chunks.
+
+        Args:
+            block_data: hex string of the full block to send
+        """
+        max_packet_size = 114  # 57 byte pairs
+        offset = 0
+
+        while offset < len(block_data):
+            chunk = block_data[offset:offset + max_packet_size]
+            remaining = len(block_data) - offset
+            is_final = remaining <= max_packet_size
+
+            if is_final:
+                packet_header = format(len(chunk) // 2, '02x').upper()
+            else:
+                packet_header = 'FF'
+
+            self._send_firmware_chunk(chunk, packet_header)
+
+            # Wait for device to acknowledge each chunk
+            if not is_final:
+                ack = self._wait_for_firmware_ack('RECEIVED OKFWUPDATE', timeout=5)
+                if not ack:
+                    raise RuntimeError('Device did not acknowledge firmware chunk')
+
+            offset += max_packet_size
+
+    def _wait_for_firmware_ack(self, expected_msg, timeout=5):
+        """Wait for a specific firmware acknowledgment message from the device.
+
+        Args:
+            expected_msg: string to look for in device response
+            timeout: max seconds to wait
+
+        Returns: True if expected message received, False otherwise
+        """
+        start = time.time()
+        while time.time() - start < timeout:
+            try:
+                resp = self.read_string(timeout_ms=500)
+                if resp:
+                    logging.debug('FW ack: %s', resp)
+                    if expected_msg in resp:
+                        return True
+                    elif 'ERROR' in resp:
+                        print('\nDevice error: {}'.format(resp))
+                        return False
+                    elif 'UNLOCKED' in resp or '|' in resp:
+                        # Unexpected message, keep waiting
+                        continue
+            except:
+                pass
+        return False
+
+    def _reconnect_for_firmware(self):
+        """Reconnect to the OnlyKey after it reboots into bootloader mode."""
+        print('Waiting for device to reconnect in bootloader mode...')
+        self._hid.close()
+        time.sleep(5)
+
+        # Try to reconnect
+        for attempt in range(10):
+            try:
+                self._hid.open()
+                resp = self.read_string(timeout_ms=1000)
+                if resp:
+                    print('Device: {}'.format(resp))
+                    if 'BOOTLOADER' in resp:
+                        print('Device is now in bootloader mode')
+                        return
+                time.sleep(1)
+            except:
+                time.sleep(2)
+
+        raise RuntimeError('Could not reconnect to device in bootloader mode. '
+                         'Please manually reconnect and try again.')
 
     def loadprivate(self, rootkey_ascii_armor, rootkey_passphrase):
         """Legacy method - parse and display private keys from OpenPGP keys.
