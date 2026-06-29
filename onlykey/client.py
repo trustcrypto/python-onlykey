@@ -11,7 +11,13 @@ import hashlib
 import os
 import codecs
 
-import hid
+try:
+    # On Linux the hidapi package ships a hidraw-backed module alongside the
+    # libusb-backed one. Prefer hidraw to avoid hid "open failed" races when the
+    # OnlyKey's HID interface was just used by another application (e.g. KeePassXC HMAC)
+    import hidraw as hid
+except ImportError:
+    import hid
 from aenum import Enum
 from sys import platform
 
