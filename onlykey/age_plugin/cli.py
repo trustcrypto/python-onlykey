@@ -18,98 +18,27 @@ Decryption:
 import sys
 import os
 import base64
+import hashlib
 
-from onlykey.age_plugin import __version__, PLUGIN_NAME, SLOT_XWING
+from onlykey.age_plugin import (
+    __version__, PLUGIN_NAME, DEFAULT_XWING_SLOT, validate_ecc_slot,
+)
+from onlykey.age_plugin.bech32 import bech32_encode, bech32_decode
 from onlykey.age_plugin.protocol import (
     Stanza, b64encode_no_pad, b64decode_no_pad,
-    run_identity_v1, run_recipient_v1,
+    run_identity_v1, run_recipient_v1, notify,
 )
-
-
-# Bech32 encoding for age recipients/identities
-# Simplified implementation for age1onlykey1... format
-
-BECH32_CHARSET = "qpzry9x8gf2tvdw0s3jn54khce6mua7l"
-
-
-def _bech32_polymod(values):
-    """Internal function for Bech32 checksum."""
-    GEN = [0x3B6A57B2, 0x26508E6D, 0x1EA119FA, 0x3D4233DD, 0x2A1462B3]
-    chk = 1
-    for v in values:
-        b = chk >> 25
-        chk = ((chk & 0x1FFFFFF) << 5) ^ v
-        for i in range(5):
-            chk ^= GEN[i] if ((b >> i) & 1) else 0
-    return chk
-
-
-def _bech32_hrp_expand(hrp):
-    return [ord(x) >> 5 for x in hrp] + [0] + [ord(x) & 31 for x in hrp]
-
-
-def _bech32_create_checksum(hrp, data):
-    values = _bech32_hrp_expand(hrp) + data
-    polymod = _bech32_polymod(values + [0, 0, 0, 0, 0, 0]) ^ 1
-    return [(polymod >> 5 * (5 - i)) & 31 for i in range(6)]
-
-
-def _bech32_verify_checksum(hrp, data):
-    return _bech32_polymod(_bech32_hrp_expand(hrp) + data) == 1
-
-
-def _convertbits(data, frombits, tobits, pad=True):
-    """General power-of-2 base conversion."""
-    acc = 0
-    bits = 0
-    ret = []
-    maxv = (1 << tobits) - 1
-    for value in data:
-        if value < 0 or (value >> frombits):
-            return None
-        acc = (acc << frombits) | value
-        bits += frombits
-        while bits >= tobits:
-            bits -= tobits
-            ret.append((acc >> bits) & maxv)
-    if pad:
-        if bits:
-            ret.append((acc << (tobits - bits)) & maxv)
-    elif bits >= frombits or ((acc << (tobits - bits)) & maxv):
-        return None
-    return ret
-
-
-def bech32_encode(hrp: str, data: bytes) -> str:
-    """Encode bytes as Bech32."""
-    values = _convertbits(list(data), 8, 5)
-    checksum = _bech32_create_checksum(hrp, values)
-    return hrp + "1" + "".join(BECH32_CHARSET[d] for d in values + checksum)
-
-
-def bech32_decode(bech: str):
-    """Decode Bech32 string to (hrp, data_bytes)."""
-    if any(ord(x) < 33 or ord(x) > 126 for x in bech):
-        return None, None
-    bech = bech.lower()
-    pos = bech.rfind("1")
-    if pos < 1 or pos + 7 > len(bech):
-        return None, None
-    hrp = bech[:pos]
-    data = [BECH32_CHARSET.find(x) for x in bech[pos + 1 :]]
-    if -1 in data:
-        return None, None
-    if not _bech32_verify_checksum(hrp, data):
-        return None, None
-    decoded = _convertbits(data[:-6], 5, 8, False)
-    if decoded is None:
-        return None, None
-    return hrp, bytes(decoded)
 
 
 # HRP for OnlyKey age recipients and identities
 RECIPIENT_HRP = "age1onlykey"
 IDENTITY_HRP = "age-plugin-onlykey-"  # uppercase AGE-PLUGIN-ONLYKEY- in file
+
+IDENTITY_VERSION = 1
+IDENTITY_FINGERPRINT_LEN = 8
+XWING_RECIPIENT_LEN = 1216
+XWING_STANZA_ENC_LEN = 1120
+FILE_KEY_LEN = 32
 
 
 def encode_recipient(pubkey: bytes) -> str:
@@ -125,7 +54,12 @@ def decode_recipient(recipient: str) -> bytes:
     return data
 
 
-def encode_identity(slot: int = SLOT_XWING) -> str:
+def recipient_fingerprint(pubkey: bytes) -> bytes:
+    """Return a short fingerprint for identity binding."""
+    return hashlib.sha256(pubkey).digest()[:IDENTITY_FINGERPRINT_LEN]
+
+
+def encode_identity(slot: int = DEFAULT_XWING_SLOT) -> str:
     """Encode an identity string. Contains just the slot number."""
     # Identity data: just the slot byte
     data = bytes([slot])
@@ -135,26 +69,52 @@ def encode_identity(slot: int = SLOT_XWING) -> str:
     )
 
 
-def decode_identity(identity: str) -> int:
-    """Decode identity string, returns slot number."""
+def decode_identity(identity: str) -> dict:
+    """Decode identity string.
+
+    Returns a mapping with ``slot``, ``fingerprint``, and ``legacy`` keys.
+    Legacy one-byte identities are supported so older files continue to work.
+    """
     hrp, data = bech32_decode(identity.lower())
-    if data is None or len(data) < 1:
+    if hrp != IDENTITY_HRP or data is None or len(data) < 1:
         raise ValueError(f"Invalid OnlyKey identity: {identity}")
-    return data[0]
+
+    if len(data) == 1:
+        return {
+            "slot": data[0],
+            "fingerprint": None,
+            "legacy": True,
+        }
+
+    if len(data) != 2 + IDENTITY_FINGERPRINT_LEN:
+        raise ValueError(
+            f"Invalid OnlyKey identity payload length: {len(data)}"
+        )
+
+    version = data[0]
+    if version != IDENTITY_VERSION:
+        raise ValueError(f"Unsupported OnlyKey identity version: {version}")
+
+    return {
+        "slot": data[1],
+        "fingerprint": data[2:],
+        "legacy": False,
+    }
 
 
-def cmd_generate():
+
+def cmd_generate(slot: int = DEFAULT_XWING_SLOT):
     """Generate X-Wing keypair on OnlyKey and print recipient/identity."""
     from onlykey.age_plugin.onlykey_hid import OnlyKeyPQ
 
-    print("Generating X-Wing keypair on OnlyKey...", file=sys.stderr)
+    print(f"Generating X-Wing keypair on OnlyKey (ECC slot {slot})...", file=sys.stderr)
     dev = OnlyKeyPQ()
-    pk = dev.xwing_keygen()
+    pk = dev.xwing_keygen(slot)
 
     recipient = encode_recipient(pk)
-    identity = encode_identity(SLOT_XWING)
+    identity = encode_identity(slot)
 
-    print(f"# X-Wing public key (age v1.3.0 mlkem768x25519 compatible)", file=sys.stderr)
+    print("# X-Wing public key (produces native age mlkem768x25519 stanzas)", file=sys.stderr)
     print(f"# Recipient: {recipient}", file=sys.stderr)
     print(file=sys.stderr)
 
@@ -164,29 +124,175 @@ def cmd_generate():
     print(identity)
 
 
-def cmd_recipient():
-    """Print the current X-Wing public key as an age recipient."""
+def cmd_recipient(slot: int = DEFAULT_XWING_SLOT):
+    """Print the X-Wing public key in the given ECC slot as an age recipient."""
     from onlykey.age_plugin.onlykey_hid import OnlyKeyPQ
 
     dev = OnlyKeyPQ()
-    pk = dev.xwing_getpubkey()
+    pk = dev.xwing_getpubkey(slot)
     print(encode_recipient(pk))
 
 
-def cmd_identity():
+def cmd_identity(slot: int = DEFAULT_XWING_SLOT):
     """Print an identity file for use with age -i."""
-    identity = encode_identity(SLOT_XWING)
-    print(f"# age-plugin-onlykey identity (X-Wing slot {SLOT_XWING})")
+    identity = encode_identity(slot)
+    print(f"# age-plugin-onlykey identity (X-Wing ECC slot {slot})")
     print(identity)
 
 
+def cmd_generate_derived(label: str):
+    """Derive a label-based X-Wing key on OnlyKey; print recipient + identity.
+
+    Nothing is stored on the device — the key is reproduced on demand from
+    (web-and-agent derivation key, label), so the SAME OnlyKey and
+    label produce the same key in the web app (interoperable age files)."""
+    from onlykey.age_plugin.onlykey_hid import OnlyKeyPQ
+    from onlykey.age_plugin import derived_xwing as dx
+
+    print(f"Deriving X-Wing key on OnlyKey (label {label!r})...", file=sys.stderr)
+    dev = OnlyKeyPQ()
+    recipient = encode_recipient(dev.derive_recipient(label))
+    print(f"# Recipient: {recipient}", file=sys.stderr)
+    print(f"# created: {__import__('datetime').datetime.now().isoformat()}")
+    print(f"# recipient: {recipient}")
+    print(dx.encode_identity(label))
+
+
+def cmd_recipient_derived(label: str):
+    """Print the derived X-Wing recipient for a label."""
+    from onlykey.age_plugin.onlykey_hid import OnlyKeyPQ
+    from onlykey.age_plugin import derived_xwing as dx
+
+    dev = OnlyKeyPQ()
+    print(encode_recipient(dev.derive_recipient(label)))
+
+
+def cmd_identity_derived(label: str):
+    """Print a derived (label-based) identity for use with age -i."""
+    from onlykey.age_plugin import derived_xwing as dx
+
+    print(f"# age-plugin-onlykey derived identity (label {label!r})")
+    print(dx.encode_identity(label))
+
+
+def _parse_onlykey_identities(identities):
+    parsed = []
+    for identity in identities:
+        try:
+            parsed.append(decode_identity(identity))
+        except ValueError:
+            continue
+    return parsed
+
+
+def _decode_xwing_stanza(stanza):
+    """Return the validated 1120-byte X-Wing ciphertext from a stanza, or None
+    if it is not an mlkem768x25519 stanza. Raises ValueError on a malformed one."""
+    if stanza.tag != "mlkem768x25519":
+        return None
+    if len(stanza.args) != 1:
+        raise ValueError(
+            f"Malformed mlkem768x25519 stanza: expected 1 arg, got {len(stanza.args)}"
+        )
+    try:
+        enc = b64decode_no_pad(stanza.args[0])
+    except Exception as exc:
+        raise ValueError(
+            "Malformed mlkem768x25519 stanza: invalid base64 ciphertext"
+        ) from exc
+    if len(enc) != XWING_STANZA_ENC_LEN:
+        raise ValueError(
+            f"Malformed mlkem768x25519 stanza: ciphertext must be {XWING_STANZA_ENC_LEN} bytes, got {len(enc)}"
+        )
+    if len(stanza.body) != FILE_KEY_LEN:
+        raise ValueError(
+            f"Malformed mlkem768x25519 stanza body: expected {FILE_KEY_LEN} bytes, got {len(stanza.body)}"
+        )
+    return enc
+
+
 def unwrap_callback(identities, stanzas_per_file):
-    """Plugin identity-v1 callback: unwrap file keys using OnlyKey."""
+    """Plugin identity-v1 callback: unwrap file keys using OnlyKey.
+
+    Supports BOTH identity models: slot-based (a key stored in an ECC slot) and
+    derived (label-based split custody, interoperable with the web app).
+    """
     from onlykey.age_plugin.onlykey_hid import OnlyKeyPQ
     from onlykey.age_plugin.xwing import open_file_key
+    from onlykey.age_plugin import derived_xwing as dx
 
     results = []
-    dev = None
+    parsed_identities = _parse_onlykey_identities(identities)
+    derived_labels = [d["label"] for d in (dx.decode_identity(s) for s in identities) if d]
+    if not parsed_identities and not derived_labels:
+        print("No valid OnlyKey identity supplied.", file=sys.stderr)
+        return results
+
+    dev = OnlyKeyPQ()
+
+    # ---- Derived (label-based) identities --------------------------------
+    # The device derives the whole X-Wing keypair on demand and decapsulates
+    # both halves itself. Same OnlyKey + same label => the same key as the web
+    # app.
+    #
+    # The recipient lookup that used to happen here has gone with split
+    # custody: it existed only to get pk_X and the ML-KEM seed into
+    # split_decapsulate(), and the device now needs neither from us.
+    for label in derived_labels:
+        for file_idx, stanzas in stanzas_per_file.items():
+            for stanza in stanzas:
+                enc = _decode_xwing_stanza(stanza)
+                if enc is None:
+                    continue
+                try:
+                    ss = dev.derive_decaps(label, enc)
+                    file_key = open_file_key(ss, enc, stanza.body)
+                    results.append((file_idx, file_key))
+                    break
+                except Exception as e:
+                    # Through the `msg` channel, not stderr: age discards a
+                    # plugin's stderr and reports its own generic
+                    # "no identity matched any of the recipients", so the
+                    # device's actual words - "Timeout occured while waiting
+                    # for confirmation on OnlyKey", "OnlyKey is locked" - never
+                    # reached the user. Same gap the prompt had, on the error
+                    # path instead: measured 2026-09-21, where a missed button
+                    # press was indistinguishable from a wrong identity.
+                    notify(f"derived unwrap failed: {e}")
+                    print(f"derived unwrap failed: {e}", file=sys.stderr)
+                    continue
+
+    if not parsed_identities:
+        return results
+
+    # The identity carries the ECC slot the key lives in; any of the 32 ECC
+    # slots (101-132) is valid. Query that slot's public key and match it.
+    matching_identity = None
+    matching_slot = None
+    for identity in parsed_identities:
+        try:
+            slot = validate_ecc_slot(identity["slot"])
+        except ValueError:
+            continue
+        try:
+            device_pubkey = dev.xwing_getpubkey(slot)
+        except Exception as exc:
+            print(f"Could not read X-Wing key in slot {slot}: {exc}", file=sys.stderr)
+            continue
+        if len(device_pubkey) != XWING_RECIPIENT_LEN:
+            continue
+        if (identity["fingerprint"] is None
+                or identity["fingerprint"] == recipient_fingerprint(device_pubkey)):
+            matching_identity = identity
+            matching_slot = slot
+            break
+
+    if matching_identity is None:
+        print(
+            "OnlyKey identity does not match the connected device's X-Wing public key.",
+            file=sys.stderr,
+        )
+        return results
 
     for file_idx, stanzas in stanzas_per_file.items():
         for stanza in stanzas:
@@ -195,27 +301,32 @@ def unwrap_callback(identities, stanzas_per_file):
                 continue
 
             if len(stanza.args) != 1:
-                continue
+                raise ValueError(
+                    f"Malformed mlkem768x25519 stanza: expected 1 arg, got {len(stanza.args)}"
+                )
 
             # Parse the ciphertext from the stanza argument
             try:
                 enc = b64decode_no_pad(stanza.args[0])
-            except Exception:
-                continue
+            except Exception as exc:
+                raise ValueError(
+                    "Malformed mlkem768x25519 stanza: invalid base64 ciphertext"
+                ) from exc
 
-            if len(enc) != 1120:
-                continue
+            if len(enc) != XWING_STANZA_ENC_LEN:
+                raise ValueError(
+                    f"Malformed mlkem768x25519 stanza: ciphertext must be {XWING_STANZA_ENC_LEN} bytes, got {len(enc)}"
+                )
 
             # Body must be exactly 32 bytes
-            if len(stanza.body) != 32:
-                continue
+            if len(stanza.body) != FILE_KEY_LEN:
+                raise ValueError(
+                    f"Malformed mlkem768x25519 stanza body: expected {FILE_KEY_LEN} bytes, got {len(stanza.body)}"
+                )
 
-            # Connect to OnlyKey if not already
-            if dev is None:
-                dev = OnlyKeyPQ()
 
-            # Send ciphertext to OnlyKey for decapsulation
-            ss = dev.xwing_decaps(enc)
+            # Send ciphertext to OnlyKey for decapsulation (in the matched slot)
+            ss = dev.xwing_decaps(enc, slot=matching_slot)
 
             # Use shared secret to decrypt the file key via HPKE
             try:
@@ -281,13 +392,51 @@ def main():
                 print(f"Unknown state machine: {state_machine}", file=sys.stderr)
                 sys.exit(1)
 
+    # Derived (label-based) mode: --derived --label NAME. No slot; the key is
+    # reproduced on demand and interoperates with the web app.
+    derived = "--derived" in args
+    label = None
+    for i, arg in enumerate(args):
+        if arg == "--label" and i + 1 < len(args):
+            label = args[i + 1]
+        elif arg.startswith("--label="):
+            label = arg.split("=", 1)[1]
+    if derived:
+        if not label:
+            print("Error: --derived requires --label <name>", file=sys.stderr)
+            sys.exit(1)
+        if "--generate" in args or "-g" in args:
+            cmd_generate_derived(label)
+        elif "--recipient" in args or "-r" in args:
+            cmd_recipient_derived(label)
+        elif "--identity" in args or "-i" in args:
+            cmd_identity_derived(label)
+        elif "--version" in args or "-v" in args:
+            print(f"age-plugin-onlykey {__version__}")
+        else:
+            print(__doc__)
+        return
+
+    # Optional --slot N / --slot=N selects which ECC slot (101-132) holds the key.
+    slot = DEFAULT_XWING_SLOT
+    for i, arg in enumerate(args):
+        if arg == "--slot" and i + 1 < len(args):
+            slot = args[i + 1]
+        elif arg.startswith("--slot="):
+            slot = arg.split("=", 1)[1]
+    try:
+        slot = validate_ecc_slot(slot)
+    except ValueError as exc:
+        print(f"Error: {exc}", file=sys.stderr)
+        sys.exit(1)
+
     # Direct invocation modes
     if "--generate" in args or "-g" in args:
-        cmd_generate()
+        cmd_generate(slot)
     elif "--recipient" in args or "-r" in args:
-        cmd_recipient()
+        cmd_recipient(slot)
     elif "--identity" in args or "-i" in args:
-        cmd_identity()
+        cmd_identity(slot)
     elif "--version" in args or "-v" in args:
         print(f"age-plugin-onlykey {__version__}")
     elif "--help" in args or "-h" in args:
@@ -301,6 +450,7 @@ def main():
         print("  --generate    Generate X-Wing keypair on OnlyKey")
         print("  --recipient   Print recipient (public key) for encryption")
         print("  --identity    Print identity file for decryption")
+        print("  --slot N      User ECC slot 101-116 to use (default 101)")
         print("  --help        Show full help")
         print()
         print("Quick start:")

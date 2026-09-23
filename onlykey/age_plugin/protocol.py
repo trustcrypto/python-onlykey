@@ -3,6 +3,7 @@
 Implements both recipient-v1 (encrypt) and identity-v1 (decrypt) state machines.
 """
 
+from __future__ import annotations
 import sys
 import base64
 import io
@@ -101,6 +102,30 @@ def write_command(tag: str, args: list[str] = None, body: bytes = b"", stream=No
     write_stanza(Stanza(tag, args or [], body), stream)
 
 
+_STATE_MACHINE = False
+
+
+def notify(text: str):
+    """Show text to the person running age.
+
+    Inside the plugin state machine stdout is the protocol channel and age
+    discards the plugin's stderr, so the only way to reach the user is the
+    `msg` command (C2SP age-plugin.md), which the client answers with `ok`
+    or `fail`. Outside the state machine (direct CLI use) plain stderr is
+    right. Without this a button prompt - and worse, a 3-digit challenge
+    code the user must type on the device - was written to a channel age
+    throws away, so the operation just appeared to hang and then fail.
+    """
+    if not _STATE_MACHINE:
+        print(text, file=sys.stderr)
+        return
+    write_command("msg", [], text.encode())
+    reply = read_stanza()
+    if reply is None:
+        sys.exit(1)
+    # `ok` or `fail` - either way carry on; the device prompt still stands.
+
+
 def run_identity_v1(unwrap_callback):
     """Run the identity-v1 state machine for decryption.
 
@@ -113,6 +138,8 @@ def run_identity_v1(unwrap_callback):
     It should return a list of (file_index, file_key_bytes) tuples for
     successful unwraps, or raise an error.
     """
+    global _STATE_MACHINE
+    _STATE_MACHINE = True
     identities = []
     stanzas_per_file = {}  # file_index -> [Stanza]
 
@@ -168,6 +195,8 @@ def run_recipient_v1(wrap_callback):
 
     It should return a list of (file_index, [recipient_stanza]) tuples.
     """
+    global _STATE_MACHINE
+    _STATE_MACHINE = True
     recipients = []
     identities = []
     file_keys = []
