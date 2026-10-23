@@ -25,9 +25,85 @@ from prompt_toolkit.keys import Keys
 from prompt_toolkit.filters import Condition
 import nacl.signing
 
-from .client import OnlyKey, Message, MessageField
+from .client import OnlyKey, Message, MessageField, WEBCRYPTPOLICY_FIELD
 
-only_key = OnlyKey()
+
+def _cli_version():
+    """The installed package version - the one number setup.py declares.
+
+    The CLI used to print a hard-coded 'v1.2.10' in three places while setup.py
+    said 1.2.11, so `onlykey-cli version` reported a release that was not the
+    one installed. Reading the distribution metadata makes setup.py the only
+    place the number lives.
+    """
+    try:
+        from importlib.metadata import version, PackageNotFoundError
+    except ImportError:  # pragma: no cover - python_requires is >= 3.10
+        return 'unknown'
+    try:
+        return version('onlykey')
+    except PackageNotFoundError:
+        return 'unknown (not installed as a package)'
+
+
+class _LazyOnlyKey(object):
+    """Connect on first use, not at import.
+
+    `only_key = OnlyKey()` ran at module import, so EVERY invocation - including
+    `onlykey-cli version`, `help` and `-h`, which never talk to a key - opened
+    the device first: a key on the bus saw traffic it did not ask for, and a
+    missing key made `version` fail. The proxy defers the connection to the
+    first attribute a command actually uses, so the commands that need no
+    device never touch one.
+    """
+
+    def __init__(self):
+        object.__setattr__(self, '_ok', None)
+
+    def _get(self):
+        ok = object.__getattribute__(self, '_ok')
+        if ok is None:
+            ok = OnlyKey()
+            object.__setattr__(self, '_ok', ok)
+        return ok
+
+    def __getattr__(self, name):
+        return getattr(self._get(), name)
+
+    def close_if_open(self):
+        """Close the HID handle if a command opened one - and never open one to
+        close it, which is what the exit handler did through the proxy."""
+        ok = object.__getattribute__(self, '_ok')
+        if ok is not None:
+            ok._hid.close()
+
+    def __setattr__(self, name, value):
+        setattr(self._get(), name, value)
+
+
+only_key = _LazyOnlyKey()
+
+
+def _pqc_input_bytes(arg):
+    """Read a PQC operand given as a hex string or as a path to a file.
+
+    A file is tried as hex text first and taken as raw bytes if that fails, so
+    both a `.hex`-style dump and a raw binary file work. Accepting a path
+    matters here because an ML-KEM ciphertext is 1088 bytes - 2176 hex
+    characters - which is past what several shells will take as one argument.
+
+    This is for CIPHERTEXT and digest operands (signpqc, decryptpqc), which are
+    public data. Key material has no equivalent: loadpqc takes an armored key
+    file and nothing else.
+    """
+    if os.path.isfile(arg):
+        raw = open(arg, 'rb').read()
+        try:
+            return bytes.fromhex(raw.decode().strip())
+        except Exception:
+            return raw
+    return bytes.fromhex(arg.strip())
+
 
 def cli():
 
@@ -115,9 +191,7 @@ def cli():
                 print ()
         elif sys.argv[1] == 'getlabels':
             tmp = {}      
-            only_key.set_time(time.time())
-            okversion = only_key.read_string()
-            if okversion[19] == 'c':
+            if not only_key.is_duo():
                 for slot in only_key.getlabels():
                     tmp[slot.name] = slot
                     slots = iter(['1a', '1b', '2a', '2b', '3a', '3b', '4a', '4b', '5a', '5b', '6a', '6b'])
@@ -357,6 +431,7 @@ def cli():
         elif sys.argv[1] == 'setkey' or sys.argv[1] == 'genkey':
             try:
                 slot_id = 0
+                pqc_slot = False
                 if sys.argv[2] == 'RSA1':
                     slot_id = 1
                 elif sys.argv[2] == 'RSA2':
@@ -365,6 +440,18 @@ def cli():
                     slot_id = 3
                 elif sys.argv[2] == 'RSA4':
                     slot_id = 4
+                elif sys.argv[2] == 'PQC1':
+                    slot_id = 1
+                    pqc_slot = True
+                elif sys.argv[2] == 'PQC2':
+                    slot_id = 2
+                    pqc_slot = True
+                elif sys.argv[2] == 'PQC3':
+                    slot_id = 3
+                    pqc_slot = True
+                elif sys.argv[2] == 'PQC4':
+                    slot_id = 4
+                    pqc_slot = True
                 elif sys.argv[2] == 'ECC1':
                     slot_id = 101
                 elif sys.argv[2] == 'ECC2':
@@ -401,11 +488,36 @@ def cli():
                     slot_id = 130
                 elif sys.argv[2] == 'HMAC2':
                     slot_id = 129
+                # PQC1-PQC4 name the same physical slots as RSA1-RSA4; the name
+                # says which kind of key is going in, and these two checks keep
+                # the name and the type honest in both directions. Without them
+                # the pair is decorative: `setkey PQC1 n d <rsa>` would load an
+                # RSA key into a slot the user called PQC.
+                if pqc_slot and sys.argv[3] != 'p':
+                    print("PQC%d holds a composite PQC PGP key: setkey PQC%d p <320 hex chars>."
+                          % (slot_id, slot_id))
+                    print("For an RSA key in that slot, name it RSA%d." % slot_id)
+                    return
+                if sys.argv[3] == 'p' and not pqc_slot:
+                    print("A composite PQC PGP key goes in a PQC slot: setkey PQC1-PQC4 p <320 hex chars>.")
+                    return
                 if (sys.argv[1]=='genkey'):
-                    if (slot_id > 100 and (sys.argv[3] in ('x', 'n', 's', 'm', 'w'))):
+                    if (slot_id > 100 and (sys.argv[3] in ('x', 'n', 's', 'c', 'm', 'w'))):
                         only_key.setkey(slot_id, sys.argv[3], sys.argv[4], 'ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff')
                     else:
+                        # No composite entry here on purpose. genkey sends the
+                        # all-FFs trigger, and okcrypto_generate_random_key()
+                        # is gated on `buffer[5] > 100` - ECC slots only - so a
+                        # composite key cannot be generated on the device at
+                        # all. It is made off-device and loaded.
                         print('Input error. See available commands with examples here https://docs.crp.to/command-line.html')
+                elif (sys.argv[3] == 'p'):
+                    # setkey PQC<1-4> p <320 hex chars>
+                    #
+                    # Three arguments, not four: a composite key is always
+                    # decrypt AND sign, so there is no feature letter to pick.
+                    # client.py's setkey() rejects one rather than ignoring it.
+                    only_key.setkey(slot_id, 'p', '', sys.argv[4])
                 elif (sys.argv[3]=='label'):
                     if slot_id > 100:
                         slot_id = slot_id - 72
@@ -414,10 +526,136 @@ def cli():
                     only_key.setslot(slot_id, MessageField.LABEL, sys.argv[4])
                 else:
                     only_key.setkey(slot_id, sys.argv[3], sys.argv[4], sys.argv[5])
-            except:
-                print(sys.exc_info()[0])
-                print('Input error. See available commands with examples here https://docs.crp.to/command-line.html')
-                return
+            except Exception as e:
+                # A refused composite load raises with the device's own words
+                # ("OnlyKey refused the key load: Error not in config mode").
+                # This printed only the exception CLASS and exited 0, so the
+                # reason was lost and a script could not tell a refusal from a
+                # load. setpqc had the same shape and was fixed; setkey p is
+                # its replacement and must not regress it.
+                if str(e) and not isinstance(e, (IndexError, KeyError)):
+                    print(str(e))
+                else:
+                    print(sys.exc_info()[0])
+                    print('Input error. See available commands with examples here https://docs.crp.to/command-line.html')
+                sys.exit(1)
+        elif sys.argv[1] == 'loadpqc':
+            # Load a composite PQC PGP key (IETF OpenPGP-PQC) into an RSA slot.
+            # loadpqc <keyfile.asc> [PQC1-PQC4] [passphrase]
+            #
+            # Parses an armored composite private key through the OpenPGP.js
+            # bridge (needs Node.js) and sends the 160-byte seed blob. This is
+            # the only way a composite key reaches the device: the firmware has
+            # no keygen trigger in the RSA slot path, and OKSETPRIV is not
+            # reachable over the browser's FIDO2 transport at all.
+            try:
+                from . import pqc, pgp_bridge
+                keyfile = sys.argv[2]
+                # Composite PQC keys occupy the 4 RSA key slots on the device,
+                # but the CLI names them PQC1-PQC4 and only that. setkey is
+                # strict about the pair - `setkey PQC1 n d` and `setkey RSA1 p`
+                # are both refused - and loadpqc accepting RSA names anyway
+                # would undo the point of the PQC names existing.
+                slotmap = {'PQC1': 1, 'PQC2': 2, 'PQC3': 3, 'PQC4': 4}
+                slot_id = slotmap.get(sys.argv[3]) if len(sys.argv) > 3 else 1
+                if not slot_id:
+                    print('loadpqc <keyfile> [PQC1-PQC4] [passphrase]')
+                    sys.exit(1)
+                passphrase = sys.argv[4] if len(sys.argv) > 4 else None
+                blob = pgp_bridge.composite_blob(path=keyfile, passphrase=passphrase)
+                # Raises if the device refused the load, so the success line
+                # below is only ever printed for a load that happened. There is
+                # no readback for a composite key - okcrypto_getpubkey() has no
+                # KEYTYPE_PQC_PGP branch - so the device's own acknowledgement
+                # is the only thing that distinguishes a stored key from an
+                # empty slot.
+                pqc.load_composite_key(only_key, slot_id, blob)
+                print('Loaded composite PQC PGP key from %s (%d bytes) into PQC%d'
+                      % (keyfile, len(blob), slot_id))
+            except Exception:
+                print(sys.exc_info()[1])
+                print('loadpqc <keyfile> [PQC1-PQC4] [passphrase]')
+                sys.exit(1)
+        elif sys.argv[1] == 'signpqc':
+            # Sign a digest with ONE half of a composite PQC PGP key.
+            # signpqc [PQC1-PQC4] [ecc|pqc] [digest hex | file]
+            #   ecc -> Ed25519,    64-byte signature
+            #   pqc -> ML-DSA-65,  3309-byte signature
+            #
+            # This is the device PRIMITIVE, not a PGP message signer: a
+            # composite OpenPGP signature is the two halves concatenated, and
+            # assembling that packet is the caller's job (openpgp.js does it
+            # for the web app). Exposing the primitive is what lets a shell
+            # script, or an independent implementation's test harness, get a
+            # real signature out of the device at all.
+            try:
+                from . import pqc
+                # Composite PQC keys occupy the 4 RSA key slots on the device,
+                # but the CLI names them PQC1-PQC4 and only that. setkey is
+                # strict about the pair - `setkey PQC1 n d` and `setkey RSA1 p`
+                # are both refused - and loadpqc accepting RSA names anyway
+                # would undo the point of the PQC names existing.
+                slotmap = {'PQC1': 1, 'PQC2': 2, 'PQC3': 3, 'PQC4': 4}
+                halfmap = {'ecc': pqc.HALF_ECC, 'pqc': pqc.HALF_PQC}
+                if len(sys.argv) < 5:
+                    print('signpqc [PQC1-PQC4] [ecc|pqc] [digest hex | file]')
+                    sys.exit(1)
+                slot_id = slotmap.get(sys.argv[2])
+                half = halfmap.get(sys.argv[3].lower())
+                if not slot_id or half is None:
+                    print('signpqc [PQC1-PQC4] [ecc|pqc] [digest hex | file]')
+                    sys.exit(1)
+                digest = _pqc_input_bytes(sys.argv[4])
+                print('Press the three buttons shown on your OnlyKey to confirm signing...',
+                      file=sys.stderr)
+                sig = pqc.sign(only_key, slot_id, half, digest)
+                print(binascii.hexlify(sig).decode())
+            except SystemExit:
+                raise
+            except Exception:
+                print(sys.exc_info()[1])
+                print('signpqc [PQC1-PQC4] [ecc|pqc] [digest hex | file]')
+                sys.exit(1)
+        elif sys.argv[1] == 'decryptpqc':
+            # Decapsulate with ONE half of a composite PQC PGP key.
+            # decryptpqc [PQC1-PQC4] [hex | file]
+            #
+            # The device picks the half by INPUT SIZE - there is no selector:
+            #   32 bytes   -> X25519 ephemeral point -> 32-byte shared secret
+            #   1088 bytes -> ML-KEM-768 ciphertext  -> 32-byte shared secret
+            #
+            # Again a primitive. Recovering an OpenPGP session key from these
+            # needs the SHA3-256 key combine of draft-ietf-openpgp-pqc-10
+            # section 4.2.1 - over both key shares, the ECDH ciphertext and
+            # public key, the algorithm ID, and "OpenPGPCompositeKDFv1" with its
+            # length - and an RFC 3394 AES-256 key-unwrap on top, which the
+            # caller does.
+            try:
+                from . import pqc
+                # Composite PQC keys occupy the 4 RSA key slots on the device,
+                # but the CLI names them PQC1-PQC4 and only that. setkey is
+                # strict about the pair - `setkey PQC1 n d` and `setkey RSA1 p`
+                # are both refused - and loadpqc accepting RSA names anyway
+                # would undo the point of the PQC names existing.
+                slotmap = {'PQC1': 1, 'PQC2': 2, 'PQC3': 3, 'PQC4': 4}
+                if len(sys.argv) < 4:
+                    print('decryptpqc [PQC1-PQC4] [32-byte X25519 point or 1088-byte ML-KEM ct: hex | file]')
+                    sys.exit(1)
+                slot_id = slotmap.get(sys.argv[2])
+                if not slot_id:
+                    print('decryptpqc [PQC1-PQC4] [hex | file]')
+                    sys.exit(1)
+                data = _pqc_input_bytes(sys.argv[3])
+                print('Press the three buttons shown on your OnlyKey to confirm decryption...',
+                      file=sys.stderr)
+                shared = pqc.decrypt(only_key, slot_id, data)
+                print(binascii.hexlify(shared).decode())
+            except SystemExit:
+                raise
+            except Exception:
+                print(sys.exc_info()[1])
+                print('decryptpqc [PQC1-PQC4] [hex | file]')
+                sys.exit(1)
         elif sys.argv[1] == 'wipekey':
             try:
                 if sys.argv[2] == 'RSA1':
@@ -427,6 +665,14 @@ def cli():
                 elif sys.argv[2] == 'RSA3':
                     slot_id = 3
                 elif sys.argv[2] == 'RSA4':
+                    slot_id = 4
+                elif sys.argv[2] == 'PQC1':
+                    slot_id = 1
+                elif sys.argv[2] == 'PQC2':
+                    slot_id = 2
+                elif sys.argv[2] == 'PQC3':
+                    slot_id = 3
+                elif sys.argv[2] == 'PQC4':
                     slot_id = 4
                 elif sys.argv[2] == 'ECC1':
                     slot_id = 101
@@ -479,12 +725,38 @@ def cli():
              only_key.setslot(1, MessageField.LEDBRIGHTNESS, int(sys.argv[2]))
         elif sys.argv[1] == 'touchsense':
             only_key.setslot(1, MessageField.TOUCHSENSE, int(sys.argv[2]))
-        elif sys.argv[1] == '2ndprofilemode':
-             only_key.setslot(1, MessageField.SECPROFILEMODE, int(sys.argv[2]))
-        elif sys.argv[1] == 'storedkeymode':
-             only_key.setslot(1, MessageField.PGPCHALENGEMODE, int(sys.argv[2]))
-        elif sys.argv[1] == 'derivedkeymode':
-             only_key.setslot(1, MessageField.SSHCHALENGEMODE, int(sys.argv[2]))
+        elif sys.argv[1] in ('storedkeymode', 'derivedkeymode',
+                             'webagentderivemode', 'webderivemode'):
+            # User input mode, one enum for all three surfaces: 0 = challenge
+            # code, 1 = button press, 2 = no press. Default is 1. For
+            # stored/derived keys, 2 is only honoured by firmware built with
+            # OK_ALLOW_NO_PRESS (the device answers "Error unsupported user
+            # input mode" otherwise); for web/agent derived keys it is always
+            # allowed. The KEY never depends on this - it is authorisation only.
+            #
+            # webagentderivemode is the current name for field 30 because it
+            # governs slot 128 on BOTH transports, the web app and a local
+            # agent over HID alike; webderivemode stays as an alias.
+            field = {'storedkeymode': MessageField.PGPCHALENGEMODE,
+                     'derivedkeymode': MessageField.SSHCHALENGEMODE,
+                     'webagentderivemode': MessageField.WEBDERIVEMODE,
+                     'webderivemode': MessageField.WEBDERIVEMODE}[sys.argv[1]]
+            if len(sys.argv) < 3 or sys.argv[2] not in ('0', '1', '2'):
+                print('%s [0 = challenge code | 1 = button press | 2 = no press]' % sys.argv[1])
+                sys.exit(1)
+            only_key.setslot(1, field, int(sys.argv[2]))
+        elif sys.argv[1] == 'webcryptpolicy':
+            # Field 31 bitfield: 0 = derived keys only (stored-key PGP off,
+            # extension on), 1 = also allow stored-key PGP over FIDO2,
+            # 2 = disable the FIDO2 extension entirely, 3 = both bits.
+            # Never written (new or upgraded key) behaves as 1, like v3.0.4.
+            # The firmware refuses undefined bits rather than masking them,
+            # so the host validates the same range instead of guessing.
+            if len(sys.argv) < 3 or sys.argv[2] not in ('0', '1', '2', '3'):
+                print('webcryptpolicy [0 | 1 = allow stored-key PGP over FIDO2 |'
+                      ' 2 = disable FIDO2 extension | 3 = both]')
+                sys.exit(1)
+            only_key.setslot(1, WEBCRYPTPOLICY_FIELD, int(sys.argv[2]))
         elif sys.argv[1] == 'backupkeymode':
              only_key.setslot(1, MessageField.BACKUPMODE, int(sys.argv[2]))
         elif sys.argv[1] == 'keylayout':
@@ -495,8 +767,88 @@ def cli():
              only_key.setslot(1, MessageField.LOCKBUTTON, int(sys.argv[2]))
         elif sys.argv[1] == 'hmackeymode':
              only_key.setslot(1, MessageField.HMACMODE, int(sys.argv[2]))
+        elif sys.argv[1] == 'loadkey':
+            try:
+                # loadkey <keyfile> [slot] [features]
+                # slot: RSA1-RSA4, ECC1-ECC16, or 'auto' (default)
+                # features: d (decryption), s (signing), b (backup)
+                keyfile = sys.argv[2]
+                slot = 99  # auto by default
+                features = ''
+                if len(sys.argv) > 3:
+                    slot_arg = sys.argv[3]
+                    if slot_arg == 'auto':
+                        slot = 99
+                    elif slot_arg.startswith('RSA'):
+                        slot = int(slot_arg[3:])
+                    elif slot_arg.startswith('ECC'):
+                        slot = 100 + int(slot_arg[3:])
+                    else:
+                        slot = int(slot_arg)
+                if len(sys.argv) > 4:
+                    features = sys.argv[4]
+                with open(keyfile, 'r') as f:
+                    key_data = f.read()
+                passphrase = prompt('Passphrase: ',
+                                   is_password=Condition(lambda: hidden[0]),
+                                   key_bindings=key_bindings)
+                only_key.loadkey(key_data, passphrase, slot=slot, key_features=features)
+            except Exception as e:
+                print('Error loading key: {}'.format(str(e)))
+                print('Usage: onlykey-cli loadkey <keyfile> [slot] [features]')
+                print('  slot: RSA1-RSA4, ECC1-ECC16, or auto (default)')
+                print('  features: d (decryption), s (signing), b (backup)')
+                return
+        elif sys.argv[1] == 'restore':
+            try:
+                backupfile = sys.argv[2]
+                with open(backupfile, 'r') as f:
+                    backup_data = f.read()
+                only_key.restore_from_backup(backup_data)
+            except IndexError:
+                print('Usage: onlykey-cli restore <backupfile>')
+                return
+            except Exception as e:
+                print('Error restoring backup: {}'.format(str(e)))
+                return
+        elif sys.argv[1] == 'backuppassphrase':
+            try:
+                print('Type Control-T to toggle passphrase visible.')
+                passphrase1 = prompt('Backup Passphrase: ',
+                                    is_password=Condition(lambda: hidden[0]),
+                                    key_bindings=key_bindings)
+                passphrase2 = prompt('Confirm Passphrase: ',
+                                    is_password=Condition(lambda: hidden[0]),
+                                    key_bindings=key_bindings)
+                if passphrase1 != passphrase2:
+                    print('Error: Passphrases do not match')
+                    return
+                only_key.set_backup_passphrase(passphrase1)
+            except Exception as e:
+                print('Error setting backup passphrase: {}'.format(str(e)))
+                return
+        elif sys.argv[1] == 'loadfirmware':
+            try:
+                fwfile = sys.argv[2]
+                with open(fwfile, 'r') as f:
+                    fw_data = f.read()
+                print('WARNING: Loading firmware will update your OnlyKey device.')
+                print('Do NOT disconnect the device during the update!')
+                confirm = input('Type YES to continue: ')
+                if confirm.strip() != 'YES':
+                    print('Firmware update cancelled.')
+                    return
+                only_key.load_firmware(fw_data)
+            except IndexError:
+                print('Usage: onlykey-cli loadfirmware <firmware_file>')
+                return
+            except Exception as e:
+                print('Error loading firmware: {}'.format(str(e)))
+                return
         elif sys.argv[1] == 'version':
-            print('OnlyKey CLI v1.2.10')
+            print('OnlyKey CLI v' + _cli_version())
+        elif sys.argv[1] == 'capabilities':
+            only_key.displaycapabilities()
         elif sys.argv[1] == 'fwversion':
             only_key.set_time(time.time())
             okversion = only_key.read_string()
@@ -573,7 +925,7 @@ def cli():
     else:
 
         # Print help.
-        print('OnlyKey CLI v1.2.10')
+        print('OnlyKey CLI v' + _cli_version())
         print('Control-D to exit.')
         print()
 
@@ -645,9 +997,7 @@ def cli():
                     print()
             elif data[0] == 'getlabels':
                 tmp = {}      
-                only_key.set_time(time.time())
-                okversion = only_key.read_string()
-                if okversion[19] == 'c':
+                if not only_key.is_duo():
                     for slot in only_key.getlabels():
                         tmp[slot.name] = slot
                         slots = iter(['1a', '1b', '2a', '2b', '3a', '3b', '4a', '4b', '5a', '5b', '6a', '6b'])
@@ -893,6 +1243,14 @@ def cli():
                         slot_id = 3
                     elif data[1] == 'RSA4':
                         slot_id = 4
+                    elif data[1] == 'PQC1':
+                        slot_id = 1
+                    elif data[1] == 'PQC2':
+                        slot_id = 2
+                    elif data[1] == 'PQC3':
+                        slot_id = 3
+                    elif data[1] == 'PQC4':
+                        slot_id = 4
                     elif data[1] == 'ECC1':
                         slot_id = 101
                     elif data[1] == 'ECC2':
@@ -935,10 +1293,18 @@ def cli():
                     continue
                 try:
                     if (data[0]=='genkey'):
-                        if (slot_id > 100 and (data[2] in ('x', 'n', 's', 'm', 'w'))):
+                        if (slot_id > 100 and (data[2] in ('x', 'n', 's', 'c', 'm', 'w'))):
                             only_key.setkey(slot_id, data[2], data[3], 'ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff')
                         else:
                             print('Input error. See available commands with examples here https://docs.crp.to/command-line.html')
+                    elif (data[2] == 'p'):
+                        # setkey PQC<1-4> p   - the blob is prompted for, the
+                        # same way RSA and ECC key material is here, so 320 hex
+                        # characters of private key never land in shell history.
+                        if not 1 <= slot_id <= 4:
+                            print('A composite PQC PGP key goes in PQC1-PQC4.')
+                            continue
+                        only_key.setkey(slot_id, 'p', '', prompt_pass())
                     elif (data[2]=='label'):
                         if slot_id > 100:
                             slot_id = slot_id - 72
@@ -961,6 +1327,14 @@ def cli():
                     elif data[1] == 'RSA3':
                         slot_id = 3
                     elif data[1] == 'RSA4':
+                        slot_id = 4
+                    elif data[1] == 'PQC1':
+                        slot_id = 1
+                    elif data[1] == 'PQC2':
+                        slot_id = 2
+                    elif data[1] == 'PQC3':
+                        slot_id = 3
+                    elif data[1] == 'PQC4':
                         slot_id = 4
                     elif data[1] == 'ECC1':
                         slot_id = 101
@@ -1031,6 +1405,16 @@ def cli():
                     only_key.setslot(1, MessageField.TOUCHSENSE, int(data[1]))
                 except:
                     continue
+            elif data[0] in ('webagentderivemode', 'webderivemode'):
+                try:
+                    only_key.setslot(1, MessageField.WEBDERIVEMODE, int(data[1]))
+                except:
+                    continue
+            elif data[0] == 'webcryptpolicy':
+                try:
+                    only_key.setslot(1, WEBCRYPTPOLICY_FIELD, int(data[1]))
+                except:
+                    continue
             elif data[0] == 'storedkeymode':
                 try:
                     only_key.setslot(1, MessageField.PGPCHALENGEMODE, int(data[1]))
@@ -1041,14 +1425,14 @@ def cli():
                     only_key.setslot(1, MessageField.SSHCHALENGEMODE, int(data[1]))
                 except:
                     continue
+            elif data[0] == 'webderivemode':
+                try:
+                    only_key.setslot(1, MessageField.WEBDERIVEMODE, int(data[1]))
+                except:
+                    continue
             elif data[0] == 'backupkeymode':
                 try:
                     only_key.setslot(1, MessageField.BACKUPMODE, int(data[1]))
-                except:
-                    continue
-            elif data[0] == '2ndprofilemode':
-                try:
-                    only_key.setslot(1, MessageField.SECPROFILEMODE, int(data[1]))
                 except:
                     continue
             elif data[0] == 'keylayout':
@@ -1071,11 +1455,91 @@ def cli():
                     only_key.setslot(1, MessageField.HMACMODE, int(data[1]))
                 except:
                     continue
+            elif data[0] == 'loadkey':
+                try:
+                    keyfile = data[1]
+                    slot = 99
+                    features = ''
+                    if len(data) > 2:
+                        slot_arg = data[2]
+                        if slot_arg == 'auto':
+                            slot = 99
+                        elif slot_arg.startswith('RSA'):
+                            slot = int(slot_arg[3:])
+                        elif slot_arg.startswith('ECC'):
+                            slot = 100 + int(slot_arg[3:])
+                        else:
+                            slot = int(slot_arg)
+                    if len(data) > 3:
+                        features = data[3]
+                    with open(keyfile, 'r') as f:
+                        key_data = f.read()
+                    passphrase = prompt('Passphrase: ',
+                                       is_password=Condition(lambda: hidden[0]),
+                                       key_bindings=key_bindings)
+                    only_key.loadkey(key_data, passphrase, slot=slot, key_features=features)
+                except Exception as e:
+                    print('Error loading key: {}'.format(str(e)))
+                    print('Usage: loadkey <keyfile> [slot] [features]')
+                    print('  slot: RSA1-RSA4, ECC1-ECC16, or auto (default)')
+                    print('  features: d (decryption), s (signing), b (backup)')
+                    continue
+            elif data[0] == 'restore':
+                try:
+                    backupfile = data[1]
+                    with open(backupfile, 'r') as f:
+                        backup_data = f.read()
+                    only_key.restore_from_backup(backup_data)
+                except IndexError:
+                    print('Usage: restore <backupfile>')
+                    continue
+                except Exception as e:
+                    print('Error restoring backup: {}'.format(str(e)))
+                    continue
+            elif data[0] == 'backuppassphrase':
+                try:
+                    print('Type Control-T to toggle passphrase visible.')
+                    passphrase1 = prompt('Backup Passphrase: ',
+                                        is_password=Condition(lambda: hidden[0]),
+                                        key_bindings=key_bindings)
+                    passphrase2 = prompt('Confirm Passphrase: ',
+                                        is_password=Condition(lambda: hidden[0]),
+                                        key_bindings=key_bindings)
+                    if passphrase1 != passphrase2:
+                        print('Error: Passphrases do not match')
+                        continue
+                    only_key.set_backup_passphrase(passphrase1)
+                except Exception as e:
+                    print('Error setting backup passphrase: {}'.format(str(e)))
+                    continue
+            elif data[0] == 'loadfirmware':
+                try:
+                    fwfile = data[1]
+                    with open(fwfile, 'r') as f:
+                        fw_data = f.read()
+                    print('WARNING: Loading firmware will update your OnlyKey device.')
+                    print('Do NOT disconnect the device during the update!')
+                    confirm = input('Type YES to continue: ')
+                    if confirm.strip() != 'YES':
+                        print('Firmware update cancelled.')
+                        continue
+                    only_key.load_firmware(fw_data)
+                except IndexError:
+                    print('Usage: loadfirmware <firmware_file>')
+                    continue
+                except Exception as e:
+                    print('Error loading firmware: {}'.format(str(e)))
+                    continue
             elif data[0] == 'version':
                 try:
-                    print('OnlyKey CLI v1.2.10')
+                    print('OnlyKey CLI v' + _cli_version())
                 except:
                     continue
+            elif data[0] == 'capabilities':
+                try:
+                    only_key.displaycapabilities()
+                except:
+                    print(sys.exc_info()[0])
             elif data[0] == 'fwversion':
                 try:
                     only_key.set_time(time.time())
@@ -1195,10 +1659,10 @@ def main():
         atexit.register(exit_handler)
         cli()
     except EOFError:
-        only_key._hid.close()
+        only_key.close_if_open()
         print()
         print('Bye!')
         pass
 
 def exit_handler():
-    only_key._hid.close()
+    only_key.close_if_open()
