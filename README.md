@@ -309,6 +309,9 @@ Installed with `pip3 install "onlykey[age]"`. Lets [age](https://age-encryption.
   - `age-plugin-onlykey --generate` - generate an X-Wing key on the device
   - `age-plugin-onlykey --identity` / `--recipient` - print the identity file line / the recipient for a stored key
   - `age-plugin-onlykey --derived --label NAME --recipient` - a derived recipient for a label; the private key never leaves the device and the same label gives the same recipient in the OnlyKey web app
+  - add `--native` to `--recipient` to print the same key as age's own post-quantum recipient (`age1pq1...`). age 1.3+, [typage](https://github.com/FiloSottile/typage), and [rage](https://github.com/str4d/rage) or older age with `age-plugin-pq` can then encrypt to the OnlyKey without this plugin installed; decryption still uses the OnlyKey identity.
+
+Files are standard age v1 (`mlkem768x25519` stanzas per the [age specification](https://github.com/C2SP/C2SP/blob/main/age.md)): what the plugin or the OnlyKey web app writes opens in age, rage and typage, and the other way around. Tested against age 1.3.2 and 1.1.1, rage 0.12.1 and typage 0.3.1.
 
 ### FIDO2 Config Options
 
