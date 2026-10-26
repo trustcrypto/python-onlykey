@@ -10,10 +10,18 @@ age's mlkem768x25519 stanza format:
 The body is ChaCha20-Poly1305(key, nonce, aad="", file_key)
 where key and nonce come from the HPKE key schedule with X-Wing KEM.
 
-HPKE cipher suite:
-  KEM: X-Wing (ID 0x647a)
+HPKE cipher suite (C2SP age.md, "mlkem768x25519 recipient stanza"):
+  KEM: MLKEM768-X25519 / X-Wing (ID 0x647a)
   KDF: HKDF-SHA256 (ID 0x0001)
   AEAD: ChaCha20-Poly1305 (ID 0x0003)
+  info: "age-encryption.org/mlkem768x25519"
+
+X-Wing is not a DHKEM: its Encaps already returns the HPKE shared secret
+(the SHA3-256 combiner output), so there is no ExtractAndExpand step - the
+combiner output goes straight into KeySchedule. Versions up to 1.3.0 ran an
+extra DHKEM-style ExtractAndExpand over it and used an empty info string,
+which produced stanzas the age tool could not open (and could not open
+age's). open_file_key() still accepts those for files already written.
 """
 
 import os
@@ -117,60 +125,68 @@ def hpke_key_schedule_base(shared_secret: bytes, info: bytes,
     return key, base_nonce
 
 
+# C2SP age.md: info for the mlkem768x25519 stanza's SealBase/OpenBase.
+AGE_PQ_INFO = b"age-encryption.org/mlkem768x25519"
+
+
 def seal_file_key(shared_secret: bytes, enc: bytes, file_key: bytes,
-                  info: bytes = b"") -> bytes:
-    """HPKE SealBase: encrypt file key using X-Wing shared secret.
+                  info: bytes = AGE_PQ_INFO) -> bytes:
+    """HPKE SealBase: encrypt the file key under the X-Wing shared secret.
 
     Args:
         shared_secret: 32-byte X-Wing shared secret from Encaps
-        enc: 1120-byte X-Wing ciphertext (used in kem_context)
+        enc: 1120-byte X-Wing ciphertext (unused: X-Wing's combiner already
+             binds ct_X and pk_X, and it is not a DHKEM, so there is no
+             ExtractAndExpand over enc)
         file_key: 16-byte file key to encrypt
-        info: optional HPKE info parameter
+        info: HPKE info; age's label by default
 
     Returns:
         32-byte AEAD ciphertext (16 plaintext + 16 tag)
     """
     if not HAS_CRYPTO:
         raise RuntimeError("cryptography library required: pip install cryptography")
-
-    # KEM context for X-Wing: just the enc (ciphertext)
-    # For X-Wing, the kem_context is empty per the HPKE KEM interface
-    # since X-Wing already binds ct_X and pk_X in its combiner
-    kem_context = enc
-
-    # ExtractAndExpand the KEM shared secret
-    hpke_ss = hpke_extract_and_expand(shared_secret, kem_context)
-
-    # Key schedule
-    key, base_nonce = hpke_key_schedule_base(hpke_ss, info)
-
+    del enc
+    key, base_nonce = hpke_key_schedule_base(shared_secret, info)
     # AEAD seal (seq=0, so nonce = base_nonce XOR 0 = base_nonce)
-    aead = ChaCha20Poly1305(key)
-    return aead.encrypt(base_nonce, file_key, b"")
+    return ChaCha20Poly1305(key).encrypt(base_nonce, file_key, b"")
+
+
+def _open_legacy_file_key(shared_secret: bytes, enc: bytes, ciphertext: bytes) -> bytes:
+    """The construction python-onlykey <= 1.3.0 and the web app used to write:
+    DHKEM-style ExtractAndExpand(ss, enc) and an empty info string. Kept so
+    files encrypted by those versions still open; nothing writes it any more."""
+    hpke_ss = hpke_extract_and_expand(shared_secret, enc)
+    key, base_nonce = hpke_key_schedule_base(hpke_ss, b"")
+    return ChaCha20Poly1305(key).decrypt(base_nonce, ciphertext, b"")
 
 
 def open_file_key(shared_secret: bytes, enc: bytes, ciphertext: bytes,
-                  info: bytes = b"") -> bytes:
-    """HPKE OpenBase: decrypt file key using X-Wing shared secret.
+                  info: bytes = AGE_PQ_INFO) -> bytes:
+    """HPKE OpenBase: decrypt the file key with the X-Wing shared secret.
+
+    Tries the age construction first, then the pre-1.3.1 one. Both checks are
+    AEAD tag checks under keys derived from the same secret, so a wrong
+    identity still fails both.
 
     Args:
         shared_secret: 32-byte X-Wing shared secret from Decaps
-        enc: 1120-byte X-Wing ciphertext (used in kem_context)
+        enc: 1120-byte X-Wing ciphertext (only the legacy fallback uses it)
         ciphertext: 32-byte AEAD ciphertext (16 plaintext + 16 tag)
-        info: optional HPKE info parameter
+        info: HPKE info; age's label by default
 
     Returns:
         16-byte file key
     """
     if not HAS_CRYPTO:
         raise RuntimeError("cryptography library required: pip install cryptography")
-
-    kem_context = enc
-    hpke_ss = hpke_extract_and_expand(shared_secret, kem_context)
-    key, base_nonce = hpke_key_schedule_base(hpke_ss, info)
-
-    aead = ChaCha20Poly1305(key)
-    return aead.decrypt(base_nonce, ciphertext, b"")
+    if len(ciphertext) != 32:
+        raise ValueError("mlkem768x25519 stanza body must be 32 bytes")
+    key, base_nonce = hpke_key_schedule_base(shared_secret, info)
+    try:
+        return ChaCha20Poly1305(key).decrypt(base_nonce, ciphertext, b"")
+    except Exception:
+        return _open_legacy_file_key(shared_secret, enc, ciphertext)
 
 
 def x25519_keygen() -> Tuple[bytes, bytes]:
