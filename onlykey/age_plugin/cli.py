@@ -11,6 +11,11 @@ Usage:
 Encryption:
   age -r age1onlykey1<pubkey> -e secret.txt > secret.age
 
+  --recipient --native prints the same key as age's own post-quantum
+  recipient (age1pq1...), which age 1.3+, typage, and rage or older age with
+  age-plugin-pq encrypt to without this plugin installed. Either way the file
+  is decrypted with the OnlyKey identity below.
+
 Decryption:
   age -d -i onlykey-identity.txt secret.age > secret.txt
 """
@@ -32,6 +37,9 @@ from onlykey.age_plugin.protocol import (
 
 # HRP for OnlyKey age recipients and identities
 RECIPIENT_HRP = "age1onlykey"
+# age's native post-quantum recipient (C2SP age.md): the same 1216-byte X-Wing
+# public key, which any age 1.3+ implementation encrypts to with no plugin.
+NATIVE_RECIPIENT_HRP = "age1pq"
 IDENTITY_HRP = "age-plugin-onlykey-"  # uppercase AGE-PLUGIN-ONLYKEY- in file
 
 IDENTITY_VERSION = 1
@@ -46,12 +54,24 @@ def encode_recipient(pubkey: bytes) -> str:
     return bech32_encode(RECIPIENT_HRP, pubkey)
 
 
+def encode_native_recipient(pubkey: bytes) -> str:
+    """Encode X-Wing public key as age's native age1pq recipient string."""
+    return bech32_encode(NATIVE_RECIPIENT_HRP, pubkey)
+
+
 def decode_recipient(recipient: str) -> bytes:
     """Decode age recipient string to public key bytes."""
     hrp, data = bech32_decode(recipient.lower())
     if hrp != RECIPIENT_HRP or data is None:
         raise ValueError(f"Invalid OnlyKey recipient: {recipient}")
     return data
+
+
+def _print_recipients(pk: bytes):
+    """The two spellings of one key, as comments in an identity file."""
+    print(f"# recipient: {encode_recipient(pk)}")
+    print(f"# recipient (age 1.3+, typage, rage with age-plugin-pq; no plugin needed): "
+          f"{encode_native_recipient(pk)}")
 
 
 def recipient_fingerprint(pubkey: bytes) -> bytes:
@@ -120,17 +140,17 @@ def cmd_generate(slot: int = DEFAULT_XWING_SLOT):
 
     # Print identity to stdout (for saving to file)
     print(f"# created: {__import__('datetime').datetime.now().isoformat()}")
-    print(f"# recipient: {recipient}")
+    _print_recipients(pk)
     print(identity)
 
 
-def cmd_recipient(slot: int = DEFAULT_XWING_SLOT):
+def cmd_recipient(slot: int = DEFAULT_XWING_SLOT, native: bool = False):
     """Print the X-Wing public key in the given ECC slot as an age recipient."""
     from onlykey.age_plugin.onlykey_hid import OnlyKeyPQ
 
     dev = OnlyKeyPQ()
     pk = dev.xwing_getpubkey(slot)
-    print(encode_recipient(pk))
+    print(encode_native_recipient(pk) if native else encode_recipient(pk))
 
 
 def cmd_identity(slot: int = DEFAULT_XWING_SLOT):
@@ -151,20 +171,21 @@ def cmd_generate_derived(label: str):
 
     print(f"Deriving X-Wing key on OnlyKey (label {label!r})...", file=sys.stderr)
     dev = OnlyKeyPQ()
-    recipient = encode_recipient(dev.derive_recipient(label))
+    pk = dev.derive_recipient(label)
+    recipient = encode_recipient(pk)
     print(f"# Recipient: {recipient}", file=sys.stderr)
     print(f"# created: {__import__('datetime').datetime.now().isoformat()}")
-    print(f"# recipient: {recipient}")
+    _print_recipients(pk)
     print(dx.encode_identity(label))
 
 
-def cmd_recipient_derived(label: str):
+def cmd_recipient_derived(label: str, native: bool = False):
     """Print the derived X-Wing recipient for a label."""
     from onlykey.age_plugin.onlykey_hid import OnlyKeyPQ
-    from onlykey.age_plugin import derived_xwing as dx
 
     dev = OnlyKeyPQ()
-    print(encode_recipient(dev.derive_recipient(label)))
+    pk = dev.derive_recipient(label)
+    print(encode_native_recipient(pk) if native else encode_recipient(pk))
 
 
 def cmd_identity_derived(label: str):
@@ -420,7 +441,7 @@ def main():
         if "--generate" in args or "-g" in args:
             cmd_generate_derived(label)
         elif "--recipient" in args or "-r" in args:
-            cmd_recipient_derived(label)
+            cmd_recipient_derived(label, native="--native" in args)
         elif "--identity" in args or "-i" in args:
             cmd_identity_derived(label)
         elif "--version" in args or "-v" in args:
@@ -446,7 +467,7 @@ def main():
     if "--generate" in args or "-g" in args:
         cmd_generate(slot)
     elif "--recipient" in args or "-r" in args:
-        cmd_recipient(slot)
+        cmd_recipient(slot, native="--native" in args)
     elif "--identity" in args or "-i" in args:
         cmd_identity(slot)
     elif "--version" in args or "-v" in args:
@@ -461,6 +482,7 @@ def main():
         print("Commands:")
         print("  --generate    Generate X-Wing keypair on OnlyKey")
         print("  --recipient   Print recipient (public key) for encryption")
+        print("  --native      With --recipient: print it as age1pq1... (no plugin needed to encrypt)")
         print("  --identity    Print identity file for decryption")
         print("  --slot N      User ECC slot 101-116 to use (default 101)")
         print("  --help        Show full help")
