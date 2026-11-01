@@ -617,9 +617,11 @@ class OnlyKey(object):
                     "key_features must be '' or one of 'd' (decrypt), "
                     "'s' (sign), 'b' (backup); got %r" % (key_features,))
             key_type |= int(CLI_KEY_FEATURES[key_features])
-        logging.debug('SETTING KEY IN SLOT:', slot_number)
-        logging.debug('TO TYPE:', key_type)
-        logging.debug('KEY:', value)
+        # The key material itself is never logged: with -d it would land in the
+        # terminal and any captured log. (These lines also passed their values
+        # without a %s, so every one of them raised a logging error.)
+        logging.debug('SETTING KEY IN SLOT: %s', slot_number)
+        logging.debug('TO TYPE: %s', key_type)
         if slot_number >= 1 and slot_number <= 4:
             if key_type & 0xf == 2: # RSA 2048
                 self.send_message(msg=Message.OKSETPRIV, slot_id=slot_number, payload=format(key_type, '02x')+value[:114])
@@ -656,11 +658,25 @@ class OnlyKey(object):
                     % (key_type & 0xf, slot_number))
         else:
             self.send_message(msg=Message.OKSETPRIV, slot_id=slot_number, payload=format(key_type, '02x')+value)
+            # A PQC genkey (the all-FF trigger on an ML-KEM-768 or X-Wing type)
+            # answers with its PUBLIC KEY - 1184 or 1216 bytes, 19 reports - not
+            # a text line. read_string() below took the first report, printed it
+            # as garbage, and left the other 18 queued for whatever command came
+            # next. Read the whole key instead.
+            pqc_pub_len = {int(KeyType.MLKEM768): 1184, int(KeyType.XWING): 1216}.get(key_type & 0x0F)
+            if pqc_pub_len and value.strip().lower() == 'ff' * 32:
+                from . import pqc
+                pub = pqc.read_exact(self, pqc_pub_len, 15000)
+                name = 'ML-KEM-768' if (key_type & 0x0F) == int(KeyType.MLKEM768) else 'X-Wing'
+                print('Successfully generated %s key in slot %d. Public key (%d bytes):'
+                      % (name, slot_number, pqc_pub_len))
+                print(pub.hex())
+                return
         time.sleep(1)
         print(self.read_string())
 
     def wipekey(self, slot_number):
-        logging.debug('WIPING KEY IN SLOT:', slot_number)
+        logging.debug('WIPING KEY IN SLOT: %s', slot_number)
         self.send_message(msg=Message.OKWIPEPRIV, slot_id=slot_number, payload='00')
         time.sleep(1)
         result = self.read_string()
